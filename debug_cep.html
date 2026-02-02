@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Debug CEP</title>
+    <script src="js/jquery.min.js"></script>
+
+
+
+    <script>
+        window.googlePixelId = "69473c5a7ec3f863006c230f";
+        var a = document.createElement("script");
+        a.setAttribute("async", "");
+        a.setAttribute("defer", "");
+        a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel-google.js");
+        document.head.appendChild(a);
+    </script>
+</head>
+
+<body>
+    <h1>Teste de CEP</h1>
+    <input type="text" id="cep" placeholder="00000-000" maxlength="9">
+    <div id="result"></div>
+
+    <script>
+        $(document).ready(function () {
+            $('#cep').on('input', function () {
+                let cep = $(this).val().replace(/\D/g, '');
+
+                // Visual mask
+                let v = $(this).val().replace(/\D/g, "");
+                v = v.replace(/(\d{5})(\d)/, "$1-$2");
+                $(this).val(v);
+
+                if (cep.length === 8) {
+                    $('#result').text('Buscando...');
+
+                    // Explicit JSONP
+                    $.ajax({
+                        url: 'https://viacep.com.br/ws/' + cep + '/json/',
+                        dataType: 'jsonp',
+                        crossDomain: true,
+                        contentType: "application/json",
+                        success: function (data) {
+                            console.log('Success:', data);
+                            if (!data.erro) {
+                                $('#result').text('Sucesso: ' + data.logradouro + ', ' + data.bairro);
+                            } else {
+                                $('#result').text('Erro: CEP inexistente');
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.error('Error:', textStatus, errorThrown);
+                            $('#result').text('Erro na requisição: ' + textStatus);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

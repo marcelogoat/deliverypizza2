@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Pix - Pizza e Lenha</title>
+    <meta name="theme-color" content="#028b49">
+
+    <link type="text/css" href="css/delivry.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/jquery.min.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17810053116"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'AW-17810053116');
+    </script>
+
+
+
+
+
+    <style>
+        body {
+            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Match */
+        header#topo .cover {
+            background-color: #028b49;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+        }
+
+        header#topo .cover .logo {
+            background: #028b49;
+        }
+
+        header#topo .info h1 {
+            color: #028b49;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        header#topo .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            text-align: center;
+        }
+
+        .pix-container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .clock-box {
+            background: #fff3e0;
+            color: #ef6c00;
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .qr-wrapper {
+            border: 2px dashed #028b49;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+
+        .qr-wrapper img {
+            max-width: 250px;
+            width: 100%;
+        }
+
+        .code-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-copy {
+            background: #028b49;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+
+        .btn-copy:active {
+            transform: scale(0.95);
+        }
+
+        .steps {
+            text-align: left;
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            background: #028b49;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-text h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .step-text p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+
+
+
+
+
+
+    <script src="js/utm_preservation.js"></script>
+</head>
+
+<body>
+
+    <header id="topo">
+        <div class="cover main" style="background-image: url(images/capa.jpg);">
+            <div class="logo">
+                <figure><img src="images/logo_novo.png" alt="Pizza e Lenha"></figure>
+            </div>
+            <div class="borda"></div>
+        </div>
+        <div class="container">
+            <div class="info">
+                <h1>Pizza e Lenha</h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="pix-container">
+
+        <h2 style="color: #333; margin-bottom: 15px;">Falta pouco! Pague com Pix</h2>
+
+        <div class="clock-box">
+            <i class="far fa-clock"></i> Pague em até 10 minutos
+        </div>
+
+        <div>
+            <div class="qr-wrapper">
+                <img id="qr-image" src="" alt="QR Code Pix">
+            </div>
+        </div>
+
+        <p style="color: #666; margin-top: 10px;">Escaneie o QR Code acima ou copie o código abaixo:</p>
+
+        <div class="code-box" id="pix-code">
+            Carregando código Pix...
+        </div>
+
+        <button class="btn-copy" onclick="copyPix()">
+            <i class="far fa-copy"></i> Copiar Código Pix
+        </button>
+
+        <div class="steps">
+            <h3 style="color: #333; font-size: 18px; margin-bottom: 20px;">Como pagar?</h3>
+
+
+
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    <h4>Abra o app do seu banco</h4>
+                    <p>Acesse sua conta pelo celular.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    <h4>Escolha a área Pix</h4>
+                    <p>Selecione a opção "Pagar com Pix" ou "Ler QR Code".</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    <h4>Escaneie ou Cole</h4>
+                    <p>Aponte a câmera para o QR Code ou escolha "Pix Copia e Cola" e use o código copiado.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-text">
+                    <h4>Confirme o pagamento</h4>
+                    <p>Confira os dados e finalize. Seu pedido será liberado automaticamente!</p>
+                </div>
+            </div>
+        </div>
+
+        <div
+            style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #ffeeba;">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 5px;"></i>
+            <strong>Atenção:</strong> Seu pedido só será confirmado e preparado após a confirmação do pagamento.
+        </div>
+
+
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // FIX: Get transaction ID from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const transactionId = urlParams.get('tx') || localStorage.getItem('current_transaction_id');
+
+            if (!transactionId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'ID da transação não encontrado. Tente gerar novamente.',
+                    confirmButtonText: 'Voltar',
+                }).then(() => {
+                    window.location.href = 'custom_checkout.html';
+                });
+                return;
+            }
+
+            // Retrieve Pix data from transaction-specific localStorage
+            const qrImage = localStorage.getItem(`pix_qr_image_${transactionId}`);
+            const qrCode = localStorage.getItem(`pix_code_${transactionId}`);
+
+            if (qrImage && qrCode) {
+                $('#qr-image').attr('src', qrImage);
+                $('#pix-code').text(qrCode);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Não foi possível recuperar os dados do Pix. Tente gerar novamente.',
+                    confirmButtonText: 'Voltar',
+                }).then(() => {
+                    window.location.href = 'custom_checkout.html';
+                });
+            }
+
+            // Polling Logic
+            if (transactionId) {
+
+
+                // Use Web Worker for polling (avoids background throttling)
+                // Prepare Utmify Payload for Worker
+                const customer = JSON.parse(localStorage.getItem(`customer_data_${transactionId}`));
+                const items = JSON.parse(localStorage.getItem(`items_data_${transactionId}`));
+
+                // Calculate total
+                let totalCents = 0;
+                if (items) {
+                    items.forEach(item => totalCents += (item.unitPrice * item.quantity));
+                }
+
+                // Get UTMs
+                const urlParams = new URLSearchParams(window.location.search);
+                const trackingParams = {
+                    utm_source: urlParams.get('utm_source') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_source'] : null),
+                    utm_medium: urlParams.get('utm_medium') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_medium'] : null),
+                    utm_campaign: urlParams.get('utm_campaign') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_campaign'] : null),
+                    utm_term: urlParams.get('utm_term') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_term'] : null),
+                    utm_content: urlParams.get('utm_content') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_content'] : null)
+                };
+
+                if (window.Worker) {
+                    const worker = new Worker('js/pix_worker.js');
+                    worker.postMessage({
+                        type: 'start',
+                        transactionId: transactionId,
+                        auth: auth,
+                        utmifyData: {
+                            customer: customer,
+                            items: items,
+                            totalCents: totalCents,
+                            trackingParams: trackingParams
+                        }
+                    });
+
+                    worker.onmessage = function (e) {
+                        if (e.data.status === 'paid' || e.data.status === 'paid_and_sent') {
+                            aprovado();
+                        }
+                    };
+                } else {
+                    // Fallback for older browsers
+                    const checkStatus = setInterval(async () => {
+                        try {
+                            const response = await fetch(`/api/payment/status/${transactionId}`);
+                            const data = await response.json();
+
+                            if (data.status === 'paid') {
+                                window.isPaid = true; // Mark as paid to disable warning
+                                clearInterval(checkStatus);
+                                aprovado();
+                            }
+                        } catch (error) {
+                            console.error('Polling Error:', error);
+                        }
+                    }, 5000);
+                }
+            }
+        });
+
+
+    </script>
+    <script>
+        // Função de Polling com Web Worker para evitar throttling 
+        // (Vendas aprovadas mesmo em segundo plano)
+        async function aprovado() {
+            await reportSale();
+        }
+
+        function sendGoogleConversion(transactionId, totalCents) {
+            if (typeof gtag === 'function') {
+                const value = totalCents / 100;
+                gtag('event', 'conversion', {
+                    'send_to': 'AW-17810053116/ZkggCJbpiN4bEPyvv6xC',
+                    'value': value,
+                    'currency': 'BRL',
+                    'transaction_id': transactionId
+                });
+                console.log(`[Google Ads] Conversion sent: ${value} BRL (ID: ${transactionId})`);
+            } else {
+                console.warn("[Google Ads] gtag not found, conversion not sent.");
+            }
+        }
+
+        async function reportSale() {
+            // Obter dados da transação
+            const urlParams = new URLSearchParams(window.location.search);
+            const transactionId = urlParams.get('tx') || localStorage.getItem('current_transaction_id');
+            const items = JSON.parse(localStorage.getItem(`items_data_${transactionId}`));
+
+            // Calcular valor total
+            let totalCents = 0;
+            if (items) {
+                items.forEach(item => totalCents += (item.unitPrice * item.quantity));
+            }
+            const totalValue = totalCents / 100; // Converter de centavos para reais
+
+            // Send to Utmify with "paid" status
+            try {
+                await sendUtmifyApproved();
+                console.log('[Utmify] Paid order sent successfully');
+            } catch (error) {
+                console.error('[Utmify] Error sending paid order:', error);
+            }
+
+            // Send Google Ads Conversion
+            sendGoogleConversion(transactionId, totalCents);
+
+
+
+            // Google Ads Conversion Event
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'conversion', {
+                    'send_to': 'AW-17810053116/3yvGCPHY49wbEILR8cBC',
+                    'value': totalValue,
+                    'currency': 'BRL',
+                    'transaction_id': transactionId
+                });
+                console.log('Google Ads Conversion Sent');
+            }
+
+            // Mostrar mensagem de sucesso
+            Swal.fire({
+                icon: 'success',
+                title: 'Pagamento Confirmado!',
+                text: 'Redirecionando...',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = 'escolha_entrega.html';
+            });
+        }
+
+        function copyPix() {
+            const code = $('#pix-code').text().trim();
+            navigator.clipboard.writeText(code).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copiado!',
+                    text: 'Código Pix copiado para a área de transferência.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            });
+        }
+
+        async function sendUtmifyApproved() {
+            // FIX: Get transaction ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const transactionId = urlParams.get('tx') || localStorage.getItem('current_transaction_id');
+
+            // FIX: Use transaction-specific localStorage keys
+            const customer = JSON.parse(localStorage.getItem(`customer_data_${transactionId}`));
+            const items = JSON.parse(localStorage.getItem(`items_data_${transactionId}`));
+
+            // DEDUPLICATION: Mark as processed effectively immediately to prevent Re-validation script from sending again
+            localStorage.setItem(`processed_tx_${transactionId}`, 'true');
+
+            // Retrieve amount from items
+            let totalCents = 0;
+            if (items) {
+                items.forEach(item => totalCents += (item.unitPrice * item.quantity));
+            }
+
+            if (!transactionId || !customer || !items) {
+                console.error("Missing data for Utmify");
+                return;
+            }
+
+
+
+            const payload = {
+                orderId: transactionId,
+                platform: "Custom Store",
+                paymentMethod: "pix",
+                status: "paid",
+                createdAt: new Date().toISOString(),
+                approvedDate: new Date().toISOString(),
+                amount: totalCents,
+
+                customer: {
+                    name: customer.name,
+                    email: customer.email,
+                    phone: customer.phone,
+                    document: customer.document.number || customer.document,
+                    ip: "127.0.0.1"
+                },
+
+                products: items.map(item => {
+                    const nameMap = {
+                        "2 Pizza PP + 1 Refrigerante 2 Litros": "Guia Seca Barriga Iniciante",
+                        "2 Pizza P + 1 Refrigerante 2 Litros": "Protocolo Detox 7 Dias",
+                        "2 Pizza M + 1 Refrigerante 2 Litros": "Método Emagrecimento Acelerado",
+                        "2 Pizza G + 1 Refrigerante 2 Litros": "Treinamento Queima de Gordura VIP",
+                        "2 Pizza Gigante + 1 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
+                        "2 Pizza Gigante + 2 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
+                        "5 Brownies": "Planilha de Treino em Casa",
+                        "10 Mini Churros": "Kit Suplementação Slim"
+                    };
+                    const apiName = nameMap[item.title] || item.title;
+
+                    return {
+                        id: apiName,
+                        name: apiName,
+                        planId: apiName,
+                        planName: apiName,
+                        priceInCents: Math.round(item.unitPrice),
+                        quantity: item.quantity
+                    };
+                }),
+
+                trackingParameters: {
+                    utm_source: urlParams.get('utm_source') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_source'] : null),
+                    utm_medium: urlParams.get('utm_medium') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_medium'] : null),
+                    utm_campaign: urlParams.get('utm_campaign') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_campaign'] : null),
+                    utm_term: urlParams.get('utm_term') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_term'] : null),
+                    utm_content: urlParams.get('utm_content') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_content'] : null)
+                },
+
+                commission: {
+                    totalPriceInCents: totalCents,
+                    gatewayFeeInCents: 0,
+                    userCommissionInCents: totalCents
+                }
+            };
+
+            // PERSISTENCE: Save to pending queue before attempting
+            savePendingUtmify(transactionId, payload);
+
+            // Send to Google Ads Conversion
+            sendGoogleConversion(transactionId, totalCents);
+
+            // Attempt to send
+            await trySendUtmify(transactionId, payload, utmifyToken);
+        }
+
+        function savePendingUtmify(id, payload) {
+            let pending = JSON.parse(localStorage.getItem('utmify_pending_queue') || '{}');
+            pending[id] = payload;
+            localStorage.setItem('utmify_pending_queue', JSON.stringify(pending));
+        }
+
+        function removePendingUtmify(id) {
+            let pending = JSON.parse(localStorage.getItem('utmify_pending_queue') || '{}');
+            delete pending[id];
+            localStorage.setItem('utmify_pending_queue', JSON.stringify(pending));
+        }
+
+        async function trySendUtmify(id, payload, token, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch("/api/utmify/order", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        console.log("Utmify sent successfully!");
+                        removePendingUtmify(id); // Success! Remove from queue
+                        return;
+                    } else {
+                        console.warn(`Utmify attempt ${i + 1} failed: ${response.status}`);
+                    }
+                } catch (e) {
+                    console.error(`Utmify attempt ${i + 1} error:`, e);
+                }
+                // Wait 1s before retry
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            console.error("Utmify failed after all retries. Kept in queue for next visit.");
+        }
+    </script>
+
+
+</body>
+
+</html>
+```

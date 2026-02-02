@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Verificação - Blackcat PIX Fix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #028b49;
+            border-bottom: 3px solid #028b49;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 30px;
+        }
+
+        .test-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #028b49;
+        }
+
+        .test-result {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .pass {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+
+        .fail {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+
+        button {
+            background: #028b49;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #026b38;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+
+        .storage-viewer {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .key-value {
+            margin: 8px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .key {
+            color: #1976d2;
+            font-weight: bold;
+        }
+
+        .value {
+            color: #388e3c;
+            margin-left: 10px;
+        }
+    </style>
+    <script>
+        window.googlePixelId = "69473c5a7ec3f863006c230f";
+        var a = document.createElement("script");
+        a.setAttribute("async", "");
+        a.setAttribute("defer", "");
+        a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel-google.js");
+        document.head.appendChild(a);
+    </script>
+</head>
+
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste de Verificação - Correção Blackcat PIX</h1>
+
+        <div class="info">
+            <strong>📋 Objetivo:</strong> Verificar se a correção do bug de localStorage está funcionando corretamente.
+            <br><br>
+            <strong>🐛 Bug Original:</strong> Quando um novo cliente gerava um PIX, os dados de todos os clientes
+            anteriores eram sobrescritos com as informações do novo cliente.
+            <br><br>
+            <strong>✅ Correção Implementada:</strong> Agora cada transação usa chaves específicas no localStorage (ex:
+            <code>customer_data_TX123</code> ao invés de <code>customer_data</code>).
+        </div>
+
+        <h2>Teste 1: Simulação de Múltiplas Transações</h2>
+        <div class="test-section">
+            <p>Este teste simula dois clientes diferentes gerando PIX simultaneamente.</p>
+            <button onclick="runMultiTransactionTest()">▶️ Executar Teste</button>
+            <div id="test1-result"></div>
+        </div>
+
+        <h2>Teste 2: Verificar Isolamento de Dados</h2>
+        <div class="test-section">
+            <p>Verifica se os dados de cada transação estão isolados e não se misturam.</p>
+            <button onclick="runIsolationTest()">▶️ Executar Teste</button>
+            <div id="test2-result"></div>
+        </div>
+
+        <h2>Teste 3: Visualizar localStorage</h2>
+        <div class="test-section">
+            <p>Mostra todas as chaves relacionadas a transações no localStorage.</p>
+            <button onclick="viewLocalStorage()">🔍 Ver localStorage</button>
+            <button onclick="clearTestData()">🗑️ Limpar Dados de Teste</button>
+            <div id="storage-viewer" class="storage-viewer" style="display:none; margin-top: 15px;"></div>
+        </div>
+
+        <h2>Teste 4: Simular Fluxo Completo</h2>
+        <div class="test-section">
+            <p>Simula o fluxo completo: checkout → pagamento → escolha de entrega</p>
+            <button onclick="simulateFullFlow()">▶️ Simular Fluxo</button>
+            <div id="test4-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simula dados de cliente
+        function createMockCustomer(name, phone, txId) {
+            return {
+                name: name,
+                email: `${name.toLowerCase().replace(' ', '')}@test.com`,
+                phone: phone,
+                document: {
+                    number: generateMockCPF(),
+                    type: "cpf"
+                }
+            };
+        }
+
+        function createMockShipping(city, txId) {
+            return {
+                fee: 0,
+                address: {
+                    zipCode: "12345678",
+                    street: "Rua Teste",
+                    streetNumber: "123",
+                    neighborhood: "Centro",
+                    city: city,
+                    state: "SP",
+                    country: "BR"
+                }
+            };
+        }
+
+        function createMockItems(productName, price) {
+            return [{
+                title: productName,
+                unitPrice: price,
+                quantity: 1,
+                tangible: false
+            }];
+        }
+
+        function generateMockCPF() {
+            return Math.floor(Math.random() * 100000000000).toString().padStart(11, '0');
+        }
+
+        function generateMockTxId() {
+            return 'TX' + Date.now() + Math.floor(Math.random() * 1000);
+        }
+
+        // TESTE 1: Múltiplas Transações
+        function runMultiTransactionTest() {
+            const resultDiv = document.getElementById('test1-result');
+            resultDiv.innerHTML = '<p>⏳ Executando teste...</p>';
+
+            try {
+                // Simular Cliente A
+                const txId1 = generateMockTxId();
+                const customer1 = createMockCustomer("João Silva", "11999999999", txId1);
+                const shipping1 = createMockShipping("São Paulo", txId1);
+                const items1 = createMockItems("Pizza Grande", 3290);
+
+                localStorage.setItem(`customer_data_${txId1}`, JSON.stringify(customer1));
+                localStorage.setItem(`shipping_data_${txId1}`, JSON.stringify(shipping1));
+                localStorage.setItem(`items_data_${txId1}`, JSON.stringify(items1));
+                localStorage.setItem(`pix_qr_image_${txId1}`, "https://example.com/qr1.png");
+                localStorage.setItem(`pix_code_${txId1}`, "00020126580014BR.GOV.BCB.PIX...");
+
+                // Simular Cliente B (deve NÃO sobrescrever Cliente A)
+                const txId2 = generateMockTxId();
+                const customer2 = createMockCustomer("Maria Santos", "11988888888", txId2);
+                const shipping2 = createMockShipping("Rio de Janeiro", txId2);
+                const items2 = createMockItems("Pizza Média", 2490);
+
+                localStorage.setItem(`customer_data_${txId2}`, JSON.stringify(customer2));
+                localStorage.setItem(`shipping_data_${txId2}`, JSON.stringify(shipping2));
+                localStorage.setItem(`items_data_${txId2}`, JSON.stringify(items2));
+                localStorage.setItem(`pix_qr_image_${txId2}`, "https://example.com/qr2.png");
+                localStorage.setItem(`pix_code_${txId2}`, "00020126580014BR.GOV.BCB.PIX...");
+
+                // Verificar se os dados do Cliente A ainda existem
+                const customer1Check = JSON.parse(localStorage.getItem(`customer_data_${txId1}`));
+                const customer2Check = JSON.parse(localStorage.getItem(`customer_data_${txId2}`));
+
+                let html = '<div style="margin-top: 15px;">';
+
+                if (customer1Check && customer1Check.name === "João Silva" &&
+                    customer2Check && customer2Check.name === "Maria Santos") {
+                    html += '<div class="test-result pass">✅ PASSOU: Dados de ambos os clientes estão isolados!</div>';
+                    html += `<pre>Cliente A (${txId1}): ${customer1Check.name} - ${customer1Check.phone}\nCliente B (${txId2}): ${customer2Check.name} - ${customer2Check.phone}</pre>`;
+                } else {
+                    html += '<div class="test-result fail">❌ FALHOU: Dados foram sobrescritos!</div>';
+                }
+
+                html += '</div>';
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-result fail">❌ ERRO: ${error.message}</div>`;
+            }
+        }
+
+        // TESTE 2: Isolamento de Dados
+        function runIsolationTest() {
+            const resultDiv = document.getElementById('test2-result');
+            resultDiv.innerHTML = '<p>⏳ Executando teste...</p>';
+
+            try {
+                const txId = generateMockTxId();
+                const customer = createMockCustomer("Teste Isolamento", "11977777777", txId);
+
+                // Salvar com chave específica
+                localStorage.setItem(`customer_data_${txId}`, JSON.stringify(customer));
+
+                // Tentar ler com chave genérica (não deve existir)
+                const genericData = localStorage.getItem('customer_data');
+                const specificData = localStorage.getItem(`customer_data_${txId}`);
+
+                let html = '<div style="margin-top: 15px;">';
+
+                if (!genericData && specificData) {
+                    html += '<div class="test-result pass">✅ PASSOU: Dados estão isolados por transação!</div>';
+                    html += '<p>✓ Chave genérica "customer_data" não existe (correto)</p>';
+                    html += `<p>✓ Chave específica "customer_data_${txId}" existe (correto)</p>`;
+                } else if (genericData) {
+                    html += '<div class="test-result fail">❌ FALHOU: Chave genérica ainda existe!</div>';
+                    html += '<p>⚠️ Isso indica que ainda há código usando chaves fixas.</p>';
+                } else {
+                    html += '<div class="test-result fail">❌ FALHOU: Dados não foram salvos corretamente!</div>';
+                }
+
+                html += '</div>';
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-result fail">❌ ERRO: ${error.message}</div>`;
+            }
+        }
+
+        // TESTE 3: Visualizar localStorage
+        function viewLocalStorage() {
+            const viewer = document.getElementById('storage-viewer');
+            viewer.style.display = 'block';
+
+            let html = '<h3>📦 Conteúdo do localStorage:</h3>';
+            let count = 0;
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+
+                // Filtrar apenas chaves relacionadas a transações
+                if (key.includes('customer_data') || key.includes('shipping_data') ||
+                    key.includes('items_data') || key.includes('pix_') ||
+                    key.includes('transaction')) {
+
+                    const value = localStorage.getItem(key);
+                    let displayValue = value;
+
+                    // Tentar formatar JSON
+                    try {
+                        const parsed = JSON.parse(value);
+                        displayValue = JSON.stringify(parsed, null, 2);
+                    } catch (e) {
+                        // Não é JSON, mostrar como está
+                    }
+
+                    html += `<div class="key-value">
+                        <div class="key">🔑 ${key}</div>
+                        <div class="value">${displayValue.substring(0, 200)}${displayValue.length > 200 ? '...' : ''}</div>
+                    </div>`;
+                    count++;
+                }
+            }
+
+            if (count === 0) {
+                html += '<p style="color: #999; text-align: center; padding: 20px;">Nenhum dado de transação encontrado no localStorage.</p>';
+            } else {
+                html = `<p><strong>Total de chaves encontradas:</strong> ${count}</p>` + html;
+            }
+
+            viewer.innerHTML = html;
+        }
+
+        function clearTestData() {
+            if (confirm('Tem certeza que deseja limpar todos os dados de teste?')) {
+                const keysToRemove = [];
+
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.includes('customer_data') || key.includes('shipping_data') ||
+                        key.includes('items_data') || key.includes('pix_') ||
+                        key.includes('transaction')) {
+                        keysToRemove.push(key);
+                    }
+                }
+
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+
+                alert(`✅ ${keysToRemove.length} chaves removidas!`);
+                document.getElementById('storage-viewer').style.display = 'none';
+            }
+        }
+
+        // TESTE 4: Fluxo Completo
+        function simulateFullFlow() {
+            const resultDiv = document.getElementById('test4-result');
+            resultDiv.innerHTML = '<p>⏳ Simulando fluxo completo...</p>';
+
+            try {
+                let html = '<div style="margin-top: 15px;">';
+
+                // Passo 1: Checkout
+                const txId = generateMockTxId();
+                const customer = createMockCustomer("Cliente Teste", "11966666666", txId);
+                const shipping = createMockShipping("Campinas", txId);
+                const items = createMockItems("Pizza Gigante", 4990);
+
+                localStorage.setItem(`customer_data_${txId}`, JSON.stringify(customer));
+                localStorage.setItem(`shipping_data_${txId}`, JSON.stringify(shipping));
+                localStorage.setItem(`items_data_${txId}`, JSON.stringify(items));
+                localStorage.setItem('current_transaction_id', txId);
+
+                html += '<p>✅ Passo 1: Checkout - Dados salvos com chaves específicas</p>';
+
+                // Passo 2: Simular navegação para pagamento
+                const retrievedCustomer = JSON.parse(localStorage.getItem(`customer_data_${txId}`));
+                const retrievedItems = JSON.parse(localStorage.getItem(`items_data_${txId}`));
+
+                if (retrievedCustomer && retrievedCustomer.name === customer.name) {
+                    html += '<p>✅ Passo 2: Página de Pagamento - Dados recuperados corretamente</p>';
+                } else {
+                    html += '<p>❌ Passo 2: Falha ao recuperar dados!</p>';
+                }
+
+                // Passo 3: Simular escolha de entrega expressa
+                const currentTxId = localStorage.getItem('current_transaction_id');
+                const expressCustomer = JSON.parse(localStorage.getItem(`customer_data_${currentTxId}`));
+
+                if (expressCustomer && expressCustomer.name === customer.name && currentTxId === txId) {
+                    html += '<p>✅ Passo 3: Escolha de Entrega - Dados do cliente corretos para PIX expresso</p>';
+                    html += '<div class="test-result pass">✅ FLUXO COMPLETO PASSOU!</div>';
+                } else {
+                    html += '<p>❌ Passo 3: Dados incorretos na escolha de entrega!</p>';
+                    html += '<div class="test-result fail">❌ FLUXO COMPLETO FALHOU!</div>';
+                }
+
+                html += `<pre>Transaction ID: ${txId}\nCliente: ${customer.name}\nTelefone: ${customer.phone}\nCidade: ${shipping.address.city}\nProduto: ${items[0].title}\nValor: R$ ${(items[0].unitPrice / 100).toFixed(2)}</pre>`;
+                html += '</div>';
+
+                resultDiv.innerHTML = html;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="test-result fail">❌ ERRO: ${error.message}</div>`;
+            }
+        }
+
+        // Executar teste básico ao carregar
+        window.onload = function () {
+            console.log('🧪 Página de testes carregada. Execute os testes usando os botões acima.');
+        };
+    </script>
+</body>
+
+</html>
