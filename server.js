@@ -6,6 +6,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
 
 // Middleware
 app.use(cors());
@@ -152,8 +153,6 @@ app.get('/api/health', (req, res) => {
 // ============================================
 // Start Server
 // ============================================
-
-const HOST = '0.0.0.0'; // Railway requirement
 
 app.listen(PORT, HOST, () => {
     console.log(`\n🚀 Server running on http://${HOST}:${PORT}`);
