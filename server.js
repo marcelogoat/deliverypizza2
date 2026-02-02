@@ -153,8 +153,10 @@ app.get('/api/health', (req, res) => {
 // Start Server
 // ============================================
 
-app.listen(PORT, () => {
-    console.log(`\n🚀 Server running on http://localhost:${PORT}`);
+const HOST = '0.0.0.0'; // Railway requirement
+
+app.listen(PORT, HOST, () => {
+    console.log(`\n🚀 Server running on http://${HOST}:${PORT}`);
     console.log(`📁 Serving static files from: ${__dirname}`);
     console.log(`🔒 API Keys loaded: MarchaPay=${!!(process.env.MARCHAPAY_PUBLIC_KEY && process.env.MARCHAPAY_SECRET_KEY)}, Utmify=${!!process.env.UTMIFY_API_TOKEN}\n`);
 });
