@@ -433,6 +433,15 @@
         function copyPix() {
             const code = $('#pix-code').text().trim();
             navigator.clipboard.writeText(code).then(() => {
+                // Track Copy Event
+                const urlParams = new URLSearchParams(window.location.search);
+                const transactionId = urlParams.get('tx') || localStorage.getItem('current_transaction_id');
+
+                if (transactionId) {
+                    fetch(`/api/orders/${transactionId}/copied`, { method: 'POST' })
+                        .catch(e => console.error('Error tracking copy:', e));
+                }
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Copiado!',

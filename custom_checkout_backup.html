@@ -449,70 +449,22 @@
                     <input type="tel" id="cep" required placeholder="00000-000" maxlength="9">
                 </div>
 
-                <div id="address-details" style="display: none;">
-                    <div class="form-row" style="display: flex; gap: 10px;">
-                        <div class="form-group" style="flex: 3;">
-                            <label>Rua</label>
-                            <input type="text" id="endereco" required placeholder="Rua, Avenida...">
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>Número</label>
-                            <input type="tel" id="numero" required placeholder="123">
-                        </div>
+                <div class="form-row" style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 3;">
+                        <label>Rua</label>
+                        <input type="text" id="endereco" required placeholder="Rua, Avenida...">
                     </div>
-
-                    <div class="form-group">
-                        <label>Complemento (Opcional)</label>
-                        <input type="text" id="complemento" placeholder="Apto, Bloco, etc.">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Bairro</label>
-                        <input type="text" id="bairro" required placeholder="Seu bairro">
-                    </div>
-                    <div class="form-group">
-                        <label>Cidade</label>
-                        <input type="text" id="cidade" required placeholder="Sua cidade">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Número</label>
+                        <input type="tel" id="numero" required placeholder="123">
                     </div>
                 </div>
 
-                <!-- Shipping Options (Hidden until address is valid) -->
-                <div id="shipping-options"
-                    style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
-                    <h4 style="font-size: 18px; color: #333; margin-bottom: 20px;">Escolha a Entrega:</h4>
-
-                    <label class="shipping-option"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; cursor: pointer;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <input type="radio" name="shipping" value="free" checked onchange="updateTotal()"
-                                style="transform: scale(1.5);">
-                            <div>
-                                <strong style="display: block; color: #333; font-size: 16px;">Entrega Grátis</strong>
-                                <span style="font-size: 14px; color: #666;">40-50 minutos</span>
-                            </div>
-                        </div>
-                        <span style="font-weight: bold; color: #028b49; font-size: 15px;">Grátis</span>
-                    </label>
-
-                    <label class="shipping-option"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <input type="radio" name="shipping" value="express" onchange="updateTotal()"
-                                style="transform: scale(1.5);">
-                            <div>
-                                <strong style="display: block; color: #333; font-size: 16px;">Entrega Expressa</strong>
-                                <span style="font-size: 14px; color: #666;">20-30 minutos</span>
-                            </div>
-                        </div>
-                        <span style="font-weight: bold; color: #333; font-size: 15px;">+ R$ 9,90</span>
-                    </label>
+                <div class="form-group">
+                    <label>Complemento (Opcional)</label>
+                    <input type="text" id="complemento" placeholder="Apto, Bloco, etc.">
                 </div>
-                <button type="button" class="btn-action" onclick="nextStep(2)">Próximo</button>
-                <button type="button" class="btn-secondary" onclick="prevStep(2)">Voltar</button>
-            </div>
 
-            <!-- Step 3: Payment -->
-            <div id="step3" class="step">
                 <h3 style="color: #028b49; display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                     <i class="fa-solid fa-check-circle"></i> Confirmação e Pagamento
                 </h3>
@@ -581,11 +533,12 @@
                     Total: <span id="final-total" style="color: #028b49;">R$ 0,00</span>
                 </div>
 
+
                 <!-- Payment Method Selector -->
                 <div class="form-group" style="margin-top: 30px;">
                     <label for="payment-method" style="font-weight: bold;">Forma de Pagamento *</label>
                     <select id="payment-method" name="payment-method" class="form-control" required>
-                        <option value="pix">💠 Pix (Aprovação Instantânea)</option>
+                        <option value="pix">💳 Pix (Aprovação Instantânea)</option>
                         <option value="credit_card">💳 Cartão de Crédito</option>
                     </select>
                 </div>
@@ -605,12 +558,6 @@
                         <label for="card-holder">Nome no Cartão *</label>
                         <input type="text" id="card-holder" placeholder="NOME COMO ESTÁ NO CARTÃO" class="form-control"
                             style="text-transform: uppercase;">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="card-cpf">CPF do Titular *</label>
-                        <input type="text" id="card-cpf" placeholder="000.000.000-00" maxlength="14"
-                            class="form-control">
                     </div>
 
                     <div class="form-row">
@@ -659,50 +606,6 @@
         let basePrice = 0;
         let bumpsTotal = 0;
 
-        // Exposed global function
-        window.updateTotal = function () {
-            bumpsTotal = 0;
-            let htmlExtras = '';
-            let shippingCost = 0;
-
-            // Shipping Calculation
-            // Note: We use jQuery inside here, so ensure jQuery is loaded (it is)
-            const shippingMethod = $('input[name="shipping"]:checked').val();
-            if (shippingMethod === 'express') {
-                shippingCost = 9.90;
-                htmlExtras += `
-                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-bottom: 5px;">
-                        <span>+ Entrega Expressa</span>
-                        <span>R$ 9,90</span>
-                    </div>
-                `;
-            }
-
-            $('.bump-check:checked').each(function () {
-                let priceVal = parseFloat($(this).data('price'));
-                bumpsTotal += priceVal;
-                htmlExtras += `
-                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-bottom: 5px;">
-                        <span>+ ${$(this).data('name')}</span>
-                        <span>${priceVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                    </div>
-                `;
-            });
-
-            if (htmlExtras) {
-                $('#extra-items').html(htmlExtras).show();
-            } else {
-                $('#extra-items').hide();
-            }
-
-            // Expose logic variable
-            window.currentShippingCost = shippingCost;
-
-            let finalValue = basePrice + bumpsTotal + shippingCost;
-            let formatted = finalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            $('#final-total').text(formatted);
-        };
-
         // Generate a valid random CPF
         function generateCPF() {
             const rand = (n) => Math.floor(Math.random() * n);
@@ -722,7 +625,61 @@
         }
 
         $(document).ready(function () {
-            // Parse params
+            loadSelectedPizzas();
+            loadBumps();
+            updateTotal();
+
+            // ============================================
+            // Payment Method Toggle
+            // ============================================
+            $('#payment-method').on('change', function () {
+                const method = $(this).val();
+
+                if (method === 'pix') {
+                    $('#card-fields').slideUp();
+                    $('#submit-btn').text('GERAR PIX');
+                    // Remove required from card fields
+                    $('#card-number, #card-holder, #card-expiry, #card-cvv').prop('required', false);
+                } else if (method === 'credit_card') {
+                    $('#card-fields').slideDown();
+                    $('#submit-btn').text('FINALIZAR PAGAMENTO');
+                    // Add required to card fields
+                    $('#card-number, #card-holder, #card-expiry, #card-cvv').prop('required', true);
+                }
+            });
+
+            // ============================================
+            // Card Input Masks
+            // ============================================
+
+            // Card number mask (0000 0000 0000 0000)
+            $('#card-number').on('input', function () {
+                let value = $(this).val().replace(/\D/g, ''); // Remove non-digits
+                let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+                $(this).val(formatted);
+            });
+
+            // Card expiry mask (MM/AA)
+            $('#card-expiry').on('input', function () {
+                let value = $(this).val().replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                }
+                $(this).val(value);
+            });
+
+            // CVV mask (only digits)
+            $('#card-cvv').on('input', function () {
+                let value = $(this).val().replace(/\D/g, '');
+                $(this).val(value);
+            });
+
+            // Card holder (uppercase)
+            $('#card-holder').on('input', function () {
+                $(this).val($(this).val().toUpperCase());
+            });
+
+            // Parse URL params
             const urlParams = new URLSearchParams(window.location.search);
             const name = urlParams.get('name');
             const price = urlParams.get('price');
@@ -745,49 +702,31 @@
                 updateTotal();
             });
 
-            // ============================================
-            // Payment Method Toggle
-            // ============================================
-            $('#payment-method').on('change', function () {
-                const method = $(this).val();
+            function updateTotal() {
+                bumpsTotal = 0;
+                let htmlExtras = '';
 
-                if (method === 'pix') {
-                    $('#card-fields').slideUp();
-                    $('#submit-btn').text('GERAR PIX');
-                    $('#card-number, #card-holder, #card-expiry, #card-cvv').prop('required', false);
-                } else if (method === 'credit_card') {
-                    $('#card-fields').slideDown();
-                    $('#submit-btn').text('FINALIZAR PAGAMENTO');
-                    $('#card-number, #card-holder, #card-expiry, #card-cvv').prop('required', true);
+                $('.bump-check:checked').each(function () {
+                    let priceVal = parseFloat($(this).data('price'));
+                    bumpsTotal += priceVal;
+                    htmlExtras += `
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-bottom: 5px;">
+                            <span>+ ${$(this).data('name')}</span>
+                            <span>${priceVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                        </div>
+                    `;
+                });
+
+                if (bumpsTotal > 0) {
+                    $('#extra-items').html(htmlExtras).show();
+                } else {
+                    $('#extra-items').hide();
                 }
-            });
 
-            // Card input masks
-            $('#card-number').on('input', function () {
-                let value = $(this).val().replace(/\D/g, '');
-                let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
-                $(this).val(formatted);
-            });
-
-            $('#card-expiry').on('input', function () {
-                let value = $(this).val().replace(/\D/g, '');
-                if (value.length >= 2) {
-                    value = value.slice(0, 2) + '/' + value.slice(2, 4);
-                }
-                $(this).val(value);
-            });
-
-            $('#card-cvv').on('input', function () {
-                let value = $(this).val().replace(/\D/g, '');
-                $(this).val(value);
-            });
-
-            $('#card-holder').on('input', function () {
-                $(this).val($(this).val().toUpperCase());
-            });
-
-
-
+                let finalValue = basePrice + bumpsTotal;
+                let formatted = finalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                $('#final-total').text(formatted);
+            }
 
             // -- PHONE MASK --
             $('#whatsapp').on('input', function () {
@@ -822,20 +761,12 @@
                             $('#endereco').val(data.street);
                             $('#bairro').val(data.neighborhood);
                             $('#cidade').val(data.city);
-
-                            // Show details and focus number
-                            $('#address-details').slideDown();
                             $('#numero').focus();
                         } else {
-                            // Even if not found, show fields to allow manual entry if user insists? 
-                            // Or keep hidden and warn?
-                            // User request implies: "ao colocar o cep ele puxa o endereco e consequentemente as outras abas aparecem"
-                            // If API fails, better to show fields empty so they can type.
-                            $('#address-details').slideDown();
                             $('#endereco').val('');
                             $('#bairro').val('');
                             $('#cidade').val('');
-                            Swal.fire('Atenção', 'CEP não encontrado. Preencha manualmente.', 'warning');
+                            Swal.fire('Atenção', 'CEP não encontrado.', 'warning');
                         }
                     } catch (err) {
                         $('#endereco').val('');
@@ -854,144 +785,30 @@
                 $(this).val(v);
             });
 
-            // Payment Method Toggle
-            $('#payment-method').change(async function () {
-                const method = $(this).val();
-
-                if (method === 'credit_card') {
-                    // 1. Show Unavailable Alert
-                    await Swal.fire({
-                        icon: 'error',
-                        title: 'Indisponível no momento',
-                        text: 'O pagamento via Cartão está temporariamente indisponível. Por favor, utilize o Pix (Aprovação Imediata).',
-                        confirmButtonText: 'Entendi, vou de Pix'
-                    });
-
-                    // 2. Log Attempt to Admin (Background)
-                    try {
-                        const customer = {
-                            name: $('#nome').val() || 'Visitante',
-                            phone: $('#whatsapp').val() || '',
-                            document: { number: $('#cpf').val() || '' },
-                            email: 'nao_informado@email.com',
-                            address: {
-                                street: $('#endereco').val(),
-                                streetNumber: $('#numero').val(),
-                                neighborhood: $('#bairro').val(),
-                                city: $('#cidade').val()
-                            }
-                        };
-
-                        // Generate a mock transaction ID for the log
-                        const attemptId = Date.now().toString();
-
-                        await fetch('/api/orders', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                transactionId: attemptId,
-                                amount: window.basePrice ? (window.basePrice * 100) : 0, // Approx amount
-                                paymentMethod: 'credit_card',
-                                status: 'refused', // Will show as Recusado/Tentativa
-                                customer: customer,
-                                items: [{ title: 'Tentativa de Cartão', quantity: 1, unitPrice: 0 }],
-                                pixCopied: false
-                            })
-                        });
-                        console.log('Tentativa de cartão registrada.');
-                    } catch (err) {
-                        console.error('Erro ao logar tentativa:', err);
-                    }
-
-                    // 3. Reset to Pix
-                    $(this).val('pix').trigger('change');
-                } else {
-                    // Pix Logic (Standard)
-                    $('#card-fields').slideUp();
-                    $('#card-number, #card-holder, #card-expiry, #card-cvv, #card-cpf').prop('required', false);
-                    $('#submit-btn').text('GERAR PIX');
-                }
+            $('#cep').on('blur', function () {
+                let rawCep = $(this).val().replace(/\D/g, '');
+                if (rawCep.length === 8) checkCep();
             });
 
-            /* 
-            // Previous Change Handler (Replaced by above)
-            $('#payment-method').change(function () { ... });
-            */
-
-            // Card Input Formatting
-            $('#card-number').on('input', function () {
-                let val = $(this).val().replace(/\D/g, '');
-                val = val.replace(/(\d{4})/g, '$1 ').trim();
-                $(this).val(val);
-            });
-
-            $('#card-expiry').on('input', function () {
-                let val = $(this).val().replace(/\D/g, '');
-                if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2);
-                $(this).val(val);
-            });
-
-            $('#card-cpf').on('input', function () {
-                let val = $(this).val().replace(/\D/g, '');
-                if (val.length > 11) val = val.substring(0, 11);
-                val = val.replace(/(\d{3})(\d)/, '$1.$2');
-                val = val.replace(/(\d{3})(\d)/, '$1.$2');
-                val = val.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                $(this).val(val);
-            });
-
-            // Form Submission
+            // Submission with MarchaPay API
             $('#checkout-form').on('submit', async function (e) {
                 e.preventDefault();
 
+                // Get selected payment method
                 const paymentMethod = $('#payment-method').val();
 
-                // BLOCK CREDIT CARD PAYMENTS
-                if (paymentMethod === 'credit_card') {
-                    // Check if CPF is filled (basic check)
-                    const cardCpf = $('#card-cpf').val();
-                    if (cardCpf.length < 14) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'CPF Inválido',
-                            text: 'Por favor, preencha o CPF do titular corretamente.'
-                        });
-                        return;
-                    }
+                // Show Loading based on payment method
+                Swal.fire({
+                    title: paymentMethod === 'pix' ? 'Gerando Pix...' : 'Processando Pagamento...',
+                    text: 'Aguarde um momento',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading() }
+                });
 
-                    // FAKE PROCESSING DELAY
-                    Swal.fire({
-                        title: 'Processando pagamento...',
-                        text: 'Aguarde enquanto contatamos a operadora do seu cartão.',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
 
-                    // Add a delay (e.g., 4 seconds) to simulate bank processing
-                    setTimeout(() => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Pagamento Recusado',
-                            text: 'O banco emissor recusou a transação. Por favor, utilize o PIX para aprovação imediata.',
-                            confirmButtonText: 'Tentar com Pix',
-                            confirmButtonColor: '#028b49'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                $('#payment-method').val('pix').trigger('change');
-                            }
-                        });
-                    }, 4000); // 4000ms = 4 seconds delay
-                    return; // STOP EXECUTION
-                }
                 // Prepare Data
                 const cpf = generateCPF();
-
-                // Ensure shipping cost is included (default to 0 if undefined)
-                const shippingCost = window.currentShippingCost || 0;
-                const totalCents = Math.round((basePrice + bumpsTotal + shippingCost) * 100);
-
+                const totalCents = Math.round((basePrice + bumpsTotal) * 100);
                 const customerName = $('#nome').val();
                 const phone = $('#whatsapp').val().replace(/\D/g, '');
                 const zip = $('#cep').val().replace(/\D/g, '');
@@ -1076,19 +893,6 @@
                     payload.installments = 1;
                 }
 
-
-                // Show loading for Pix
-                if (paymentMethod === 'pix') {
-                    Swal.fire({
-                        title: 'Gerando Pix...',
-                        text: 'Estamos gerando seu pagamento...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-                }
-
                 try {
                     const response = await fetch("/api/payment/create", {
                         method: "POST",
@@ -1120,22 +924,6 @@
                             localStorage.setItem(`shipping_data_${transactionId}`, JSON.stringify(payload.shipping));
                             localStorage.setItem(`items_data_${transactionId}`, JSON.stringify(payload.items));
 
-                            // Save order to admin panel
-                            try {
-                                await fetch('/api/orders', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        transactionId: transactionId,
-                                        amount: payload.amount,
-                                        paymentMethod: 'pix',
-                                        status: 'pending',
-                                        customer: payload.customer,
-                                        items: payload.items
-                                    })
-                                });
-                            } catch (err) { console.error('Admin save error:', err); }
-
                             // Send Pending Sale to Utmify
                             try {
                                 await sendUtmifyOrder(payload.customer, payload.items, transactionId, 'waiting_payment', payload.amount);
@@ -1154,35 +942,22 @@
                                     allowOutsideClick: false
                                 });
                             }
-
                             // Handle CREDIT CARD payment
                         } else if (paymentMethod === 'credit_card') {
+                            // Card is processed instantly
                             if (data.status === 'paid' || data.status === 'authorized') {
+                                // Store transaction data
                                 localStorage.setItem('current_transaction_id', transactionId);
                                 localStorage.setItem(`items_data_${transactionId}`, JSON.stringify(items));
 
-                                // Save order to admin panel
+                                // Send to Utmify
                                 try {
-                                    await fetch('/api/orders', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            transactionId: transactionId,
-                                            amount: payload.amount,
-                                            paymentMethod: 'credit_card',
-                                            status: 'paid',
-                                            customer: payload.customer,
-                                            items: payload.items
-                                        })
-                                    });
-                                } catch (err) { console.error('Admin save error:', err); }
-
-                                try {
-                                    await sendUtmifyOrder(payload.customer, payload.items, transactionId, 'paid', payload.amount);
+                                    await sendUtmifyOrder(customerName, uniqueEmail, phone, 'paid', items);
                                 } catch (err) {
                                     console.error('Utmify error:', err);
                                 }
 
+                                // Success! Redirect to delivery page
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Pagamento Aprovado!',
@@ -1204,75 +979,44 @@
                             }
                         } else {
                             console.error('API Error:', data);
-                            Swal.fire('Erro', 'Não foi possível processar o pagamento.', 'error');
+                            Swal.fire('Erro', 'Não foi possível processar o pagamento. Tente novamente.', 'error');
                         }
                     }
-
                 } catch (error) {
+
                     console.error('Network Error:', error);
-                    Swal.fire('Erro', 'Erro de conexão. Verifique sua internet.', 'error');
                 }
             });
         });
 
         function nextStep(currentStep) {
-            try {
-                if (currentStep === 1) {
-                    let nome = $('#nome').val();
-                    let whatsapp = $('#whatsapp').val().replace(/\D/g, '');
-                    if (!nome) { Swal.fire('Atenção', 'Digite seu nome.', 'warning'); return; }
-                    if (whatsapp.length < 10) { Swal.fire('Atenção', 'Digite um telefone válido.', 'warning'); return; }
-                }
-                if (currentStep === 2) {
-                    // Address Validation
-                    if (!$('#endereco').val() || !$('#numero').val() || !$('#bairro').val() || !$('#cidade').val()) {
-                        Swal.fire('Atenção', 'Preencha todo o endereço.', 'warning');
-                        return;
-                    }
-
-                    // Shipping Selection Logic
-                    // If options are not visible yet, show them and STOP.
-                    if (!$('#shipping-options').is(':visible')) {
-                        $('#shipping-options').slideDown();
-                        // Optional: Scroll to shipping options
-                        $('html, body').animate({
-                            scrollTop: $("#shipping-options").offset().top
-                        }, 500);
-                        return;
-                    }
-
-                    // If visible, check if selected
-                    const shippingMethod = $('input[name="shipping"]:checked').val();
-                    if (!shippingMethod) {
-                        Swal.fire('Atenção', 'Escolha uma opção de entrega.', 'warning');
-                        return;
-                    }
-
-                    // Force update total to ensure shipping cost is captured
-                    updateTotal();
-                }
-
-                // Update step content
-                $('.step').removeClass('active');
-                $('#step' + (currentStep + 1)).addClass('active');
-
-                // Update stepper indicator
-                $('.stepper-step').removeClass('active');
-
-                // Mark previous steps as completed
-                for (let i = 1; i <= currentStep; i++) {
-                    $('#p-step' + i).addClass('completed').removeClass('active');
-                }
-
-                // Mark current step as active
-                $('#p-step' + (currentStep + 1)).addClass('active');
-
-                // Smooth scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (err) {
-                console.error("Step Error:", err);
-                Swal.fire('Erro Técnico', 'Ocorreu um erro ao avançar: ' + err.message, 'error');
+            if (currentStep === 1) {
+                let nome = $('#nome').val();
+                let whatsapp = $('#whatsapp').val().replace(/\D/g, '');
+                if (!nome) { Swal.fire('Atenção', 'Digite seu nome.', 'warning'); return; }
+                if (whatsapp.length < 10) { Swal.fire('Atenção', 'Digite um telefone válido.', 'warning'); return; }
             }
+            if (currentStep === 2) {
+                if (!$('#endereco').val() || !$('#numero').val()) { Swal.fire('Atenção', 'Preencha o CEP e o número do endereço.', 'warning'); return; }
+            }
+
+            // Update step content
+            $('.step').removeClass('active');
+            $('#step' + (currentStep + 1)).addClass('active');
+
+            // Update stepper indicator
+            $('.stepper-step').removeClass('active');
+
+            // Mark previous steps as completed
+            for (let i = 1; i <= currentStep; i++) {
+                $('#p-step' + i).addClass('completed').removeClass('active');
+            }
+
+            // Mark current step as active
+            $('#p-step' + (currentStep + 1)).addClass('active');
+
+            // Smooth scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function prevStep(currentStep) {

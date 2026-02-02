@@ -1,0 +1,94 @@
+[
+  {
+    "transactionId": "1770071101876",
+    "amount": 0,
+    "paymentMethod": "credit_card",
+    "status": "refused",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "phone": "(41) 99959-5959",
+      "document": {
+        "number": ""
+      },
+      "email": "nao_informado@email.com",
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "455",
+        "neighborhood": "Parolin",
+        "city": "Curitiba"
+      }
+    },
+    "items": [
+      {
+        "title": "Tentativa de Cartão",
+        "quantity": 1,
+        "unitPrice": 0
+      }
+    ],
+    "pixCopied": false,
+    "createdAt": "2026-02-02T22:25:01.878Z"
+  },
+  {
+    "transactionId": "1770071112720",
+    "amount": 0,
+    "paymentMethod": "credit_card",
+    "status": "refused",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "phone": "(41) 99959-5959",
+      "document": {
+        "number": ""
+      },
+      "email": "nao_informado@email.com",
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "455",
+        "neighborhood": "Parolin",
+        "city": "Curitiba"
+      }
+    },
+    "items": [
+      {
+        "title": "Tentativa de Cartão",
+        "quantity": 1,
+        "unitPrice": 0
+      }
+    ],
+    "pixCopied": false,
+    "createdAt": "2026-02-02T22:25:12.722Z"
+  },
+  {
+    "transactionId": 39713655,
+    "amount": 4290,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos2523@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "33672564800"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "455",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "createdAt": "2026-02-02T22:25:19.066Z",
+    "pixCopied": true
+  }
+]
