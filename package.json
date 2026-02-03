@@ -1,6 +1,6 @@
 {
   "name": "pizza-lenha-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Backend seguro para Pizza e Lenha com proxy de APIs",
   "main": "server.js",
   "scripts": {
