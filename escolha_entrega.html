@@ -74,6 +74,16 @@
             display: inline-block;
         }
     </style>
+    <!-- ADS ADDED -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17913792623"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'AW-17913792623');
+    </script>
 </head>
 
 <body>
@@ -118,12 +128,7 @@
         console.log('[Success] Order approved and confirmed');
 
         // You can add Google Analytics or other tracking here
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'purchase_complete', {
-                'event_category': 'ecommerce',
-                'event_label': 'order_confirmed'
-            });
-        }
+        // Google Analytics removed
     </script>
 
 </body>

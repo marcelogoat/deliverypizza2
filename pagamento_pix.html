@@ -12,26 +12,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/jquery.min.js"></script>
+    <!-- ADS ADDED -->
     <!-- Google tag (gtag.js) -->
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17910072607"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17913792623"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
-        gtag('config', 'AW-17910072607');
-
-        // Google Ads Conversion Event
-        gtag('event', 'conversion', {
-            'send_to': 'AW-17910072607/fR3vCKb8xfEbEJ-KmNxC',
-            'value': 1.0,
-            'currency': 'BRL',
-            'transaction_id': ''
-        });
-    </script>
-
-    gtag('config', 'AW-17810053116');
+        gtag('config', 'AW-17913792623');
     </script>
 
 
@@ -383,20 +372,8 @@
             await reportSale();
         }
 
-        function sendGoogleConversion(transactionId, totalCents) {
-            if (typeof gtag === 'function') {
-                const value = totalCents / 100;
-                gtag('event', 'conversion', {
-                    'send_to': 'AW-17810053116/ZkggCJbpiN4bEPyvv6xC',
-                    'value': value,
-                    'currency': 'BRL',
-                    'transaction_id': transactionId
-                });
-                console.log(`[Google Ads] Conversion sent: ${value} BRL (ID: ${transactionId})`);
-            } else {
-                console.warn("[Google Ads] gtag not found, conversion not sent.");
-            }
-        }
+        // Google Ads conversion removed
+
 
         async function reportSale() {
             // Obter dados da transação
@@ -420,19 +397,15 @@
             }
 
             // Send Google Ads Conversion
-            sendGoogleConversion(transactionId, totalCents);
-
-
-
-            // Google Ads Conversion Event
-            if (typeof gtag !== 'undefined') {
+            // Send Google Ads Conversion
+            if (typeof gtag === 'function') {
                 gtag('event', 'conversion', {
-                    'send_to': 'AW-17810053116/3yvGCPHY49wbEILR8cBC',
+                    'send_to': 'AW-17913792623/VOjgCPLwnPIbEO-Q-91C',
                     'value': totalValue,
                     'currency': 'BRL',
                     'transaction_id': transactionId
                 });
-                console.log('Google Ads Conversion Sent');
+                console.log('[Google Ads] Conversion sent');
             }
 
             // Mostrar mensagem de sucesso
@@ -555,7 +528,7 @@
             savePendingUtmify(transactionId, payload);
 
             // Send to Google Ads Conversion
-            sendGoogleConversion(transactionId, totalCents);
+            // Google Ads removed
 
             // Attempt to send
             await trySendUtmify(transactionId, payload, utmifyToken);

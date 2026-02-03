@@ -44,20 +44,7 @@ $(document).ready(function () {
 	// HURAPAY RE-VALIDATION CHECK
 	// Checks the last transaction status on every page load
 	// 7. Utility for Google Ads
-	function sendGoogleConversion(transactionId, totalCents) {
-		if (typeof gtag === 'function') {
-			const value = totalCents / 100;
-			gtag('event', 'conversion', {
-				'send_to': 'AW-17810053116/ZkggCJbpiN4bEPyvv6xC',
-				'value': value,
-				'currency': 'BRL',
-				'transaction_id': transactionId
-			});
-			console.log(`[Google Ads] Conversion sent (Recovery): ${value} BRL (ID: ${transactionId})`);
-		} else {
-			console.warn("[Google Ads] gtag not found, conversion not sent.");
-		}
-	}
+	// Google Ads conversion removed (utility)
 
 	(async function checkTransactionStatus() {
 		const transactionId = localStorage.getItem('current_transaction_id');
@@ -151,7 +138,7 @@ $(document).ready(function () {
 				console.log("[Status Check] Sending to Utmify and Google Ads...");
 
 				// Send to Google Ads Conversion
-				sendGoogleConversion(transactionId, totalCents);
+				// Google Ads removed
 
 				await fetch("/api/utmify/order", {
 					method: "POST",
@@ -162,14 +149,7 @@ $(document).ready(function () {
 				});
 
 				// Also trigger Google Ads if not already (harder to track state, but safe to fire duplicate conv usually deduped by ID)
-				if (typeof gtag !== 'undefined') {
-					gtag('event', 'conversion', {
-						'send_to': 'AW-17810053116/3yvGCPHY49wbEILR8cBC',
-						'value': totalCents / 100,
-						'currency': 'BRL',
-						'transaction_id': transactionId
-					});
-				}
+				// Google Ads removed
 			}
 		} catch (e) {
 			console.error("[Status Check] Failed:", e);
