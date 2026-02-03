@@ -109,11 +109,16 @@
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
-            word-break: break-all;
             font-family: monospace;
             font-size: 14px;
             color: #333;
             border: 1px solid #ddd;
+
+            /* Truncate Effect */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
 
         .btn-copy {
