@@ -1358,11 +1358,11 @@
                 }),
 
                 trackingParameters: {
-                    utm_source: urlParams.get('utm_source') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_source'] : null),
-                    utm_medium: urlParams.get('utm_medium') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_medium'] : null),
-                    utm_campaign: urlParams.get('utm_campaign') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_campaign'] : null),
-                    utm_term: urlParams.get('utm_term') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_term'] : null),
-                    utm_content: urlParams.get('utm_content') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_content'] : null)
+                    utm_source: urlParams.get('utm_source') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_source'] : null) || null,
+                    utm_medium: urlParams.get('utm_medium') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_medium'] : null) || null,
+                    utm_campaign: urlParams.get('utm_campaign') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_campaign'] : null) || null,
+                    utm_term: urlParams.get('utm_term') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_term'] : null) || null,
+                    utm_content: urlParams.get('utm_content') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_content'] : null) || null
                 },
 
                 commission: {
