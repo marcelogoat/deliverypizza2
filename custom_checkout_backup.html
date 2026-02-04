@@ -1134,6 +1134,23 @@
                 throw e;
             }
         }
+
+        // Feature Flag: Dynamic Payment Methods
+        (async function checkSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+
+                if (settings.enableCreditCard === false) {
+                    $('option[value="credit_card"]').remove();
+                    if ($('#payment-method').val() === 'credit_card') {
+                        $('#payment-method').val('pix').trigger('change');
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to load settings:', err);
+            }
+        })();
     </script>
 </body>
 

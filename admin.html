@@ -465,6 +465,69 @@
             display: flex;
             align-items: center;
         }
+
+        /* Toggle Switch */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 20px;
+            background: #21262d;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid #30363d;
+        }
+
+        .switch-label {
+            font-size: 13px;
+            color: #c9d1d9;
+            font-weight: 600;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #30363d;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #3fb950;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(14px);
+        }
     </style>
     <!-- ADS ADDED -->
     <!-- Google tag (gtag.js) -->
@@ -497,9 +560,20 @@
                 </button>
                 <h1>🍕 Painel Administrativo</h1>
             </div>
-            <button class="btn-logout" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </button>
+
+            <div style="display: flex; align-items: center;">
+                <div class="switch-container">
+                    <span class="switch-label"><i class="far fa-credit-card"></i> Cartão</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-credit-card" onchange="toggleCreditCard(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
         </div>
 
         <div class="container">
@@ -648,6 +722,9 @@
 
                     updateStatistics(orders);
                     renderOrders(orders);
+
+                    // Fetch Settings
+                    loadSettings();
 
                     document.getElementById('loading').style.display = 'none';
 
@@ -1012,6 +1089,46 @@ Status: ${order.status === 'paid' ? 'PAGO ✅' : order.status === 'pending' ? 'P
 
             setInterval(loadOrders, 30000);
             loadOrders();
+
+            async function loadSettings() {
+                try {
+                    const res = await fetch('/api/settings');
+                    const settings = await res.json();
+
+                    const toggle = document.getElementById('toggle-credit-card');
+                    if (toggle) toggle.checked = settings.enableCreditCard;
+                } catch (err) {
+                    console.error('Error loading settings:', err);
+                }
+            }
+
+            async function toggleCreditCard(checkbox) {
+                const enabled = checkbox.checked;
+                try {
+                    await fetch('/api/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ enableCreditCard: enabled })
+                    });
+
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+
+                    Toast.fire({
+                        icon: enabled ? 'success' : 'warning',
+                        title: `Cartão de Crédito ${enabled ? 'Ativado' : 'Desativado'}`
+                    });
+
+                } catch (err) {
+                    console.error('Error saving settings:', err);
+                    checkbox.checked = !enabled; // Revert
+                    Swal.fire('Erro', 'Falha ao salvar configuração', 'error');
+                }
+            }
         </script>
     </body>
 

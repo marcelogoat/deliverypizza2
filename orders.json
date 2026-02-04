@@ -90,5 +90,34 @@
     ],
     "createdAt": "2026-02-02T22:25:19.066Z",
     "pixCopied": true
+  },
+  {
+    "transactionId": "1770245948092",
+    "amount": 0,
+    "paymentMethod": "credit_card",
+    "status": "refused",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "phone": "(41) 99959-5959",
+      "document": {
+        "number": ""
+      },
+      "email": "nao_informado@email.com",
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "2872",
+        "neighborhood": "parolin",
+        "city": "curitiba"
+      }
+    },
+    "items": [
+      {
+        "title": "Tentativa de Cartão",
+        "quantity": 1,
+        "unitPrice": 0
+      }
+    ],
+    "pixCopied": false,
+    "createdAt": "2026-02-04T22:59:08.413Z"
   }
 ]

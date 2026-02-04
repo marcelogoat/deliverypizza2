@@ -333,6 +333,50 @@ app.delete('/api/orders/:transactionId', (req, res) => {
 });
 
 // ============================================
+// Settings API (Dynamic Control)
+// ============================================
+const SETTINGS_FILE = path.join(__dirname, 'settings.json');
+
+function readSettings() {
+    try {
+        if (fs.existsSync(SETTINGS_FILE)) {
+            return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+        }
+    } catch (err) { console.error('Error reading settings:', err); }
+    // Default settings
+    return { enableCreditCard: true };
+}
+
+function writeSettings(settings) {
+    try {
+        fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+    } catch (err) { console.error('Error writing settings:', err); }
+}
+
+app.get('/api/settings', (req, res) => {
+    res.json(readSettings());
+});
+
+app.post('/api/settings', (req, res) => {
+    try {
+        const { enableCreditCard } = req.body;
+        const currentSettings = readSettings();
+        
+        // Update specific fields
+        if (typeof enableCreditCard === 'boolean') {
+            currentSettings.enableCreditCard = enableCreditCard;
+        }
+
+        writeSettings(currentSettings);
+        console.log('[API] Settings updated:', currentSettings);
+        res.json({ success: true, settings: currentSettings });
+    } catch (error) {
+        console.error('Error updating settings:', error);
+        res.status(500).json({ error: 'Failed to update settings' });
+    }
+});
+
+// ============================================
 // Start Server
 // ============================================
 
