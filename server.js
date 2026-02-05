@@ -361,7 +361,7 @@ app.post('/api/settings', (req, res) => {
     try {
         const { enableCreditCard } = req.body;
         const currentSettings = readSettings();
-        
+
         // Update specific fields
         if (typeof enableCreditCard === 'boolean') {
             currentSettings.enableCreditCard = enableCreditCard;
@@ -376,6 +376,71 @@ app.post('/api/settings', (req, res) => {
     }
 });
 
+
+// ============================================
+// Real-Time Analytics API
+// ============================================
+
+const activeUsers = {}; // { [anonymousId]: { page: 'home', lastSeen: Date.now() } }
+const CLEANUP_INTERVAL = 5000; // Cleanup stale users every 5 seconds
+const TIMEOUT_MS = 12000; // User considered offline after 12s (slightly > 2 heartbeats)
+
+// Periodic cleanup
+setInterval(() => {
+    const now = Date.now();
+    for (const userId in activeUsers) {
+        if (now - activeUsers[userId].lastSeen > TIMEOUT_MS) {
+            delete activeUsers[userId];
+        }
+    }
+}, CLEANUP_INTERVAL);
+
+app.post('/api/analytics/heartbeat', (req, res) => {
+    try {
+        const { anonymousId, page } = req.body;
+        if (anonymousId && page) {
+            activeUsers[anonymousId] = {
+                page: page,
+                lastSeen: Date.now()
+            };
+        }
+        res.sendStatus(200);
+    } catch (e) {
+        res.sendStatus(500);
+    }
+});
+
+app.get('/api/analytics/online', (req, res) => {
+    const now = Date.now();
+    const stats = {
+        total: 0,
+        home: 0,
+        flavors: 0,
+        checkout: 0
+    };
+
+    for (const userId in activeUsers) {
+        // Filter on read-time as well for accuracy
+        if (now - activeUsers[userId].lastSeen <= TIMEOUT_MS) {
+            stats.total++;
+            const page = activeUsers[userId].page;
+            if (stats[page] !== undefined) {
+                stats[page]++;
+            } else {
+                // Determine category if not explicit
+                // Simplify for dashboard mapping
+                if (page === 'flavors') stats.flavors++;
+                else if (page === 'checkout') stats.checkout++;
+                else stats.home++;
+            }
+        } else {
+            // Lazy delete
+            delete activeUsers[userId];
+        }
+    }
+    res.json(stats);
+});
+
 // ============================================
 // Start Server
 // ============================================
@@ -383,5 +448,6 @@ app.post('/api/settings', (req, res) => {
 app.listen(PORT, HOST, () => {
     console.log(`\n🚀 Server running on http://${HOST}:${PORT}`);
     console.log(`📁 Serving static files from: ${__dirname}`);
-    console.log(`🔒 API Keys loaded: MarchaPay=${!!(process.env.MARCHAPAY_PUBLIC_KEY && process.env.MARCHAPAY_SECRET_KEY)}, Utmify=${!!process.env.UTMIFY_API_TOKEN}\n`);
+    console.log(`🔒 API Keys loaded: MarchaPay=${!!(process.env.MARCHAPAY_PUBLIC_KEY && process.env.MARCHAPAY_SECRET_KEY)}, Utmify=${!!process.env.UTMIFY_API_TOKEN}`);
+    console.log(`📊 Analytics active\n`);
 });

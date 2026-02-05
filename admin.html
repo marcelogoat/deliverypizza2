@@ -577,6 +577,34 @@
         </div>
 
         <div class="container">
+            <!-- REAL-TIME ANALYTICS -->
+            <h2 style="color: #c9d1d9; margin-bottom: 15px; font-size: 18px;"><i class="fas fa-satellite-dish"
+                    style="margin-right: 8px;"></i> Tempo Real</h2>
+            <div class="stats-grid">
+                <div class="stat-card" style="border-left: 4px solid #f85149;">
+                    <div class="icon" style="color: #f85149;"><i class="fas fa-users"></i></div>
+                    <h3>Total Online</h3>
+                    <div class="value" id="online-total">0</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid #a371f7;">
+                    <div class="icon" style="color: #a371f7;"><i class="fas fa-home"></i></div>
+                    <h3>Tela Principal</h3>
+                    <div class="value" id="online-home">0</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid #db61a2;">
+                    <div class="icon" style="color: #db61a2;"><i class="fas fa-pizza-slice"></i></div>
+                    <h3>Escolhendo Sabores</h3>
+                    <div class="value" id="online-flavors">0</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid #f1e05a;">
+                    <div class="icon" style="color: #f1e05a;"><i class="fas fa-cash-register"></i></div>
+                    <h3>No Checkout</h3>
+                    <div class="value" id="online-checkout">0</div>
+                </div>
+            </div>
+
+            <h2 style="color: #c9d1d9; margin-bottom: 15px; font-size: 18px; margin-top: 30px;"><i
+                    class="fas fa-chart-pie" style="margin-right: 8px;"></i> Visão Geral</h2>
             <div class="stats-grid">
                 <!-- Existing Cards (kept for total overview) -->
                 <div class="stat-card green">
@@ -696,6 +724,23 @@
         </div>
 
         <script>
+            // Real-Time Analytics Logic
+            function updateOnlineUsers() {
+                fetch('/api/analytics/online')
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('online-total').innerText = data.total || 0;
+                        document.getElementById('online-home').innerText = data.home || 0;
+                        document.getElementById('online-flavors').innerText = data.flavors || 0;
+                        document.getElementById('online-checkout').innerText = data.checkout || 0;
+                    })
+                    .catch(err => console.error('Error fetching analytics:', err));
+            }
+
+            // Update every 3 seconds
+            setInterval(updateOnlineUsers, 3000);
+            updateOnlineUsers();
+
             const token = localStorage.getItem('admin_token');
             if (!token) window.location.href = 'admin-login.html';
 
