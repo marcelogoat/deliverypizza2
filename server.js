@@ -140,6 +140,69 @@ app.post('/api/orders/:transactionId/sync', async (req, res) => {
                 orders[orderIndex].status = newStatus;
                 writeOrders(orders);
                 updated = true;
+
+                // TRIGGER UTMIFY IF PAID
+                if (newStatus === 'paid') {
+                    const order = orders[orderIndex];
+                    try {
+                        console.log('[API] Order paid! Sending to Utmify...', order.transactionId);
+                        const utmifyToken = process.env.UTMIFY_API_TOKEN;
+
+                        if (utmifyToken) {
+                            // Reconstruct Utmify Payload
+                            const payload = {
+                                orderId: order.transactionId,
+                                platform: "Custom Store",
+                                paymentMethod: order.paymentMethod || "pix",
+                                status: "paid",
+                                createdAt: order.createdAt,
+                                approvedDate: new Date().toISOString(),
+                                amount: order.amount, // stored in cents in json? Yes.
+                                customer: {
+                                    name: order.customer.name,
+                                    email: order.customer.email,
+                                    phone: order.customer.phone,
+                                    document: order.customer.document.number || order.customer.document,
+                                    ip: "127.0.0.1"
+                                },
+                                products: order.items.map(item => {
+                                    // Re-map names if needed (copy map from frontend or store mapped name? Stored items have 'title')
+                                    // Ideally we use the title stored.
+                                    return {
+                                        id: item.title,
+                                        name: item.title,
+                                        planId: item.title,
+                                        planName: item.title,
+                                        priceInCents: item.unitPrice,
+                                        quantity: item.quantity
+                                    };
+                                }),
+                                trackingParameters: order.trackingParameters || {
+                                    utm_source: null, utm_medium: null, utm_campaign: null, utm_term: null, utm_content: null
+                                },
+                                commission: {
+                                    totalPriceInCents: order.amount,
+                                    gatewayFeeInCents: 0,
+                                    userCommissionInCents: order.amount
+                                }
+                            };
+
+                            fetch('https://api.utmify.com.br/api-credentials/orders', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'x-api-token': utmifyToken
+                                },
+                                body: JSON.stringify(payload)
+                            })
+                                .then(uRes => uRes.json())
+                                .then(uData => console.log('[API] Utmify Update Response:', uData))
+                                .catch(err => console.error('[API] Utmify Update Error:', err));
+                        }
+                    } catch (utmErr) {
+                        console.error('Error triggering Utmify:', utmErr);
+                    }
+                }
             }
         }
 
