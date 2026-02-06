@@ -377,6 +377,22 @@
             background: #1a56db;
         }
 
+        .btn-approve {
+            padding: 2px 6px;
+            background: #3fb950;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        .btn-approve:hover {
+            background: #2ea043;
+        }
+
         .btn-sync {
             padding: 2px 6px;
             background: #d29922;
@@ -919,6 +935,9 @@
                     const syncBtn = (order.status === 'pending' && order.paymentMethod === 'pix')
                         ? `<button class="btn-sync" onclick="syncOrder('${order.transactionId}')" title="Verificar Pagamento"><i class="fas fa-sync-alt"></i></button>`
                         : '';
+                    const approveBtn = (order.status === 'pending')
+                        ? `<button class="btn-approve" onclick="approveOrder('${order.transactionId}')" title="Aprovar Manualmente"><i class="fas fa-check"></i></button>`
+                        : '';
 
                     tr.innerHTML = `
                     <td><input type="checkbox" class="order-checkbox" value="${order.transactionId}" onclick="updateSelection()"></td>
@@ -938,6 +957,7 @@
                     <td class="nowrap">
                         ${statusBadge}
                         ${syncBtn}
+                        ${approveBtn}
                     </td>
                     <td>
                         <button class="btn-view" onclick='viewOrder(${JSON.stringify(order).replace(/'/g, "\\'")})' title="Ver"><i class="fas fa-eye"></i></button>
@@ -1049,6 +1069,43 @@
                             updateSelection();
                         } else {
                             Swal.fire('Erro!', 'Falha ao excluir pedidos.', 'error');
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire('Erro!', 'Erro de conexão.', 'error');
+                    }
+                }
+            }
+
+            async function approveOrder(transactionId) {
+                const result = await Swal.fire({
+                    title: 'Aprovar Pedido?',
+                    text: "Isso marcará o pedido como PAGO e enviará para a Utmify.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3fb950',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sim, aprovar!',
+                    cancelButtonText: 'Cancelar'
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`/api/orders/${transactionId}/approve`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+
+                        if (response.ok) {
+                            Swal.fire(
+                                'Aprovado!',
+                                'O pedido foi aprovado com sucesso.',
+                                'success'
+                            );
+                            loadOrders();
+                        } else {
+                            const data = await response.json();
+                            Swal.fire('Erro!', data.error || 'Não foi possível aprovar o pedido.', 'error');
                         }
                     } catch (error) {
                         console.error(error);
