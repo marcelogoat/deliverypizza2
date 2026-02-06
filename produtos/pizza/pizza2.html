@@ -53,6 +53,7 @@
 	<!-- Meta tags iOS corrigidas -->
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
 	<link type="text/css" href="css/delivry.css" rel="stylesheet">
 	<style type="text/css">
@@ -62,6 +63,40 @@
 		select {
 			font-size: 16px;
 			touch-action: manipulation;
+		}
+
+		/* Estilos Premium para Swal */
+		.swal2-premium-popup {
+			border-radius: 20px !important;
+			padding: 2em !important;
+			font-family: 'Poppins', sans-serif !important;
+		}
+
+		.swal2-premium-title {
+			color: #403f3f !important;
+			font-weight: 600 !important;
+		}
+
+		.swal2-premium-html {
+			color: #666 !important;
+			font-size: 1.05em !important;
+			line-height: 1.5 !important;
+		}
+
+		.swal2-premium-confirm {
+			background-color: #028b49 !important;
+			border-radius: 100px !important;
+			padding: 12px 35px !important;
+			font-weight: 500 !important;
+			box-shadow: 0 5px 15px rgba(2, 139, 73, 0.3) !important;
+		}
+
+		.swal2-premium-deny {
+			background-color: #dc3545 !important;
+			border-radius: 100px !important;
+			padding: 12px 35px !important;
+			font-weight: 500 !important;
+			box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3) !important;
 		}
 
 		h1,
@@ -213,7 +248,7 @@
 				<!-- Seções de seleção de pizzas -->
 				<div class="info2">
 					<!-- Seção Primeira Pizza -->
-					<div class="tipo" data-id="15313" data-calculo="n" data-minimo="0" data-maximo="6"
+					<div class="tipo" data-id="15313" data-calculo="n" data-minimo="2" data-maximo="2"
 						data-opcional="n">
 						<div class="topo">
 							<div>
@@ -366,7 +401,7 @@
 					</div>
 
 					<!-- Seção Segunda Pizza -->
-					<div class="tipo" data-id="15313" data-calculo="n" data-minimo="0" data-maximo="6"
+					<div class="tipo" data-id="15314" data-calculo="n" data-minimo="2" data-maximo="2"
 						data-opcional="n">
 						<div class="topo">
 							<div>
@@ -515,226 +550,229 @@
 								</div>
 							</div>
 						</div>
-						<!-- Seção Borda Recheada -->
-						<div class="tipo" data-id="15313" data-calculo="n" data-minimo="0" data-maximo="6"
-							data-opcional="n">
-							<div class="topo">
-								<div>
-									<h3>Borda Recheada:</h3>
-									<span class="detalhe">Escolha até 2 opções</span>
-								</div>
-								<div class="col2">
-									<span class="escolhidos"><span>0</span>/2</span>
-									<i class="fa-solid fa-circle-check"></i>
-								</div>
+					</div>
+
+
+					<!-- Seção Borda Recheada -->
+					<div class="tipo" data-id="15315" data-calculo="n" data-minimo="2" data-maximo="2"
+						data-opcional="n">
+						<div class="topo">
+							<div>
+								<h3>Borda Recheada:</h3>
+								<span class="detalhe">Escolha até 2 opções</span>
 							</div>
-							<!-- Opções de bordas -->
-							<div class="opcoes" data-id="118806">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Catupiry</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco"> A mais clássica, feita com requeijão cremoso Catupiry
-											original<span style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
-								</div>
+							<div class="col2">
+								<span class="escolhidos"><span>0</span>/2</span>
+								<i class="fa-solid fa-circle-check"></i>
 							</div>
-							<div class="opcoes" data-id="118812">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Cheddar</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Recheada com queijo cheddar, dando um sabor mais
-											marcante.<span style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
-								</div>
-							</div>
-							<div class="opcoes" data-id="118807">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Mussarela</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Bordas recheadas com bastante queijo mussarela
-											derretido.<span style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
-								</div>
-							</div>
-							<div class="opcoes" data-id="118813">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Chocolate </b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Perfeita para pizzas doces, com chocolate ao leite ou meio
-											amargo.<span style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
-								</div>
-							</div>
-							<div class="opcoes" data-id="118815">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Calabresa Moída</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Uma opção salgada com calabresa triturada e queijo, bem
-											saborosa.<span style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
+						</div>
+						<!-- Opções de bordas -->
+						<div class="opcoes" data-id="158806">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Catupiry</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco"> A mais clássica, feita com requeijão cremoso Catupiry
+										original<span style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
 								</div>
 							</div>
 						</div>
-
-						<!-- Seção Refrigerantes -->
-						<div class="tipo" data-id="15313" data-calculo="n" data-minimo="0" data-maximo="6"
-							data-opcional="n">
-							<div class="topo">
-								<div>
-									<h3>Escolha seu refrigerante:</h3>
-									<span class="detalhe">Escolha até 1 opção</span>
-								</div>
-								<div class="col2">
-									<span class="escolhidos"><span>0</span>/1</span>
-									<i class="fa-solid fa-circle-check"></i>
-								</div>
-							</div>
-							<!-- Opções de refrigerantes -->
-							<div class="opcoes" data-id="118806">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Coca-Cola 2L</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Refrigerante clássico, sabor refrescante e famoso
-											mundialmente.<span style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
-								</div>
-							</div>
-							<div class="opcoes" data-id="118812">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Fanta Laranja 2L</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Sabor cítrico e refrescante, uma das preferidas para
-											acompanhar comidas.<span style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
-								</div>
-							</div>
-							<div class="opcoes" data-id="118807">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Guaraná Antarctica 2L</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Refrigerante de guaraná com sabor único e tradicional.<span
-												style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
-								</div>
-							</div>
-							<div class="opcoes" data-id="118813">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Sprite 2L</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Refrigerante refrescante, sabor limão com gás.<span
-												style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
-								</div>
-							</div>
-							<div class="opcoes" data-id="118815">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Pepsi 2L</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Sabor doce e refrescante, ideal para todas as
-											refeições.<span style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
-								</div>
-							</div>
-							<div class="opcoes" data-id="118814">
-								<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
-									<span class="nome" style="">
-										<b>Schweppes Citrus 2L</b>
-										<span class="detalheOpcao" style="padding-right:10px"></span>
-										<span class="preco">Refresco cítrico e levemente amargo, excelente para quem
-											busca algo diferente.<span style="display:none;">0.00</span></span>
-									</span>
-									<div class="qtdeProdutoOpcao">
-										<button class="removerQtdeOpcao" aria-label="Remover"><i
-												class="fa-solid fa-minus"></i></button>
-										<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
-										<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
-												class="fa-solid fa-plus"></i></button>
-									</div>
+						<div class="opcoes" data-id="158812">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Cheddar</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Recheada com queijo cheddar, dando um sabor mais
+										marcante.<span style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
 								</div>
 							</div>
 						</div>
+						<div class="opcoes" data-id="158807">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Mussarela</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Bordas recheadas com bastante queijo mussarela
+										derretido.<span style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+						<div class="opcoes" data-id="158813">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Chocolate </b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Perfeita para pizzas doces, com chocolate ao leite ou meio
+										amargo.<span style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+						<div class="opcoes" data-id="158815">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Calabresa Moída</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Uma opção salgada com calabresa triturada e queijo, bem
+										saborosa.<span style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+					</div>
 
-						<!-- <div id="turbine-seu-acai" class="tipo" data-id="15314" data-calculo="n" data-minimo="0"
+					<!-- Seção Refrigerantes -->
+					<div class="tipo" data-id="15316" data-calculo="n" data-minimo="1" data-maximo="1"
+						data-opcional="n">
+						<div class="topo">
+							<div>
+								<h3>Escolha seu refrigerante:</h3>
+								<span class="detalhe">Escolha até 1 opção</span>
+							</div>
+							<div class="col2">
+								<span class="escolhidos"><span>0</span>/1</span>
+								<i class="fa-solid fa-circle-check"></i>
+							</div>
+						</div>
+						<!-- Opções de refrigerantes -->
+						<div class="opcoes" data-id="168806">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Coca-Cola 2L</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Refrigerante clássico, sabor refrescante e famoso
+										mundialmente.<span style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+						<div class="opcoes" data-id="168812">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Fanta Laranja 2L</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Sabor cítrico e refrescante, uma das preferidas para
+										acompanhar comidas.<span style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+						<div class="opcoes" data-id="168807">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Guaraná Antarctica 2L</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Refrigerante de guaraná com sabor único e tradicional.<span
+											style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+						<div class="opcoes" data-id="168813">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Sprite 2L</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Refrigerante refrescante, sabor limão com gás.<span
+											style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+						<div class="opcoes" data-id="168815">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Pepsi 2L</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Sabor doce e refrescante, ideal para todas as
+										refeições.<span style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+						<div class="opcoes" data-id="168814">
+							<div class="desc" style="width: 100%; flex-direction: row; align-items: center;">
+								<span class="nome" style="">
+									<b>Schweppes Citrus 2L</b>
+									<span class="detalheOpcao" style="padding-right:10px"></span>
+									<span class="preco">Refresco cítrico e levemente amargo, excelente para quem
+										busca algo diferente.<span style="display:none;">0.00</span></span>
+								</span>
+								<div class="qtdeProdutoOpcao">
+									<button class="removerQtdeOpcao" aria-label="Remover"><i
+											class="fa-solid fa-minus"></i></button>
+									<input class="qtdeOpcao" type="text" value="0" min="0" size="3" disabled="">
+									<button class="adicionarQtdeOpcao" aria-label="Adicionar"><i
+											class="fa-solid fa-plus"></i></button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- <div id="turbine-seu-acai" class="tipo" data-id="15314" data-calculo="n" data-minimo="0"
 						data-maximo="0" data-opcional="n">
 						<div class="topo">
 							<div>
@@ -891,93 +929,148 @@
 							</div>
 						</div>
 					</div> -->
-						<div class="overlay"></div>
-						<div class="imagem-ampliada">
-							<img src="#" alt="">
-							<button class="fechar"><i class="fa-solid fa-xmark"></i></button>
-						</div>
-						<label>Adicionar algum detalhe?</label>
-						<input class="observacao" type="text" name="observacao" placeholder="Escreva o detalhe aqui ..."
-							maxlength="140">
-						<em><span>0</span>/140</em>
+					<div class="overlay"></div>
+					<div class="imagem-ampliada">
+						<img src="#" alt="">
+						<button class="fechar"><i class="fa-solid fa-xmark"></i></button>
 					</div>
-					<div class="info3">
-						<input id="idProduto" type="hidden" name="idProduto" value="12111">
-						<!--<div class="qtdeProduto" style="display:none">-->
-						<div class="qtdeProduto" style="display: none;">
-							<button class="removerQtde" aria-label="Remover"><i class="fa-solid fa-minus"></i></button>
-							<input class="qtde" type="text" value="1" min="1" max="86" size="3" disabled="">
-							<button class="adicionarQtde" aria-label="Adicionar"><i
-									class="fa-solid fa-plus"></i></button>
-						</div>
-						<div id="precoProduto">R$ 0,00</div>
-						<span class="precoProduto" style="display:none">14.00</span>
-						<button class="btn adicionarProduto" onclick="finalizar()">FINALIZAR PEDIDO</button>
-						<a href="https://seguro.fornalhapoop.site/api/public/shopify?product=869692225246&amp;store=8696"
-							id="finalizarPedido" style="display: none;"></a>
+					<label>Adicionar algum detalhe?</label>
+					<input class="observacao" type="text" name="observacao" placeholder="Escreva o detalhe aqui ..."
+						maxlength="140">
+					<em><span>0</span>/140</em>
+				</div>
+				<div class="info3">
+					<input id="idProduto" type="hidden" name="idProduto" value="12111">
+					<!--<div class="qtdeProduto" style="display:none">-->
+					<div class="qtdeProduto" style="display: none;">
+						<button class="removerQtde" aria-label="Remover"><i class="fa-solid fa-minus"></i></button>
+						<input class="qtde" type="text" value="1" min="1" max="86" size="3" disabled="">
+						<button class="adicionarQtde" aria-label="Adicionar"><i class="fa-solid fa-plus"></i></button>
 					</div>
+					<div id="precoProduto">R$ 0,00</div>
+					<span class="precoProduto" style="display:none">14.00</span>
+					<button class="btn adicionarProduto" onclick="finalizar()">FINALIZAR PEDIDO</button>
+					<a href="https://seguro.fornalhapoop.site/api/public/shopify?product=869692225246&amp;store=8696"
+						id="finalizarPedido" style="display: none;"></a>
 				</div>
 			</div>
 		</div>
-		<script type="text/javascript" src="js/jquery.js"></script>
-		<script type="text/javascript" src="js/deliveryproduto.js"></script>
+	</div>
+	<script type="text/javascript" src="js/jquery.js"></script>
+	<script type="text/javascript" src="js/deliveryproduto.js"></script>
 
-		<script src="js/all.js" data-auto-replace-svg="nest" defer="" type="text/javascript"></script>
-		<script type="text/javascript" src="js/jquery-mask.js" defer=""></script>
+	<script src="js/all.js" data-auto-replace-svg="nest" defer="" type="text/javascript"></script>
+	<script type="text/javascript" src="js/jquery-mask.js" defer=""></script>
 
-		<script src="js/sweetalert.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="js/sweetalert.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-		<script>
-			function finalizar() {
-				Swal.fire({
-					title: "Deseja que entregamos agora?",
-					showDenyButton: true,
-					showCancelButton: false,
-					allowOutsideClick: false,
-					icon: 'question',
-					confirmButtonText: "Sim, por favor!",
-					confirmButtonColor: "green",
-					denyButtonText: `Não, quero agendar a entrega!`,
-					focusConfirm: true,
-				}).then((result) => {
-					// Determine product details
-					var nome = $(".info1 h3").text().trim(); // Full name requested by user
-					// Get visible price text only (ignoring hidden span) from the main product info
-					var preco = $(".info1 .preco").contents().filter(function () {
-						return this.nodeType === 3; // Text nodes only
-					}).text().trim();
-					var img = $(".info1 figure img").attr("src");
-					// Fix image path for the new location (relative to custom_checkout.html)
-					// pizza1.html is in products/pizza/, checkout is in root of site wrapper
-					var imagePath = "produtos/pizza/" + img;
+	<script>
+		function finalizar() {
+			// Validação de seleção obrigatória
+			let valido = true;
+			$(".info2 .tipo").each(function () {
+				let minimo = parseInt($(this).data("minimo")) || 0;
+				if (minimo > 0) {
+					let selecionados = 0;
+					$(this).find(".qtdeOpcao").each(function () {
+						selecionados += parseInt($(this).val()) || 0;
+					});
+					$(this).find("input:checkbox:checked").each(function () {
+						selecionados++;
+					});
 
-					if (result.isConfirmed) {
-						// Add timestamp to force cache clearing
-						var timestamp = new Date().getTime();
-						window.location.href = "../../custom_checkout.html?name=" + encodeURIComponent(nome) + "&price=" + encodeURIComponent(preco) + "&image=" + encodeURIComponent(imagePath) + "&_t=" + timestamp;
-					} else if (result.isDenied) {
+					if (selecionados < minimo) {
+						let nomeSecao = $(this).find("h3").text().replace(":", "").trim();
 						Swal.fire({
-							title: "Selecione o dia e a hora, por gentileza!",
-							text: 'Deixe seu pedido agendado e receba na hora combinada.',
-							confirmButtonText: "Agendar pedido!",
-							confirmButtonColor: "green",
-							showCancelButton: false,
-							allowOutsideClick: false,
-							input: "datetime-local",
-						}).then((result) => {
-							// For now, redirect to checkout even for scheduled (can pass schedule param later)
-							window.location.href = "../../custom_checkout.html?name=" + encodeURIComponent(nome) + "&price=" + encodeURIComponent(preco) + "&image=" + encodeURIComponent(imagePath) + "&schedule=" + encodeURIComponent(result.value);
+							title: "Ops!",
+							html: `Para continuar, você precisa escolher exatamente <b>${minimo} ${minimo > 1 ? 'opções' : 'opção'}</b> em <b>"${nomeSecao}"</b>.`,
+							icon: "warning",
+							iconColor: "#028b49",
+							confirmButtonText: "Entendido",
+							customClass: {
+								popup: 'swal2-premium-popup',
+								title: 'swal2-premium-title',
+								htmlContainer: 'swal2-premium-html',
+								confirmButton: 'swal2-premium-confirm'
+							},
+							showClass: {
+								popup: 'animate__animated animate__fadeInDown animate__faster'
+							},
+							hideClass: {
+								popup: 'animate__animated animate__fadeOutUp animate__faster'
+							}
 						});
+						$('html, body').animate({ scrollTop: $(this).offset().top - 80 }, 600);
+						valido = false;
+						return false;
 					}
-				});
-			}
-		</script>
+				}
+			});
+
+			if (!valido) return;
+
+			Swal.fire({
+				title: "Deseja que entregamos agora?",
+				icon: 'question',
+				iconColor: '#028b49',
+				showDenyButton: true,
+				showCancelButton: false,
+				showCloseButton: true,
+				allowOutsideClick: true,
+				confirmButtonText: "Sim, por favor!",
+				denyButtonText: `Não, quero agendar a entrega!`,
+				focusConfirm: true,
+				customClass: {
+					popup: 'swal2-premium-popup',
+					title: 'swal2-premium-title',
+					confirmButton: 'swal2-premium-confirm',
+					denyButton: 'swal2-premium-deny'
+				},
+				showClass: {
+					popup: 'animate__animated animate__fadeInDown animate__faster'
+				},
+				hideClass: {
+					popup: 'animate__animated animate__fadeOutUp animate__faster'
+				}
+			}).then((result) => {
+				// Determine product details
+				var nome = $(".info1 h3").text().trim(); // Full name requested by user
+				// Get visible price text only (ignoring hidden span) from the main product info
+				var preco = $(".info1 .preco").contents().filter(function () {
+					return this.nodeType === 3; // Text nodes only
+				}).text().trim();
+				var img = $(".info1 figure img").attr("src");
+				// Fix image path for the new location (relative to custom_checkout.html)
+				// pizza1.html is in products/pizza/, checkout is in root of site wrapper
+				var imagePath = "produtos/pizza/" + img;
+
+				if (result.isConfirmed) {
+					// Add timestamp to force cache clearing
+					var timestamp = new Date().getTime();
+					window.location.href = "../../custom_checkout.html?name=" + encodeURIComponent(nome) + "&price=" + encodeURIComponent(preco) + "&image=" + encodeURIComponent(imagePath) + "&_t=" + timestamp;
+				} else if (result.isDenied) {
+					Swal.fire({
+						title: "Selecione o dia e a hora, por gentileza!",
+						text: 'Deixe seu pedido agendado e receba na hora combinada.',
+						confirmButtonText: "Agendar pedido!",
+						confirmButtonColor: "green",
+						showCancelButton: false,
+						allowOutsideClick: false,
+						input: "datetime-local",
+					}).then((result) => {
+						// For now, redirect to checkout even for scheduled (can pass schedule param later)
+						window.location.href = "../../custom_checkout.html?name=" + encodeURIComponent(nome) + "&price=" + encodeURIComponent(preco) + "&image=" + encodeURIComponent(imagePath) + "&schedule=" + encodeURIComponent(result.value);
+					});
+				}
+			});
+		}
+	</script>
 
 
 
 
 
-		<script src="../../js/tracking.js"></script>
+	<script src="../../js/tracking.js"></script>
 </body>
 <!-- Mirrored from megaacaidelivery.netlify.app/produtos/acai/pague-1-leve-2-300ml by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 11 Feb 2025 21:59:10 GMT -->
 <!-- Mirrored from poooppizzass.site/produtos/pizza/pizza2.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 20 Dec 2025 20:01:04 GMT -->
