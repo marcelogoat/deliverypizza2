@@ -338,14 +338,78 @@
             }
         }
 
-        /* BUMP STYLES */
-        .bump-item {
-            transition: background 0.3s, border-color 0.3s;
-            cursor: pointer;
-        }
-
         .bump-item:hover {
             background-color: #dcedc8 !important;
+        }
+
+        /* SHIPPING OPTIONS FIX */
+        .shipping-option {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 12px 15px !important;
+            border: 1px solid #ddd !important;
+            border-radius: 8px !important;
+            margin-bottom: 12px !important;
+            cursor: pointer !important;
+            background: #fff;
+            transition: all 0.2s;
+        }
+
+        .shipping-option:hover {
+            border-color: #028b49 !important;
+        }
+
+        .shipping-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .shipping-info {
+            min-width: 0;
+            line-height: 1.2;
+            flex: 1;
+            /* Take available space */
+            overflow: hidden;
+            /* Contain text */
+        }
+
+        .shipping-info strong {
+            display: block;
+            color: #333;
+            font-size: 15px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .shipping-info span {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .shipping-price {
+            font-weight: bold;
+            color: #028b49;
+            font-size: 14px;
+            white-space: nowrap;
+            margin-left: 8px;
+            text-align: right;
+            flex-shrink: 0;
+            /* Prevent squeezing on iOS Safari */
+            min-width: fit-content;
+            /* Safari compatibility */
+        }
+
+        input[type="radio"] {
+            margin: 0;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: #028b49;
         }
     </style>
 
@@ -492,30 +556,26 @@
                     style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
                     <h4 style="font-size: 18px; color: #333; margin-bottom: 20px;">Escolha a Entrega:</h4>
 
-                    <label class="shipping-option"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; cursor: pointer;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <input type="radio" name="shipping" value="free" checked onchange="updateTotal()"
-                                style="transform: scale(1.5);">
-                            <div>
-                                <strong style="display: block; color: #333; font-size: 16px;">Entrega Grátis</strong>
-                                <span style="font-size: 14px; color: #666;">40-50 minutos</span>
+                    <label class="shipping-option">
+                        <div class="shipping-main">
+                            <input type="radio" name="shipping" value="free" checked onchange="updateTotal()">
+                            <div class="shipping-info">
+                                <strong>Entrega Grátis</strong>
+                                <span>30-40 minutos</span>
                             </div>
                         </div>
-                        <span style="font-weight: bold; color: #028b49; font-size: 15px;">Grátis</span>
+                        <span class="shipping-price">Grátis</span>
                     </label>
 
-                    <label class="shipping-option"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <input type="radio" name="shipping" value="express" onchange="updateTotal()"
-                                style="transform: scale(1.5);">
-                            <div>
-                                <strong style="display: block; color: #333; font-size: 16px;">Entrega Expressa</strong>
-                                <span style="font-size: 14px; color: #666;">20-30 minutos</span>
+                    <label class="shipping-option">
+                        <div class="shipping-main">
+                            <input type="radio" name="shipping" value="express" onchange="updateTotal()">
+                            <div class="shipping-info">
+                                <strong>Entrega Expressa</strong>
+                                <span>15-25 minutos</span>
                             </div>
                         </div>
-                        <span style="font-weight: bold; color: #333; font-size: 15px;">+ R$ 9,90</span>
+                        <span class="shipping-price" style="color: #333;">+ R$ 9,90</span>
                     </label>
                 </div>
                 <button type="button" class="btn-action" onclick="nextStep(2)">Próximo</button>
