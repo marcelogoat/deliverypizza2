@@ -14,6 +14,31 @@ app.use(express.json());
 app.use(express.static(__dirname)); // Serve static files
 
 // ============================================
+// Admin Configuration & Helper Functions
+// ============================================
+
+const fs = require('fs');
+const ORDERS_FILE = path.join(__dirname, 'orders.json');
+const ADMIN_TOKEN = 'admin123secret';
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'pizza2024';
+
+function readOrders() {
+    try {
+        if (fs.existsSync(ORDERS_FILE)) {
+            return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
+        }
+    } catch (err) { console.error('Error reading orders:', err); }
+    return [];
+}
+
+function writeOrders(orders) {
+    try {
+        fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+    } catch (err) { console.error('Error writing orders:', err); }
+}
+
+// ============================================
 // MarchaPay API Endpoints
 // ============================================
 
@@ -104,6 +129,104 @@ function mapMarchaPayStatus(mpStatus) {
     return 'pending';
 }
 
+// Reusable Utmify Reporting Function
+async function sendToUtmify(order) {
+    const utmifyToken = process.env.UTMIFY_API_TOKEN;
+    if (!utmifyToken) {
+        console.log('[Utmify] Token not configured, skipping report.');
+        return;
+    }
+
+    try {
+        console.log('[Utmify] Sending order report...', order.transactionId);
+        const payload = {
+            orderId: order.transactionId,
+            platform: "Custom Store",
+            paymentMethod: order.paymentMethod || "pix",
+            status: "paid",
+            createdAt: order.createdAt,
+            approvedDate: new Date().toISOString(),
+            amount: order.amount,
+            customer: {
+                name: order.customer.name,
+                email: order.customer.email,
+                phone: order.customer.phone,
+                document: order.customer.document.number || order.customer.document,
+                ip: "127.0.0.1"
+            },
+            products: order.items.map(item => ({
+                id: item.title,
+                name: item.title,
+                planId: item.title,
+                planName: item.title,
+                priceInCents: item.unitPrice,
+                quantity: item.quantity
+            })),
+            trackingParameters: order.trackingParameters || {
+                utm_source: null, utm_medium: null, utm_campaign: null, utm_term: null, utm_content: null
+            },
+            commission: {
+                totalPriceInCents: order.amount,
+                gatewayFeeInCents: 0,
+                userCommissionInCents: order.amount
+            }
+        };
+
+        const response = await fetch('https://api.utmify.com.br/api-credentials/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-token': utmifyToken
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        console.log('[Utmify] Response:', data);
+        return data;
+    } catch (err) {
+        console.error('[Utmify] Error reporting sale:', err);
+    }
+}
+
+app.post('/api/orders/:transactionId/approve', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Não autorizado' });
+    }
+    const token = authHeader.substring(7);
+    if (token !== ADMIN_TOKEN) {
+        return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    try {
+        const { transactionId } = req.params;
+        const orders = readOrders();
+        const orderIndex = orders.findIndex(o => String(o.transactionId) === String(transactionId));
+
+        if (orderIndex === -1) {
+            return res.status(404).json({ error: 'Pedido não encontrado' });
+        }
+
+        if (orders[orderIndex].status === 'paid') {
+            return res.status(400).json({ error: 'Pedido já está aprovado' });
+        }
+
+        orders[orderIndex].status = 'paid';
+        writeOrders(orders);
+
+        // Notify Utmify
+        await sendToUtmify(orders[orderIndex]);
+
+        console.log(`[Admin] Order ${transactionId} manually approved.`);
+        res.json({ success: true, status: 'paid' });
+
+    } catch (error) {
+        console.error('[Admin] Error approving order:', error);
+        res.status(500).json({ error: 'Failed to approve order' });
+    }
+});
+
 app.post('/api/orders/:transactionId/sync', async (req, res) => {
     try {
         const { transactionId } = req.params;
@@ -143,65 +266,7 @@ app.post('/api/orders/:transactionId/sync', async (req, res) => {
 
                 // TRIGGER UTMIFY IF PAID
                 if (newStatus === 'paid') {
-                    const order = orders[orderIndex];
-                    try {
-                        console.log('[API] Order paid! Sending to Utmify...', order.transactionId);
-                        const utmifyToken = process.env.UTMIFY_API_TOKEN;
-
-                        if (utmifyToken) {
-                            // Reconstruct Utmify Payload
-                            const payload = {
-                                orderId: order.transactionId,
-                                platform: "Custom Store",
-                                paymentMethod: order.paymentMethod || "pix",
-                                status: "paid",
-                                createdAt: order.createdAt,
-                                approvedDate: new Date().toISOString(),
-                                amount: order.amount, // stored in cents in json? Yes.
-                                customer: {
-                                    name: order.customer.name,
-                                    email: order.customer.email,
-                                    phone: order.customer.phone,
-                                    document: order.customer.document.number || order.customer.document,
-                                    ip: "127.0.0.1"
-                                },
-                                products: order.items.map(item => {
-                                    // Re-map names if needed (copy map from frontend or store mapped name? Stored items have 'title')
-                                    // Ideally we use the title stored.
-                                    return {
-                                        id: item.title,
-                                        name: item.title,
-                                        planId: item.title,
-                                        planName: item.title,
-                                        priceInCents: item.unitPrice,
-                                        quantity: item.quantity
-                                    };
-                                }),
-                                trackingParameters: order.trackingParameters || {
-                                    utm_source: null, utm_medium: null, utm_campaign: null, utm_term: null, utm_content: null
-                                },
-                                commission: {
-                                    totalPriceInCents: order.amount,
-                                    gatewayFeeInCents: 0,
-                                    userCommissionInCents: order.amount
-                                }
-                            };
-
-                            fetch('https://api.utmify.com.br/api-credentials/orders', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'x-api-token': utmifyToken
-                                },
-                                body: JSON.stringify(payload)
-                            })
-                                .then(uRes => uRes.json())
-                                .then(uData => console.log('[API] Utmify Update Response:', uData))
-                                .catch(err => console.error('[API] Utmify Update Error:', err));
-                        }
-                    } catch (utmErr) {
-                        console.error('Error triggering Utmify:', utmErr);
-                    }
+                    await sendToUtmify(orders[orderIndex]);
                 }
             }
         }
@@ -268,30 +333,11 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+
 // ============================================
 // Admin API
 // ============================================
 
-const fs = require('fs');
-const ORDERS_FILE = path.join(__dirname, 'orders.json');
-const ADMIN_TOKEN = 'admin123secret';
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'pizza2024';
-
-function readOrders() {
-    try {
-        if (fs.existsSync(ORDERS_FILE)) {
-            return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
-        }
-    } catch (err) { console.error('Error reading orders:', err); }
-    return [];
-}
-
-function writeOrders(orders) {
-    try {
-        fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
-    } catch (err) { console.error('Error writing orders:', err); }
-}
 
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
