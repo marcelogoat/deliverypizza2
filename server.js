@@ -291,9 +291,9 @@ async function sendToUtmify(order) {
     }
 
     try {
-        console.log('[Utmify] Preparing report for:', order.transactionId, 'Status:', order.status);
+        const amountValue = Number(order.amount) || 0;
+        console.log('[Utmify] Preparing report for:', order.transactionId, 'Status:', order.status, 'Amount:', amountValue);
 
-        // ... (keeping nameMap and payload construction exactly as before) ...
         const nameMap = {
             "2 Pizza PP + 1 Refrigerante 2 Litros": "Guia Seca Barriga Iniciante",
             "2 Pizza P + 1 Refrigerante 2 Litros": "Protocolo Detox 7 Dias",
@@ -313,7 +313,7 @@ async function sendToUtmify(order) {
             status: order.status || "waiting_payment",
             createdAt: order.createdAt,
             approvedDate: order.status === 'paid' ? new Date().toISOString() : null,
-            amount: order.amount,
+            amount: amountValue,
             customer: {
                 name: order.customer.name,
                 email: order.customer.email,
@@ -333,12 +333,15 @@ async function sendToUtmify(order) {
                 };
             }),
             commission: {
-                totalPriceInCents: order.amount,
+                totalPriceInCents: amountValue,
                 gatewayFeeInCents: 0,
-                userCommissionInCents: 0
+                userCommissionInCents: amountValue
             },
             trackingParameters: order.trackingParameters || {}
         };
+
+        // LOG FULL PAYLOAD TO DEBUG 0 VALUE ISSUE
+        console.log('[Utmify] Sending Payload:', JSON.stringify(payload));
 
         const response = await fetch('https://api.utmify.com.br/api-credentials/orders', {
             method: 'POST',
