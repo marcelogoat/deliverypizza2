@@ -506,5 +506,45 @@
     },
     "createdAt": "2026-02-07T04:50:56.157Z",
     "pixCopied": true
+  },
+  {
+    "transactionId": "618efb917faf4a98bae1a76bb315a5a1",
+    "amount": 4290,
+    "paymentMethod": "pix",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "marcelo",
+      "email": "marcelo7772@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "57552172207"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "15151",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": "google",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms",
+      "utm_content": "ContentTesteUtms"
+    },
+    "createdAt": "2026-02-07T05:05:13.468Z"
   }
 ]

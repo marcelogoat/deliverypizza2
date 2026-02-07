@@ -125,7 +125,7 @@ app.post('/api/payment/create', async (req, res) => {
                 transactionId: txId,
                 amount: amount,
                 paymentMethod: 'pix',
-                status: 'waiting_payment',
+                status: 'created',
                 customer: customer,
                 items: items,
                 trackingParameters: trackingParameters,
@@ -197,6 +197,7 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
 app.post('/api/webhook/hurapay', async (req, res) => {
     try {
         const notification = req.body;
+        console.log(`[Webhook] FULL PAYLOAD RECEIVED:`, JSON.stringify(notification, null, 2));
         console.log('[Webhook] Hura Pay Notification received:', notification.Id, '-', notification.Status);
 
         // Map Status (Hura Pay uses "PAID", "PENDING", etc.)
@@ -210,19 +211,21 @@ app.post('/api/webhook/hurapay', async (req, res) => {
             const orderIndex = orders.findIndex(o => String(o.transactionId) === String(transactionId));
 
             if (orderIndex !== -1) {
-                // If it's a transition to paid or it's the first time we see pending
-                if (orders[orderIndex].status !== mappedStatus) {
-                    console.log(`[Webhook] Order ${transactionId} status updated to: ${mappedStatus}.`);
+                const currentStatus = orders[orderIndex].status;
+                console.log(`[Webhook] Processing Order ${transactionId}. Current: ${currentStatus}, New: ${mappedStatus}`);
+
+                if (currentStatus !== mappedStatus) {
+                    console.log(`[Webhook] Status CHANGE detected. Updating...`);
                     orders[orderIndex].status = mappedStatus;
                     writeOrders(orders);
 
                     // Send to Utmify
                     await sendToUtmify(orders[orderIndex]);
                 } else {
-                    console.log(`[Webhook] Order ${transactionId} already has status ${mappedStatus}, skipping.`);
+                    console.log(`[Webhook] Skipping: Order ${transactionId} already has status ${mappedStatus}.`);
                 }
             } else {
-                console.warn(`[Webhook] Order ${transactionId} not found in database.`);
+                console.warn(`[Webhook] ERROR: Order ${transactionId} not found in database.`);
             }
         } else {
             console.log(`[Webhook] Ignoring notification status: ${huraStatus}`);
