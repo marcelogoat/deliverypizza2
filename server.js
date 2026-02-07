@@ -118,44 +118,30 @@ app.post('/api/payment/create', async (req, res) => {
             });
         }
 
-        console.log('[API] Hura Transaction created:', data);
+        console.log('[API] Hura Transaction created:', data.id || (data.data && data.data.id));
 
-        // Map Hura response to our frontend expectation
-        // Frontend expects: { id: "...", pix: { qrcode: "..." } }
-        // We need to check Hura's exact response format. 
-        // Assuming data contains transaction details.
-        // User didn't give response format, but usually it has 'qrcode' or 'emv' or 'brcode'.
-        // I will return the raw data mapped to what frontend likely needs + log it to check structure.
-
-        // Fix: Hura Pay wraps the response in a 'data' property
         const responseData = data.data || data;
-
-        // Extract PIX code (field is 'pix.qr_code' based on debug output)
         const pixCode = (responseData.pix && responseData.pix.qr_code) ||
             (responseData.pix && responseData.pix.qrcode) ||
             responseData.pix_code ||
             responseData.qrcode;
 
-        const txId = responseData.transaction_id || responseData.id;
+        const txId = responseData.id || responseData.transaction_id;
 
-        // Update the order in DB with Hura's ID as well
-        try {
-            const updatedOrders = readOrders();
-            const idx = updatedOrders.findIndex(o => o.transactionId === localTransactionId);
-            if (idx !== -1) {
-                updatedOrders[idx].huraId = txId;
-                writeOrders(updatedOrders);
-                console.log(`[API] Order ${localTransactionId} updated with HuraId ${txId}`);
-            }
-        } catch (err) {
-            console.error('[API] Error updating order with HuraId:', err);
-        }
-
-        // Log for debugging
-        console.log('[API] Hura Pay Response Data:', JSON.stringify(responseData, null, 2));
+        // Update the order in DB with Hura's ID (background)
+        (async () => {
+            try {
+                const currentOrders = readOrders();
+                const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
+                if (idx !== -1) {
+                    currentOrders[idx].huraId = txId;
+                    writeOrders(currentOrders);
+                }
+            } catch (err) { console.error('[API] Async update error:', err); }
+        })();
 
         res.json({
-            id: localTransactionId, // Return our PRE-SAVED ID to frontend
+            id: localTransactionId,
             huraId: txId,
             pix: {
                 qrcode: pixCode
@@ -210,70 +196,60 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
 });
 
 // POST /api/webhook/hurapay - Hura Pay Webhook Listener
-app.post('/api/webhook/hurapay', async (req, res) => {
-    try {
-        const notification = req.body;
-        console.log(`[Webhook] FULL PAYLOAD RECEIVED:`, JSON.stringify(notification, null, 2));
+app.post('/api/webhook/hurapay', (req, res) => {
+    const notification = req.body;
+    console.log(`[Webhook] RECEIVED: HuraId=${notification.Id}, Status=${notification.Status}`);
 
-        const huraId = notification.Id;
-        const externalId = notification.ExternalId;
-        const huraStatus = (notification.Status || '').toUpperCase();
+    // RESPOND IMMEDIATELY TO HURA PAY
+    res.json({ success: true });
 
-        console.log(`[Webhook] Processing notification: HuraId=${huraId}, ExternalId=${externalId}, Status=${huraStatus}`);
+    // PROCESS IN BACKGROUND (Fire and Forget)
+    (async () => {
+        try {
+            const huraId = notification.Id;
+            const externalId = notification.ExternalId;
+            const huraStatus = (notification.Status || '').toUpperCase();
 
-        if (huraStatus === 'PAID' || huraStatus === 'PENDING') {
+            if (huraStatus !== 'PAID' && huraStatus !== 'PENDING') {
+                // console.log(`[Webhook] Ignoring irrelevant status: ${huraStatus}`);
+                return;
+            }
+
             const mappedStatus = huraStatus === 'PAID' ? 'paid' : 'waiting_payment';
 
-            // RETRY LOGIC: Wait up to 3 seconds if order is not found (Race Condition Fix)
             let orders = [];
             let orderIndex = -1;
 
-            for (let attempt = 1; attempt <= 4; attempt++) {
+            // Retry for 5 seconds if needed
+            for (let attempt = 1; attempt <= 6; attempt++) {
                 orders = readOrders();
                 orderIndex = orders.findIndex(o =>
                     (externalId && String(o.transactionId) === String(externalId)) ||
-                    (huraId && String(o.huraId) === String(huraId)) ||
-                    (huraId && String(o.transactionId) === String(huraId))
+                    (huraId && String(o.huraId) === String(huraId))
                 );
 
                 if (orderIndex !== -1) break;
 
-                if (attempt < 4) {
-                    console.log(`[Webhook] Order NOT found yet (Attempt ${attempt}/4). Waiting 1s...`);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                if (attempt < 6) {
+                    console.log(`[Webhook] ${huraId} not found, retrying in 1s (${attempt}/6)...`);
+                    await new Promise(r => setTimeout(r, 1000));
                 }
             }
 
             if (orderIndex !== -1) {
-                const currentStatus = orders[orderIndex].status;
-                const orderTxId = orders[orderIndex].transactionId;
-                console.log(`[Webhook] Found Order ${orderTxId}. Current status: ${currentStatus}`);
-
-                if (currentStatus !== mappedStatus) {
-                    console.log(`[Webhook] Status CHANGE detected: ${currentStatus} -> ${mappedStatus}. Reporting to Utmify...`);
+                if (orders[orderIndex].status !== mappedStatus) {
+                    console.log(`[Webhook] UPGRADE: ${orders[orderIndex].status} -> ${mappedStatus} for ${orders[orderIndex].transactionId}`);
                     orders[orderIndex].status = mappedStatus;
                     writeOrders(orders);
-
-                    // Send to Utmify
                     await sendToUtmify(orders[orderIndex]);
-                } else {
-                    console.log(`[Webhook] Already at status ${mappedStatus}. No action needed.`);
                 }
             } else {
-                console.warn(`[Webhook] CRITICAL: Order with ID ${huraId} or ExternalId ${externalId} NOT FOUND in database after retries.`);
-                console.log(`[Webhook] Current orders in DB (Count: ${orders.length})`);
+                console.warn(`[Webhook] FAIL: Order ${huraId}/${externalId} not found after retries.`);
             }
-        } else {
-            console.log(`[Webhook] Ignoring notification status: ${huraStatus}`);
+        } catch (err) {
+            console.error('[Webhook] Background processing error:', err);
         }
-
-        // Always return 200 to acknowledge receipt
-        res.json({ success: true });
-
-    } catch (error) {
-        console.error('[Webhook] Error processing Hura Pay webhook:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    })();
 });
 
 // Helper to map Hura Pay status (kept for compatibility if needed elsewhere)
