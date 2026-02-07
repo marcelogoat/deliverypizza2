@@ -69,9 +69,7 @@ app.post('/api/payment/create', async (req, res) => {
         const order = {
             transactionId: localTransactionId, // Our internal starting ID
             huraId: null, // Will be filled after creation
-            amount: amount,
-            paymentMethod: 'pix',
-            status: 'waiting_payment', // Start as waiting_payment for Utmify
+            status: 'created', // Internal initial status
             customer: customer,
             items: items,
             trackingParameters: trackingParameters,
