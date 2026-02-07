@@ -42,8 +42,8 @@ function writeOrders(orders) {
 // Hura Pay API Endpoints
 // ============================================
 
-const HURA_PUBLIC_KEY = 'hurapay_live_2X1Pa1P85h7ngFx0EcIQlyWGPtPBb4Sz';
-const HURA_SECRET_KEY = 'sk_live_PDrjYQJt6Z2IbnJV9yGEnYykQ7cg8Bs4';
+const HURA_PUBLIC_KEY = process.env.HURA_PUBLIC_KEY;
+const HURA_SECRET_KEY = process.env.HURA_SECRET_KEY;
 const HURA_BASE_URL = 'https://api.hurapayments.com.br/v1';
 
 // Helper for Basic Auth
@@ -227,7 +227,7 @@ function mapHuraPayStatus(mpStatus) {
 
 // Reusable Utmify Reporting Function
 async function sendToUtmify(order) {
-    const utmifyToken = 'Z5FI4LGLYeOvP5Ku6bxT919qolKE2KUsnP7X';
+    const utmifyToken = process.env.UTMIFY_API_TOKEN;
     if (!utmifyToken) {
         console.log('[Utmify] Token not configured, skipping report.');
         return;
@@ -370,7 +370,7 @@ app.post('/api/utmify/order', async (req, res) => {
     try {
         console.log('[API] Sending order to Utmify...');
 
-        const utmifyToken = 'Z5FI4LGLYeOvP5Ku6bxT919qolKE2KUsnP7X';
+        const utmifyToken = process.env.UTMIFY_API_TOKEN;
         if (!utmifyToken) {
             throw new Error('Utmify token not configured');
         }
@@ -637,6 +637,6 @@ app.get('/api/analytics/online', (req, res) => {
 app.listen(PORT, HOST, () => {
     console.log(`\n🚀 Server running on http://${HOST}:${PORT}`);
     console.log(`📁 Serving static files from: ${__dirname}`);
-    console.log(`🔒 API Keys loaded: MarchaPay=${!!(process.env.MARCHAPAY_PUBLIC_KEY && process.env.MARCHAPAY_SECRET_KEY)}, Utmify=${!!process.env.UTMIFY_API_TOKEN}`);
+    console.log(`🔒 API Keys loaded: HuraPay=${!!(process.env.HURA_PUBLIC_KEY && process.env.HURA_SECRET_KEY)}, Utmify=${!!process.env.UTMIFY_API_TOKEN}`);
     console.log(`📊 Analytics active\n`);
 });
