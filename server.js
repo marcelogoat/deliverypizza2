@@ -136,11 +136,6 @@ app.post('/api/payment/create', async (req, res) => {
             writeOrders(orders);
             console.log(`[API] Order ${txId} saved to database.`);
 
-            // TRIGGER UTMIFY PENDING SALE IMMEDIATELY
-            // This ensures the pending sale is reported even if the webhook is delayed or not sent for PENDING status
-            console.log(`[API] Triggering immediate Utmify pending report for ${txId}...`);
-            await sendToUtmify(order);
-
         } catch (saveErr) {
             console.error('[API] Failed to save order to database:', saveErr);
         }
@@ -204,34 +199,42 @@ app.post('/api/webhook/hurapay', async (req, res) => {
     try {
         const notification = req.body;
         console.log(`[Webhook] FULL PAYLOAD RECEIVED:`, JSON.stringify(notification, null, 2));
-        console.log('[Webhook] Hura Pay Notification received:', notification.Id, '-', notification.Status);
 
-        // Map Status (Hura Pay uses "PAID", "PENDING", etc.)
+        const huraId = notification.Id;
+        const externalId = notification.ExternalId;
         const huraStatus = (notification.Status || '').toUpperCase();
-        const transactionId = notification.Id; // The Hura ID
+
+        console.log(`[Webhook] Processing notification: HuraId=${huraId}, ExternalId=${externalId}, Status=${huraStatus}`);
 
         if (huraStatus === 'PAID' || huraStatus === 'PENDING') {
             const mappedStatus = huraStatus === 'PAID' ? 'paid' : 'waiting_payment';
             const orders = readOrders();
-            // Search for order by transaction ID
-            const orderIndex = orders.findIndex(o => String(o.transactionId) === String(transactionId));
+
+            // Search for order by Hura ID OR External ID
+            const orderIndex = orders.findIndex(o =>
+                String(o.transactionId) === String(huraId) ||
+                (externalId && String(o.transactionId) === String(externalId))
+            );
 
             if (orderIndex !== -1) {
                 const currentStatus = orders[orderIndex].status;
-                console.log(`[Webhook] Processing Order ${transactionId}. Current: ${currentStatus}, New: ${mappedStatus}`);
+                const orderTxId = orders[orderIndex].transactionId;
+                console.log(`[Webhook] Found Order ${orderTxId}. Current status: ${currentStatus}`);
 
                 if (currentStatus !== mappedStatus) {
-                    console.log(`[Webhook] Status CHANGE detected. Updating...`);
+                    console.log(`[Webhook] Status CHANGE detected: ${currentStatus} -> ${mappedStatus}. Reporting to Utmify...`);
                     orders[orderIndex].status = mappedStatus;
                     writeOrders(orders);
 
                     // Send to Utmify
                     await sendToUtmify(orders[orderIndex]);
                 } else {
-                    console.log(`[Webhook] Skipping: Order ${transactionId} already has status ${mappedStatus}.`);
+                    console.log(`[Webhook] Already at status ${mappedStatus}. No action needed.`);
                 }
             } else {
-                console.warn(`[Webhook] ERROR: Order ${transactionId} not found in database.`);
+                console.warn(`[Webhook] CRITICAL: Order with ID ${huraId} or ExternalId ${externalId} NOT FOUND in database.`);
+                // Log all orders to help debug
+                console.log(`[Webhook] Current orders in DB:`, orders.map(o => o.transactionId).join(', '));
             }
         } else {
             console.log(`[Webhook] Ignoring notification status: ${huraStatus}`);
