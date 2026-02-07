@@ -1128,6 +1128,13 @@
                             state: "SP",
                             country: "BR"
                         }
+                    },
+                    trackingParameters: {
+                        utm_source: urlParams.get('utm_source') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_source'] : null) || null,
+                        utm_medium: urlParams.get('utm_medium') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_medium'] : null) || null,
+                        utm_campaign: urlParams.get('utm_campaign') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_campaign'] : null) || null,
+                        utm_term: urlParams.get('utm_term') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_term'] : null) || null,
+                        utm_content: urlParams.get('utm_content') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_content'] : null) || null
                     }
                 };
 
@@ -1191,7 +1198,8 @@
                             localStorage.setItem(`shipping_data_${transactionId}`, JSON.stringify(payload.shipping));
                             localStorage.setItem(`items_data_${transactionId}`, JSON.stringify(payload.items));
 
-                            // Save order to admin panel
+                            // Save order to admin panel (REDUCED TO SERVER-SIDE IN PIX CREATION TO AVOID RACE CONDITION)
+                            /*
                             try {
                                 await fetch('/api/orders', {
                                     method: 'POST',
@@ -1203,16 +1211,11 @@
                                         status: 'pending',
                                         customer: payload.customer,
                                         items: payload.items,
-                                        trackingParameters: {
-                                            utm_source: urlParams.get('utm_source') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_source'] : null) || null,
-                                            utm_medium: urlParams.get('utm_medium') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_medium'] : null) || null,
-                                            utm_campaign: urlParams.get('utm_campaign') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_campaign'] : null) || null,
-                                            utm_term: urlParams.get('utm_term') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_term'] : null) || null,
-                                            utm_content: urlParams.get('utm_content') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_content'] : null) || null
-                                        }
+                                        trackingParameters: payload.trackingParameters
                                     })
                                 });
                             } catch (err) { console.error('Admin save error:', err); }
+                            */
 
                             // Send Pending Sale to Utmify (DISABLED - Using Webhooks)
                             try {

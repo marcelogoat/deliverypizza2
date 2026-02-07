@@ -57,7 +57,7 @@ app.post('/api/payment/create', async (req, res) => {
         console.log('[API] Creating Hura Pay transaction...');
 
         // Map frontend payload to Hura Pay format
-        const { amount, customer } = req.body;
+        const { amount, customer, items, trackingParameters } = req.body;
 
         const payload = {
             amount: amount, // Amount in cents
@@ -118,6 +118,26 @@ app.post('/api/payment/create', async (req, res) => {
 
         // Log for debugging
         console.log('[API] Hura Pay Response Data:', JSON.stringify(responseData, null, 2));
+
+        // SAVE ORDER IMMEDIATELY TO AVOID WEBHOOK RACE CONDITION
+        try {
+            const order = {
+                transactionId: txId,
+                amount: amount,
+                paymentMethod: 'pix',
+                status: 'waiting_payment',
+                customer: customer,
+                items: items,
+                trackingParameters: trackingParameters,
+                createdAt: new Date().toISOString()
+            };
+            const orders = readOrders();
+            orders.push(order);
+            writeOrders(orders);
+            console.log(`[API] Order ${txId} saved to database.`);
+        } catch (saveErr) {
+            console.error('[API] Failed to save order to database:', saveErr);
+        }
 
         res.json({
             id: txId,
