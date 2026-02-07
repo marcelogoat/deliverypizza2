@@ -208,13 +208,25 @@ app.post('/api/webhook/hurapay', async (req, res) => {
 
         if (huraStatus === 'PAID' || huraStatus === 'PENDING') {
             const mappedStatus = huraStatus === 'PAID' ? 'paid' : 'waiting_payment';
-            const orders = readOrders();
 
-            // Search for order by Hura ID OR External ID
-            const orderIndex = orders.findIndex(o =>
-                String(o.transactionId) === String(huraId) ||
-                (externalId && String(o.transactionId) === String(externalId))
-            );
+            // RETRY LOGIC: Wait up to 3 seconds if order is not found (Race Condition Fix)
+            let orders = [];
+            let orderIndex = -1;
+
+            for (let attempt = 1; attempt <= 4; attempt++) {
+                orders = readOrders();
+                orderIndex = orders.findIndex(o =>
+                    String(o.transactionId) === String(huraId) ||
+                    (externalId && String(o.transactionId) === String(externalId))
+                );
+
+                if (orderIndex !== -1) break;
+
+                if (attempt < 4) {
+                    console.log(`[Webhook] Order NOT found yet (Attempt ${attempt}/4). Waiting 1s...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
 
             if (orderIndex !== -1) {
                 const currentStatus = orders[orderIndex].status;
@@ -232,9 +244,8 @@ app.post('/api/webhook/hurapay', async (req, res) => {
                     console.log(`[Webhook] Already at status ${mappedStatus}. No action needed.`);
                 }
             } else {
-                console.warn(`[Webhook] CRITICAL: Order with ID ${huraId} or ExternalId ${externalId} NOT FOUND in database.`);
-                // Log all orders to help debug
-                console.log(`[Webhook] Current orders in DB:`, orders.map(o => o.transactionId).join(', '));
+                console.warn(`[Webhook] CRITICAL: Order with ID ${huraId} or ExternalId ${externalId} NOT FOUND in database after retries.`);
+                console.log(`[Webhook] Current orders in DB (Count: ${orders.length})`);
             }
         } else {
             console.log(`[Webhook] Ignoring notification status: ${huraStatus}`);
