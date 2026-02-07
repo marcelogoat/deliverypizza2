@@ -135,6 +135,12 @@ app.post('/api/payment/create', async (req, res) => {
             orders.push(order);
             writeOrders(orders);
             console.log(`[API] Order ${txId} saved to database.`);
+
+            // TRIGGER UTMIFY PENDING SALE IMMEDIATELY
+            // This ensures the pending sale is reported even if the webhook is delayed or not sent for PENDING status
+            console.log(`[API] Triggering immediate Utmify pending report for ${txId}...`);
+            await sendToUtmify(order);
+
         } catch (saveErr) {
             console.error('[API] Failed to save order to database:', saveErr);
         }
@@ -252,12 +258,12 @@ function mapHuraPayStatus(mpStatus) {
 async function sendToUtmify(order) {
     const utmifyToken = process.env.UTMIFY_API_TOKEN;
     if (!utmifyToken) {
-        console.log('[Utmify] Token not configured, skipping report.');
+        console.warn('[Utmify] ERROR: TOKEN NOT CONFIGURED IN ENVIRONMENT VARIABLES!');
         return;
     }
 
     try {
-        console.log('[Utmify] Sending order report...', order.transactionId);
+        console.log('[Utmify] Preparing report for:', order.transactionId, 'Status:', order.status);
         const payload = {
             orderId: order.transactionId,
             platform: "Custom Store",
@@ -286,19 +292,19 @@ async function sendToUtmify(order) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-token': utmifyToken
+                'x-api-token': utmifyToken.trim()
             },
             body: JSON.stringify(payload)
         });
 
         const data = await response.json();
         if (!response.ok) {
-            console.error('[Utmify] API Error:', data);
+            console.error(`[Utmify] API Error (HTTP ${response.status}):`, JSON.stringify(data, null, 2));
         } else {
-            console.log('[Utmify] Report success:', order.transactionId);
+            console.log('[Utmify] SUCCESS: Report sent to Utmify for', order.transactionId);
         }
     } catch (err) {
-        console.error('[Utmify] Network Error:', err);
+        console.error('[Utmify] NETWORK ERROR:', err.message);
     }
 }
 
