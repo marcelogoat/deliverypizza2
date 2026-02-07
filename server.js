@@ -59,6 +59,9 @@ app.post('/api/payment/create', async (req, res) => {
         // Map frontend payload to Hura Pay format
         const { amount, customer, items, trackingParameters } = req.body;
 
+        // Capture client IP for Utmify
+        const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+
         // Generate a unique transaction ID before calling Hura Pay
         const localTransactionId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -72,6 +75,7 @@ app.post('/api/payment/create', async (req, res) => {
             customer: customer,
             items: items,
             trackingParameters: trackingParameters,
+            clientIp: clientIp, // Store IP for reporting
             createdAt: new Date().toISOString()
         };
         const orders = readOrders();
@@ -270,27 +274,46 @@ async function sendToUtmify(order) {
 
     try {
         console.log('[Utmify] Preparing report for:', order.transactionId, 'Status:', order.status);
+
+        // Product Name Mapping (Crucial for Affiliate tracking)
+        const nameMap = {
+            "2 Pizza PP + 1 Refrigerante 2 Litros": "Guia Seca Barriga Iniciante",
+            "2 Pizza P + 1 Refrigerante 2 Litros": "Protocolo Detox 7 Dias",
+            "2 Pizza M + 1 Refrigerante 2 Litros": "Método Emagrecimento Acelerado",
+            "2 Pizza G + 1 Refrigerante 2 Litros": "Treinamento Queima de Gordura VIP",
+            "2 Pizza Gigante + 1 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
+            "2 Pizza Gigante + 2 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
+            "5 Brownies": "Planilha de Treino em Casa",
+            "10 Mini Churros": "Kit Suplementação Slim",
+            "3 morangos do amor": "E-book Receitas Fitness"
+        };
+
         const payload = {
             orderId: order.transactionId,
             platform: "Custom Store",
             paymentMethod: order.paymentMethod || "pix",
             status: order.status || "paid",
             createdAt: order.createdAt,
-            approvedDate: new Date().toISOString(),
+            approvedDate: order.status === 'paid' ? new Date().toISOString() : null,
             amount: order.amount,
             customer: {
                 name: order.customer.name,
                 email: order.customer.email,
                 phone: order.customer.phone,
-                document: order.customer.document.number || order.customer.document,
-                ip: "127.0.0.1"
+                document: typeof order.customer.document === 'object' ? order.customer.document.number : order.customer.document,
+                ip: order.clientIp || "127.0.0.1"
             },
-            products: (order.items || []).map(item => ({
-                id: item.title,
-                name: item.title,
-                priceInCents: item.unitPrice,
-                quantity: item.quantity
-            })),
+            products: (order.items || []).map(item => {
+                const apiName = nameMap[item.title] || item.title;
+                return {
+                    id: apiName,
+                    name: apiName,
+                    planId: apiName,
+                    planName: apiName,
+                    priceInCents: Math.round(item.unitPrice),
+                    quantity: item.quantity
+                };
+            }),
             trackingParameters: order.trackingParameters || {}
         };
 
