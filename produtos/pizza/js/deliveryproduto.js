@@ -782,38 +782,50 @@ $(document).ready(function () {
 		let maximo = $(this).parents('.tipo').data('maximo');
 		let proximo = $(this).parents('.tipo').next().attr('id');
 
+		// Check current total before incrementing
+		let qtdeTotal = 0;
+		$(this).parents('.tipo').find('input.qtdeOpcao').each(function () {
+			qtdeTotal += parseInt($(this).val());
+		});
+
+		if (qtdeTotal >= maximo && maximo > 0) {
+			return;
+		}
+
 		$(this).parents('.qtdeProdutoOpcao').addClass('selecionado');
 
 		let qtde = parseInt($(this).parent().find('.qtdeOpcao').val());
 		$(this).parent().find('.qtdeOpcao').val(qtde + 1);
+
 		let qtdeEscolhida = 0;
 		$(this).parents('.tipo').find('input.qtdeOpcao').each(function () {
 			qtdeEscolhida += parseInt($(this).val());
 		});
 
+		// Auto-advance logic: fluid transition to next section
 		if (qtdeEscolhida == maximo && maximo > 0) {
-			$(this).parents('.tipo').find('.qtdeProdutoOpcao').each(function () {
-				$(this).find('.adicionarQtdeOpcao').attr("disabled", "disabled");
-			});
-		}
+			let $atual = $(this).parents('.tipo');
+			let $proximo = $atual.nextAll('.tipo').first();
 
-		if (proximo != undefined) {
-			if (qtdeEscolhida == maximo) {
-				if ($('#produto').length > 0) {
-					let info1 = $('#produto .info1').prop('scrollHeight');
-					let indice = $(this).parents('.tipo').data('indice');
-					let somatorio = 0;
-					$(this).parents('.info2').find('.tipo').each(function () {
-						if (indice >= $(this).data('indice')) {
-							somatorio += $(this).prop('scrollHeight');
-						}
-					});
-					$('#produto').animate({ scrollTop: info1 + somatorio }, 'slow');
+			// If no more ".tipo" sections, target the observation label/input
+			if ($proximo.length === 0) {
+				$proximo = $atual.parent().find('.observacao').prev('label');
+				if ($proximo.length === 0) $proximo = $atual.parent().find('.observacao');
+			}
+
+			if ($proximo.length > 0) {
+				if ($('#produto').length > 0 && $('#produto').is(':visible')) {
+					// Logic for when product is inside a scrollable modal container
+					let currentScroll = $('#produto').scrollTop();
+					let targetOffset = $proximo.position().top;
+					$('#produto').animate({ scrollTop: currentScroll + targetOffset - 20 }, 600);
 				} else {
-					$('html, body').animate({ scrollTop: $(this).parents('.tipo').next().offset().top - 60 }, 'slow');
+					// Standard page scroll
+					$('html, body').animate({ scrollTop: $proximo.offset().top - 80 }, 600);
 				}
 			}
 		}
+
 		verificarBotaoAdicionarProduto();
 	});
 
@@ -859,24 +871,34 @@ $(document).ready(function () {
 				}
 			});
 			$(this).prop('checked', true);
+
+			// Auto-advance logic for checkboxes (fluid transition)
+			if (minimo > 0 && maximo > 0) {
+				let $atual = $(this).parents('.tipo');
+				let totalChecked = $atual.find('input:checkbox:checked').length;
+
+				if (totalChecked == maximo) {
+					let $proximo = $atual.nextAll('.tipo').first();
+					if ($proximo.length === 0) {
+						$proximo = $atual.parent().find('.observacao').prev('label');
+						if ($proximo.length === 0) $proximo = $atual.parent().find('.observacao');
+					}
+
+					if ($proximo.length > 0) {
+						if ($('#produto').length > 0 && $('#produto').is(':visible')) {
+							let currentScroll = $('#produto').scrollTop();
+							let targetOffset = $proximo.position().top;
+							$('#produto').animate({ scrollTop: currentScroll + targetOffset - 20 }, 600);
+						} else {
+							$('html, body').animate({ scrollTop: $proximo.offset().top - 80 }, 600);
+						}
+					}
+				}
+			}
 		} else {
 			$(this).prop('checked', false);
 		}
-		if (proximo != undefined && minimo > 0 && maximo > 0) {
-			if ($('#produto').length > 0) {
-				let info1 = $('#produto .info1').prop('scrollHeight');
-				let indice = $(this).parents('.tipo').data('indice');
-				let somatorio = 0;
-				$(this).parents('.info2').find('.tipo').each(function () {
-					if (indice >= $(this).data('indice')) {
-						somatorio += $(this).prop('scrollHeight');
-					}
-				});
-				$('#produto').animate({ scrollTop: info1 + somatorio }, 2000);
-			} else {
-				$('html, body').animate({ scrollTop: $(this).parents('.tipo').next().offset().top - 60 }, 2000);
-			}
-		}
+
 		verificarBotaoAdicionarProduto();
 	});
 

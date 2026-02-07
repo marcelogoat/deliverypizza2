@@ -39,42 +39,93 @@ function writeOrders(orders) {
 }
 
 // ============================================
-// MarchaPay API Endpoints
+// Hura Pay API Endpoints
 // ============================================
 
-// POST /api/payment/create - Create Pix transaction
+const HURA_PUBLIC_KEY = 'hurapay_live_2X1Pa1P85h7ngFx0EcIQlyWGPtPBb4Sz';
+const HURA_SECRET_KEY = 'sk_live_PDrjYQJt6Z2IbnJV9yGEnYykQ7cg8Bs4';
+const HURA_BASE_URL = 'https://api.hurapayments.com.br/v1';
+
+// Helper for Basic Auth
+function getHuraAuth() {
+    return 'Basic ' + Buffer.from(`${HURA_PUBLIC_KEY}:${HURA_SECRET_KEY}`).toString('base64');
+}
+
+// POST /api/payment/create - Create Pix transaction (Hura Pay)
 app.post('/api/payment/create', async (req, res) => {
     try {
-        console.log('[API] Creating MarchaPay transaction...');
+        console.log('[API] Creating Hura Pay transaction...');
 
-        const pubKey = process.env.MARCHAPAY_PUBLIC_KEY;
-        const secKey = process.env.MARCHAPAY_SECRET_KEY;
+        // Map frontend payload to Hura Pay format
+        const { amount, customer } = req.body;
 
-        if (!pubKey || !secKey) {
-            throw new Error('MarchaPay credentials not configured');
-        }
+        const payload = {
+            amount: amount, // Amount in cents
+            payment_method: "pix",
+            postback_url: "https://www.pizzaelenhaa.shop/api/webhook/hurapay",
+            customer: {
+                name: customer.name,
+                email: customer.email,
+                phone: customer.phone,
+                document: {
+                    number: customer.document.number,
+                    type: "cpf"
+                }
+            },
+            metadata: {
+                order_id: Date.now().toString() // Simple ID
+            }
+        };
 
-        // Create Basic Auth token
-        const auth = Buffer.from(`${pubKey}:${secKey}`).toString('base64');
-
-        const response = await fetch('https://api.marchabb.com/v1/transactions', {
+        const response = await fetch(`${HURA_BASE_URL}/payment-transaction/create`, {
             method: 'POST',
             headers: {
-                'Authorization': `Basic ${auth}`,
+                'Authorization': getHuraAuth(),
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(req.body)
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('[API] MarchaPay Error:', data);
-            return res.status(response.status).json(data);
+            console.error('[API] Hura Pay Error:', data);
+            return res.status(response.status).json({
+                error: 'Payment creation failed',
+                details: data
+            });
         }
 
-        console.log('[API] Transaction created:', data.id);
-        res.json(data);
+        console.log('[API] Hura Transaction created:', data);
+
+        // Map Hura response to our frontend expectation
+        // Frontend expects: { id: "...", pix: { qrcode: "..." } }
+        // We need to check Hura's exact response format. 
+        // Assuming data contains transaction details.
+        // User didn't give response format, but usually it has 'qrcode' or 'emv' or 'brcode'.
+        // I will return the raw data mapped to what frontend likely needs + log it to check structure.
+
+        // Fix: Hura Pay wraps the response in a 'data' property
+        const responseData = data.data || data;
+
+        // Extract PIX code (field is 'pix.qr_code' based on debug output)
+        const pixCode = (responseData.pix && responseData.pix.qr_code) ||
+            (responseData.pix && responseData.pix.qrcode) ||
+            responseData.pix_code ||
+            responseData.qrcode;
+
+        const txId = responseData.transaction_id || responseData.id;
+
+        // Log for debugging
+        console.log('[API] Hura Pay Response Data:', JSON.stringify(responseData, null, 2));
+
+        res.json({
+            id: txId,
+            pix: {
+                qrcode: pixCode
+            },
+            original: data
+        });
 
     } catch (error) {
         console.error('[API] Error creating transaction:', error);
@@ -86,21 +137,12 @@ app.post('/api/payment/create', async (req, res) => {
 app.get('/api/payment/status/:transactionId', async (req, res) => {
     try {
         const { transactionId } = req.params;
-        console.log('[API] Checking transaction status:', transactionId);
+        // console.log('[API] Checking transaction status:', transactionId);
 
-        const pubKey = process.env.MARCHAPAY_PUBLIC_KEY;
-        const secKey = process.env.MARCHAPAY_SECRET_KEY;
-
-        if (!pubKey || !secKey) {
-            throw new Error('MarchaPay credentials not configured');
-        }
-
-        const auth = Buffer.from(`${pubKey}:${secKey}`).toString('base64');
-
-        const response = await fetch(`https://api.marchabb.com/v1/transactions/${transactionId}`, {
+        const response = await fetch(`${HURA_BASE_URL}/payment-transaction/${transactionId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Basic ${auth}`,
+                'Authorization': getHuraAuth(),
                 'Content-Type': 'application/json'
             }
         });
@@ -108,12 +150,22 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('[API] MarchaPay Status Error:', data);
+            // console.error('[API] Hura Pay Status Error:', data);
             return res.status(response.status).json(data);
         }
 
-        console.log('[API] Transaction status:', data.status);
-        res.json(data);
+        // Map Hura status to our status ('paid', 'pending', 'refused')
+        // Hura statuses likely: 'approved', 'paid', 'completed', 'pending'
+        let status = 'pending';
+        const huraStatus = (data.status || '').toLowerCase();
+
+        if (['paid', 'approved', 'completed', 'succeeded'].includes(huraStatus)) {
+            status = 'paid';
+        } else if (['refused', 'cancelled', 'failed'].includes(huraStatus)) {
+            status = 'refused';
+        }
+
+        res.json({ status: status, original: data });
 
     } catch (error) {
         console.error('[API] Error checking status:', error);
@@ -121,17 +173,61 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
     }
 });
 
-// Helper to map MarchaPay status to our status
-function mapMarchaPayStatus(mpStatus) {
+// POST /api/webhook/hurapay - Hura Pay Webhook Listener
+app.post('/api/webhook/hurapay', async (req, res) => {
+    try {
+        const notification = req.body;
+        console.log('[Webhook] Hura Pay Notification received:', notification.Id, '-', notification.Status);
+
+        // Map Status (Hura Pay uses "PAID", "PENDING", etc.)
+        const huraStatus = (notification.Status || '').toUpperCase();
+        const transactionId = notification.Id; // The Hura ID
+
+        if (huraStatus === 'PAID' || huraStatus === 'PENDING') {
+            const mappedStatus = huraStatus === 'PAID' ? 'paid' : 'waiting_payment';
+            const orders = readOrders();
+            // Search for order by transaction ID
+            const orderIndex = orders.findIndex(o => String(o.transactionId) === String(transactionId));
+
+            if (orderIndex !== -1) {
+                // If it's a transition to paid or it's the first time we see pending
+                if (orders[orderIndex].status !== mappedStatus) {
+                    console.log(`[Webhook] Order ${transactionId} status updated to: ${mappedStatus}.`);
+                    orders[orderIndex].status = mappedStatus;
+                    writeOrders(orders);
+
+                    // Send to Utmify
+                    await sendToUtmify(orders[orderIndex]);
+                } else {
+                    console.log(`[Webhook] Order ${transactionId} already has status ${mappedStatus}, skipping.`);
+                }
+            } else {
+                console.warn(`[Webhook] Order ${transactionId} not found in database.`);
+            }
+        } else {
+            console.log(`[Webhook] Ignoring notification status: ${huraStatus}`);
+        }
+
+        // Always return 200 to acknowledge receipt
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('[Webhook] Error processing Hura Pay webhook:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Helper to map Hura Pay status (kept for compatibility if needed elsewhere)
+function mapHuraPayStatus(mpStatus) {
     const status = String(mpStatus).toLowerCase();
-    if (['paid', 'approved', 'completed'].includes(status)) return 'paid';
+    if (['paid', 'approved', 'completed', 'succeeded'].includes(status)) return 'paid';
     if (['refused', 'cancelled', 'failed'].includes(status)) return 'refused';
     return 'pending';
 }
 
 // Reusable Utmify Reporting Function
 async function sendToUtmify(order) {
-    const utmifyToken = process.env.UTMIFY_API_TOKEN;
+    const utmifyToken = 'Z5FI4LGLYeOvP5Ku6bxT919qolKE2KUsnP7X';
     if (!utmifyToken) {
         console.log('[Utmify] Token not configured, skipping report.');
         return;
@@ -143,7 +239,7 @@ async function sendToUtmify(order) {
             orderId: order.transactionId,
             platform: "Custom Store",
             paymentMethod: order.paymentMethod || "pix",
-            status: "paid",
+            status: order.status || "paid",
             createdAt: order.createdAt,
             approvedDate: new Date().toISOString(),
             amount: order.amount,
@@ -154,22 +250,13 @@ async function sendToUtmify(order) {
                 document: order.customer.document.number || order.customer.document,
                 ip: "127.0.0.1"
             },
-            products: order.items.map(item => ({
+            products: (order.items || []).map(item => ({
                 id: item.title,
                 name: item.title,
-                planId: item.title,
-                planName: item.title,
                 priceInCents: item.unitPrice,
                 quantity: item.quantity
             })),
-            trackingParameters: order.trackingParameters || {
-                utm_source: null, utm_medium: null, utm_campaign: null, utm_term: null, utm_content: null
-            },
-            commission: {
-                totalPriceInCents: order.amount,
-                gatewayFeeInCents: 0,
-                userCommissionInCents: order.amount
-            }
+            trackingParameters: order.trackingParameters || {}
         };
 
         const response = await fetch('https://api.utmify.com.br/api-credentials/orders', {
@@ -182,10 +269,13 @@ async function sendToUtmify(order) {
         });
 
         const data = await response.json();
-        console.log('[Utmify] Response:', data);
-        return data;
+        if (!response.ok) {
+            console.error('[Utmify] API Error:', data);
+        } else {
+            console.log('[Utmify] Report success:', order.transactionId);
+        }
     } catch (err) {
-        console.error('[Utmify] Error reporting sale:', err);
+        console.error('[Utmify] Network Error:', err);
     }
 }
 
@@ -232,17 +322,9 @@ app.post('/api/orders/:transactionId/sync', async (req, res) => {
         const { transactionId } = req.params;
         console.log('[API] Syncing transaction status:', transactionId);
 
-        const pubKey = process.env.MARCHAPAY_PUBLIC_KEY;
-        const secKey = process.env.MARCHAPAY_SECRET_KEY;
-
-        if (!pubKey || !secKey) {
-            return res.status(500).json({ error: 'MarchaPay credentials not configured' });
-        }
-
-        const auth = Buffer.from(`${pubKey}:${secKey}`).toString('base64');
-        const response = await fetch(`https://api.marchabb.com/v1/transactions/${transactionId}`, {
+        const response = await fetch(`${HURA_BASE_URL}/payment-transaction/${transactionId}`, {
             method: 'GET',
-            headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' }
+            headers: { 'Authorization': getHuraAuth(), 'Content-Type': 'application/json' }
         });
 
         const data = await response.json();
@@ -251,7 +333,7 @@ app.post('/api/orders/:transactionId/sync', async (req, res) => {
             return res.status(response.status).json(data);
         }
 
-        const newStatus = mapMarchaPayStatus(data.status);
+        const newStatus = mapHuraPayStatus(data.status);
 
         // Update local order
         const orders = readOrders();
@@ -288,7 +370,7 @@ app.post('/api/utmify/order', async (req, res) => {
     try {
         console.log('[API] Sending order to Utmify...');
 
-        const utmifyToken = process.env.UTMIFY_API_TOKEN;
+        const utmifyToken = 'Z5FI4LGLYeOvP5Ku6bxT919qolKE2KUsnP7X';
         if (!utmifyToken) {
             throw new Error('Utmify token not configured');
         }
@@ -305,16 +387,14 @@ app.post('/api/utmify/order', async (req, res) => {
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('[API] Utmify Error:', data);
+            console.error('[API] Utmify API Error:', data);
             return res.status(response.status).json(data);
         }
 
-        console.log('[API] Utmify order sent successfully');
         res.json(data);
-
     } catch (error) {
-        console.error('[API] Error sending to Utmify:', error);
-        res.status(500).json({ error: 'Internal server error', message: error.message });
+        console.error('[API] Utmify Proxy Error:', error);
+        res.status(500).json({ error: 'Failed to send to Utmify' });
     }
 });
 

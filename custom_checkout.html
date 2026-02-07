@@ -1214,9 +1214,9 @@
                                 });
                             } catch (err) { console.error('Admin save error:', err); }
 
-                            // Send Pending Sale to Utmify
+                            // Send Pending Sale to Utmify (DISABLED - Using Webhooks)
                             try {
-                                await sendUtmifyOrder(payload.customer, payload.items, transactionId, 'waiting_payment', payload.amount);
+                                // await sendUtmifyOrder(payload.customer, payload.items, transactionId, 'waiting_payment', payload.amount);
                                 // Pass transaction ID via URL parameter
                                 let nextUrl = `pagamento_pix.html?tx=${transactionId}`;
                                 if (window.addUTMsToURL) {
@@ -1255,11 +1255,14 @@
                                     });
                                 } catch (err) { console.error('Admin save error:', err); }
 
+                                // Send Approved Sale to Utmify (DISABLED - Using Webhooks)
+                                /*
                                 try {
                                     await sendUtmifyOrder(payload.customer, payload.items, transactionId, 'paid', payload.amount);
                                 } catch (err) {
                                     console.error('Utmify error:', err);
                                 }
+                                */
 
                                 Swal.fire({
                                     icon: 'success',

@@ -61,7 +61,7 @@
     "transactionId": 39713655,
     "amount": 4290,
     "paymentMethod": "pix",
-    "status": "pending",
+    "status": "paid",
     "customer": {
       "name": "DAVISSON KLEBER DA SILVA SANTOS",
       "email": "davissonkleberdasilvasantos2523@gmail.com",
@@ -119,5 +119,392 @@
     ],
     "pixCopied": false,
     "createdAt": "2026-02-04T22:59:08.413Z"
+  },
+  {
+    "transactionId": "023ba73c612942b78bbc51e286288e29",
+    "amount": 3290,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos8514@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "44325186425"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1515",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "createdAt": "2026-02-07T03:26:37.314Z",
+    "pixCopied": true
+  },
+  {
+    "transactionId": "85c229ba86ee44deb61d572d7eee8d94",
+    "amount": 5070,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos4111@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "55623422438"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1515",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "Planilha de Treino em Casa",
+        "unitPrice": 790,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "createdAt": "2026-02-07T03:30:08.392Z"
+  },
+  {
+    "transactionId": "f6cee2c2c8d041d0849638ea208670fa",
+    "amount": 7550,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "marcelo",
+      "email": "marcelo1668@gmail.com",
+      "phone": "99999999999",
+      "document": {
+        "type": "cpf",
+        "number": "26065061387"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1255",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "Planilha de Treino em Casa",
+        "unitPrice": 790,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "Kit Suplementação Slim",
+        "unitPrice": 1190,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "E-book Receitas Fitness",
+        "unitPrice": 1290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "createdAt": "2026-02-07T03:31:07.735Z"
+  },
+  {
+    "transactionId": "8814874cf1324c05b86ed356387e897f",
+    "amount": 3290,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos3943@gmail.com",
+      "phone": "41995959595",
+      "document": {
+        "type": "cpf",
+        "number": "86530786228"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1515",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "createdAt": "2026-02-07T03:40:10.171Z"
+  },
+  {
+    "transactionId": "56e4786dc2ef47e4a3c61f6442a4bcd1",
+    "amount": 3290,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "marcelo",
+      "email": "marcelo6088@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "31656657023"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "14",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "createdAt": "2026-02-07T03:45:12.917Z"
+  },
+  {
+    "transactionId": "28303b2881d144e0b19d9708482276b6",
+    "amount": 3290,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "marcelo",
+      "email": "marcelo8298@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "86087517634"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "14",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "createdAt": "2026-02-07T04:28:19.261Z",
+    "pixCopied": true
+  },
+  {
+    "transactionId": "67628eb4ad324dfe8972ffd50494d460",
+    "amount": 3290,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos672@gmail.com",
+      "phone": "41959595959",
+      "document": {
+        "type": "cpf",
+        "number": "80832588571"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1414",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "createdAt": "2026-02-07T04:38:24.809Z"
+  },
+  {
+    "transactionId": "09810e42a52d4b66ac5f9394a21debb5",
+    "amount": 3290,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos9093@gmail.com",
+      "phone": "99999999999",
+      "document": {
+        "type": "cpf",
+        "number": "84216483810"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "2872",
+        "zipCode": "80220071",
+        "neighborhood": "parolin",
+        "city": "curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "createdAt": "2026-02-07T04:48:03.060Z"
+  },
+  {
+    "transactionId": "05ec8ff0168c4f7aa4c5c67a3e240cf4",
+    "amount": 4280,
+    "paymentMethod": "pix",
+    "status": "pending",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos3000@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "66885842044"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1345",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "createdAt": "2026-02-07T04:50:56.157Z",
+    "pixCopied": true
   }
 ]

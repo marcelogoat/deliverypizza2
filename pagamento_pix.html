@@ -389,13 +389,15 @@
             }
             const totalValue = totalCents / 100; // Converter de centavos para reais
 
-            // Send to Utmify with "paid" status
+            // Send to Utmify (WEBHOOK ONLY MODE - Frontend disabled)
+            /*
             try {
                 await sendUtmifyApproved();
                 console.log('[Utmify] Paid order sent successfully');
             } catch (error) {
                 console.error('[Utmify] Error sending paid order:', error);
             }
+            */
 
             // Send Google Ads Conversion
             // Send Google Ads Conversion
