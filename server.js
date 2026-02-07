@@ -82,7 +82,11 @@ app.post('/api/payment/create', async (req, res) => {
         const payload = {
             amount: amount, // Amount in cents
             payment_method: "pix",
-            external_id: localTransactionId, // Send our ID to Hura
+            external_id: localTransactionId,
+            metadata: {
+                local_id: localTransactionId,
+                order_id: localTransactionId
+            },
             postback_url: "https://www.pizzaelenhaa.shop/api/webhook/hurapay",
             customer: {
                 name: customer.name,

@@ -1135,7 +1135,8 @@
                         utm_campaign: urlParams.get('utm_campaign') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_campaign'] : null) || null,
                         utm_term: urlParams.get('utm_term') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_term'] : null) || null,
                         utm_content: urlParams.get('utm_content') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_content'] : null) || null
-                    }
+                    },
+                    utmifyToken: 'dummy' // Placeholder if server needs it
                 };
 
                 // Add card data if credit card selected
