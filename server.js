@@ -212,15 +212,17 @@ app.post('/api/webhook/hurapay', (req, res) => {
     // RESPOND IMMEDIATELY TO HURA PAY
     res.json({ success: true });
 
-    // PROCESS IN BACKGROUND (Fire and Forget)
     (async () => {
         try {
             const huraId = notification.Id;
             const externalId = notification.ExternalId;
+            const metadata = notification.Metadata || {};
             const huraStatus = (notification.Status || '').toUpperCase();
 
+            // Try to extract our ID from any possible location in Hura's payload
+            const ourIdCandidate = externalId || metadata.local_id || metadata.order_id;
+
             if (huraStatus !== 'PAID' && huraStatus !== 'PENDING') {
-                // console.log(`[Webhook] Ignoring irrelevant status: ${huraStatus}`);
                 return;
             }
 
@@ -229,31 +231,37 @@ app.post('/api/webhook/hurapay', (req, res) => {
             let orders = [];
             let orderIndex = -1;
 
-            // Retry for 5 seconds if needed
-            for (let attempt = 1; attempt <= 6; attempt++) {
+            // Retry for 10 seconds in the background (very safe)
+            for (let attempt = 1; attempt <= 10; attempt++) {
                 orders = readOrders();
                 orderIndex = orders.findIndex(o =>
-                    (externalId && String(o.transactionId) === String(externalId)) ||
-                    (huraId && String(o.huraId) === String(huraId))
+                    (ourIdCandidate && String(o.transactionId) === String(ourIdCandidate)) ||
+                    (huraId && String(o.huraId) === String(huraId)) ||
+                    (huraId && String(o.transactionId) === String(huraId))
                 );
 
                 if (orderIndex !== -1) break;
 
-                if (attempt < 6) {
-                    console.log(`[Webhook] ${huraId} not found, retrying in 1s (${attempt}/6)...`);
+                if (attempt < 10) {
+                    // console.log(`[Webhook] ${huraId} not found, retrying in 1s (${attempt}/10)...`);
                     await new Promise(r => setTimeout(r, 1000));
                 }
             }
 
             if (orderIndex !== -1) {
-                if (orders[orderIndex].status !== mappedStatus) {
-                    console.log(`[Webhook] UPGRADE: ${orders[orderIndex].status} -> ${mappedStatus} for ${orders[orderIndex].transactionId}`);
+                const order = orders[orderIndex];
+                if (order.status !== mappedStatus) {
+                    console.log(`[Webhook] REPORTING: ${order.status} -> ${mappedStatus} for ${order.transactionId}`);
+
+                    // Update DB
                     orders[orderIndex].status = mappedStatus;
                     writeOrders(orders);
+
+                    // SEND TO UTMIFY (WEBHOOK-ONLY TRIGGER)
                     await sendToUtmify(orders[orderIndex]);
                 }
             } else {
-                console.warn(`[Webhook] FAIL: Order ${huraId}/${externalId} not found after retries.`);
+                console.warn(`[Webhook] NOT FOUND: HuraId=${huraId}, ExternalId=${externalId}. Metadata:`, JSON.stringify(metadata));
             }
         } catch (err) {
             console.error('[Webhook] Background processing error:', err);
