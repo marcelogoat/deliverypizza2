@@ -71,12 +71,13 @@ app.post('/api/payment/create', async (req, res) => {
             huraId: null, // Will be filled after creation
             amount: amount,
             paymentMethod: 'pix',
-            status: 'created',
+            status: 'waiting_payment', // Start as waiting_payment for Utmify
             customer: customer,
             items: items,
             trackingParameters: trackingParameters,
             clientIp: clientIp, // Store IP for reporting
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            reportedStatuses: [] // Track what we already sent to Utmify
         };
         const orders = readOrders();
         orders.push(order);
@@ -130,19 +131,23 @@ app.post('/api/payment/create', async (req, res) => {
             responseData.pix_code ||
             responseData.qrcode;
 
-        const txId = responseData.id || responseData.transaction_id;
+        const txId = data.id || (data.data && data.data.id) || responseData.id || responseData.transaction_id;
 
-        // Update the order in DB with Hura's ID (background)
-        (async () => {
-            try {
-                const currentOrders = readOrders();
-                const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
-                if (idx !== -1) {
-                    currentOrders[idx].huraId = txId;
-                    writeOrders(currentOrders);
-                }
-            } catch (err) { console.error('[API] Async update error:', err); }
-        })();
+        // Update the order in DB with Hura's ID and trigger Utmify report immediately
+        try {
+            const currentOrders = readOrders();
+            const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
+            if (idx !== -1) {
+                currentOrders[idx].huraId = txId;
+                writeOrders(currentOrders);
+
+                // REPORT PENDING SALE IMMEDIATELY (Don't wait for webhook)
+                console.log(`[API] Reporting PENDING sale to Utmify for ${localTransactionId}`);
+                await sendToUtmify(currentOrders[idx]);
+            }
+        } catch (err) {
+            console.error('[API] Error in post-creation processing:', err);
+        }
 
         res.json({
             id: localTransactionId,
@@ -272,10 +277,17 @@ async function sendToUtmify(order) {
         return;
     }
 
+    // DUPLICATE PREVENTION: Don't send the same status twice for the same order
+    if (!order.reportedStatuses) order.reportedStatuses = [];
+    if (order.reportedStatuses.includes(order.status)) {
+        console.log(`[Utmify] Status ${order.status} already reported for ${order.transactionId}. Skipping.`);
+        return;
+    }
+
     try {
         console.log('[Utmify] Preparing report for:', order.transactionId, 'Status:', order.status);
 
-        // Product Name Mapping (Crucial for Affiliate tracking)
+        // ... (keeping nameMap and payload construction exactly as before) ...
         const nameMap = {
             "2 Pizza PP + 1 Refrigerante 2 Litros": "Guia Seca Barriga Iniciante",
             "2 Pizza P + 1 Refrigerante 2 Litros": "Protocolo Detox 7 Dias",
@@ -292,7 +304,7 @@ async function sendToUtmify(order) {
             orderId: order.transactionId,
             platform: "Custom Store",
             paymentMethod: order.paymentMethod || "pix",
-            status: order.status || "paid",
+            status: order.status || "waiting_payment",
             createdAt: order.createdAt,
             approvedDate: order.status === 'paid' ? new Date().toISOString() : null,
             amount: order.amount,
@@ -331,6 +343,17 @@ async function sendToUtmify(order) {
             console.error(`[Utmify] API Error (HTTP ${response.status}):`, JSON.stringify(data, null, 2));
         } else {
             console.log('[Utmify] SUCCESS: Report sent to Utmify for', order.transactionId);
+
+            // SAVE REPORTED STATUS TO PREVENT DUPLICATES
+            try {
+                const allOrders = readOrders();
+                const oIdx = allOrders.findIndex(o => o.transactionId === order.transactionId);
+                if (oIdx !== -1) {
+                    if (!allOrders[oIdx].reportedStatuses) allOrders[oIdx].reportedStatuses = [];
+                    allOrders[oIdx].reportedStatuses.push(order.status);
+                    writeOrders(allOrders);
+                }
+            } catch (saveErr) { console.error('[Utmify] Error saving reported status:', saveErr); }
         }
     } catch (err) {
         console.error('[Utmify] NETWORK ERROR:', err.message);
