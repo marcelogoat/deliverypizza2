@@ -65,11 +65,12 @@ app.post('/api/payment/create', async (req, res) => {
         // Generate a unique transaction ID before calling Hura Pay
         const localTransactionId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        // SAVE ORDER IMMEDIATELY TO PREVENT WEBHOOK RACE CONDITION
         const order = {
             transactionId: localTransactionId, // Our internal starting ID
             huraId: null, // Will be filled after creation
-            status: 'created', // Internal initial status
+            amount: amount,
+            paymentMethod: 'pix',
+            status: 'created', // Internal initial status, allows webhook to detect change
             customer: customer,
             items: items,
             trackingParameters: trackingParameters,
@@ -413,12 +414,28 @@ app.post('/api/orders/:transactionId/sync', async (req, res) => {
         const { transactionId } = req.params;
         console.log('[API] Syncing transaction status:', transactionId);
 
-        const response = await fetch(`${HURA_BASE_URL}/payment-transaction/${transactionId}`, {
+        let targetId = transactionId;
+        const ordersForLookup = readOrders();
+        const localOrder = ordersForLookup.find(o => String(o.transactionId) === String(transactionId));
+
+        // If it's our local ID, use the stored Hura ID for the API call
+        if (localOrder && localOrder.huraId) {
+            targetId = localOrder.huraId;
+        }
+
+        const response = await fetch(`${HURA_BASE_URL}/payment-transaction/${targetId}`, {
             method: 'GET',
             headers: { 'Authorization': getHuraAuth(), 'Content-Type': 'application/json' }
         });
 
-        const data = await response.json();
+        const textBody = await response.text();
+        let data;
+        try {
+            data = JSON.parse(textBody);
+        } catch (je) {
+            console.error('[API] Invalid JSON from Hura Sync:', textBody);
+            return res.status(500).json({ error: 'Invalid response from Hura Pay', body: textBody });
+        }
 
         if (!response.ok) {
             return res.status(response.status).json(data);
@@ -433,14 +450,13 @@ app.post('/api/orders/:transactionId/sync', async (req, res) => {
         let updated = false;
         if (orderIndex !== -1) {
             if (orders[orderIndex].status !== newStatus) {
+                console.log(`[Sync] Updating status for ${transactionId}: ${orders[orderIndex].status} -> ${newStatus}`);
                 orders[orderIndex].status = newStatus;
                 writeOrders(orders);
                 updated = true;
 
-                // TRIGGER UTMIFY IF PAID
-                if (newStatus === 'paid') {
-                    await sendToUtmify(orders[orderIndex]);
-                }
+                // TRIGGER UTMIFY
+                await sendToUtmify(orders[orderIndex]);
             }
         }
 
