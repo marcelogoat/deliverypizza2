@@ -133,21 +133,20 @@ app.post('/api/payment/create', async (req, res) => {
 
         const txId = data.id || (data.data && data.data.id) || responseData.id || responseData.transaction_id;
 
-        // Update the order in DB with Hura's ID and trigger Utmify report immediately
-        try {
-            const currentOrders = readOrders();
-            const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
-            if (idx !== -1) {
-                currentOrders[idx].huraId = txId;
-                writeOrders(currentOrders);
-
-                // REPORT PENDING SALE IMMEDIATELY (Don't wait for webhook)
-                console.log(`[API] Reporting PENDING sale to Utmify for ${localTransactionId}`);
-                await sendToUtmify(currentOrders[idx]);
+        // Update the order in DB with Hura's ID (Background)
+        (async () => {
+            try {
+                const currentOrders = readOrders();
+                const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
+                if (idx !== -1) {
+                    currentOrders[idx].huraId = txId;
+                    writeOrders(currentOrders);
+                    console.log(`[API] Order ${localTransactionId} linked to HuraId ${txId}`);
+                }
+            } catch (err) {
+                console.error('[API] Error in background ID update:', err);
             }
-        } catch (err) {
-            console.error('[API] Error in post-creation processing:', err);
-        }
+        })();
 
         res.json({
             id: localTransactionId,
@@ -334,6 +333,11 @@ async function sendToUtmify(order) {
                     quantity: item.quantity
                 };
             }),
+            commission: {
+                totalPriceInCents: order.amount,
+                gatewayFeeInCents: 0,
+                userCommissionInCents: 0
+            },
             trackingParameters: order.trackingParameters || {}
         };
 
