@@ -59,9 +59,30 @@ app.post('/api/payment/create', async (req, res) => {
         // Map frontend payload to Hura Pay format
         const { amount, customer, items, trackingParameters } = req.body;
 
+        // Generate a unique transaction ID before calling Hura Pay
+        const localTransactionId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        // SAVE ORDER IMMEDIATELY TO PREVENT WEBHOOK RACE CONDITION
+        const order = {
+            transactionId: localTransactionId, // Our internal starting ID
+            huraId: null, // Will be filled after creation
+            amount: amount,
+            paymentMethod: 'pix',
+            status: 'created',
+            customer: customer,
+            items: items,
+            trackingParameters: trackingParameters,
+            createdAt: new Date().toISOString()
+        };
+        const orders = readOrders();
+        orders.push(order);
+        writeOrders(orders);
+        console.log(`[API] Order PRE-SAVED with internal ID: ${localTransactionId}`);
+
         const payload = {
             amount: amount, // Amount in cents
             payment_method: "pix",
+            external_id: localTransactionId, // Send our ID to Hura
             postback_url: "https://www.pizzaelenhaa.shop/api/webhook/hurapay",
             customer: {
                 name: customer.name,
@@ -71,9 +92,6 @@ app.post('/api/payment/create', async (req, res) => {
                     number: customer.document.number,
                     type: "cpf"
                 }
-            },
-            metadata: {
-                order_id: Date.now().toString() // Simple ID
             }
         };
 
@@ -116,32 +134,25 @@ app.post('/api/payment/create', async (req, res) => {
 
         const txId = responseData.transaction_id || responseData.id;
 
+        // Update the order in DB with Hura's ID as well
+        try {
+            const updatedOrders = readOrders();
+            const idx = updatedOrders.findIndex(o => o.transactionId === localTransactionId);
+            if (idx !== -1) {
+                updatedOrders[idx].huraId = txId;
+                writeOrders(updatedOrders);
+                console.log(`[API] Order ${localTransactionId} updated with HuraId ${txId}`);
+            }
+        } catch (err) {
+            console.error('[API] Error updating order with HuraId:', err);
+        }
+
         // Log for debugging
         console.log('[API] Hura Pay Response Data:', JSON.stringify(responseData, null, 2));
 
-        // SAVE ORDER IMMEDIATELY TO AVOID WEBHOOK RACE CONDITION
-        try {
-            const order = {
-                transactionId: txId,
-                amount: amount,
-                paymentMethod: 'pix',
-                status: 'created',
-                customer: customer,
-                items: items,
-                trackingParameters: trackingParameters,
-                createdAt: new Date().toISOString()
-            };
-            const orders = readOrders();
-            orders.push(order);
-            writeOrders(orders);
-            console.log(`[API] Order ${txId} saved to database.`);
-
-        } catch (saveErr) {
-            console.error('[API] Failed to save order to database:', saveErr);
-        }
-
         res.json({
-            id: txId,
+            id: localTransactionId, // Return our PRE-SAVED ID to frontend
+            huraId: txId,
             pix: {
                 qrcode: pixCode
             },
@@ -216,8 +227,9 @@ app.post('/api/webhook/hurapay', async (req, res) => {
             for (let attempt = 1; attempt <= 4; attempt++) {
                 orders = readOrders();
                 orderIndex = orders.findIndex(o =>
-                    String(o.transactionId) === String(huraId) ||
-                    (externalId && String(o.transactionId) === String(externalId))
+                    (externalId && String(o.transactionId) === String(externalId)) ||
+                    (huraId && String(o.huraId) === String(huraId)) ||
+                    (huraId && String(o.transactionId) === String(huraId))
                 );
 
                 if (orderIndex !== -1) break;
