@@ -546,5 +546,778 @@
       "utm_content": "ContentTesteUtms"
     },
     "createdAt": "2026-02-07T05:05:13.468Z"
+  },
+  {
+    "transactionId": "1a3603e7cc5c48928fe44223105c162c",
+    "amount": 4290,
+    "paymentMethod": "pix",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos7195@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "34680813326"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "15153",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "createdAt": "2026-02-07T06:57:59.099Z",
+    "pixCopied": true
+  },
+  {
+    "transactionId": "27d98dd4518341a29fa37a5bf9899e01",
+    "amount": 5280,
+    "paymentMethod": "pix",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos5703@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "45166822650"
+      },
+      "address": {
+        "street": "cha do pilar",
+        "streetNumber": "07",
+        "zipCode": "80220071",
+        "neighborhood": "cha do pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "createdAt": "2026-02-07T07:07:15.227Z"
+  },
+  {
+    "transactionId": "d9f0136aaac7421fa4d5547355182ff2",
+    "amount": 8550,
+    "paymentMethod": "pix",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "teste",
+      "email": "teste2869@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "74586444517"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "121414214",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "Planilha de Treino em Casa",
+        "unitPrice": 790,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "Kit Suplementação Slim",
+        "unitPrice": 1190,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "E-book Receitas Fitness",
+        "unitPrice": 1290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "createdAt": "2026-02-07T07:09:02.232Z"
+  },
+  {
+    "transactionId": "424a7298776a48cfacfe81d76bc1dff5",
+    "amount": 8550,
+    "paymentMethod": "pix",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos6979@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "07148001200"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "2872",
+        "zipCode": "80220071",
+        "neighborhood": "parolin",
+        "city": "curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "Planilha de Treino em Casa",
+        "unitPrice": 790,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "Kit Suplementação Slim",
+        "unitPrice": 1190,
+        "quantity": 1,
+        "tangible": false
+      },
+      {
+        "title": "E-book Receitas Fitness",
+        "unitPrice": 1290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "createdAt": "2026-02-07T07:11:53.760Z"
+  },
+  {
+    "transactionId": "order_1770448421769_6iim5ve8y",
+    "huraId": null,
+    "amount": 4290,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos9971@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "72211528023"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "13535",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "5352552325325532",
+      "time": "32/53",
+      "cash": "325",
+      "cep": "25235325235"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T07:13:41.769Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770450278478_nnlsbqqxp",
+    "huraId": null,
+    "amount": 4290,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos7265@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "87050355461"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "12123",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "2343224234432432",
+      "time": "23/43",
+      "cash": "234",
+      "cep": "23432423423"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T07:44:38.478Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770451490093_oaa1mb3ok",
+    "huraId": "e1318fd971894568b1494ca71fc12324",
+    "amount": 4290,
+    "paymentMethod": "pix",
+    "status": "created",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos2543@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "25616506508"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "23123",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:04:50.093Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770451519271_4tt9b0w8y",
+    "huraId": "54f318f728034d39aeaeeb815ad69be7",
+    "amount": 4290,
+    "paymentMethod": "pix",
+    "status": "created",
+    "customer": {
+      "name": "marcelo",
+      "email": "marcelo8938@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "43481833768"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1232",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Protocolo Detox 7 Dias",
+        "unitPrice": 4290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:05:19.271Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770453007693_cj0uucis2",
+    "huraId": null,
+    "amount": 3290,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos6648@gmail.com",
+      "phone": "41959595959",
+      "document": {
+        "type": "cpf",
+        "number": "62460688636"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1233",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "5353535325252525",
+      "time": "55/32",
+      "cash": "325",
+      "cep": "13123213123"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:30:07.693Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770453104328_5kzrgxmzu",
+    "huraId": null,
+    "amount": 3290,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos1122@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "77058825823"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "12312",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "5353535325252525",
+      "time": "55/32",
+      "cash": "325",
+      "cep": "57150000312"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:31:44.328Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770453272196_kfq9f9oz8",
+    "huraId": null,
+    "amount": 3290,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos1391@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "05644224520"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1231",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "5353535325252525",
+      "time": "55/32",
+      "cash": "325",
+      "cep": "12312323123"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:34:32.196Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770453459223_k1x0ho1rz",
+    "huraId": null,
+    "amount": 4280,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos2880@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "45575013898"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1231",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "5353535325252525",
+      "time": "55/32",
+      "cash": "325",
+      "cep": "80220071122"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:37:39.223Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770453484938_ser6k21t1",
+    "huraId": null,
+    "amount": 3290,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos9818@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "25143485878"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "1231",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "2131233123123213",
+      "time": "21/31",
+      "cash": "123",
+      "cep": "12312312312"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:38:04.938Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770453604791_neq2esnfy",
+    "huraId": null,
+    "amount": 3290,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos5278@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "00737537850"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "12314",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "1231312312323333",
+      "time": "55/32",
+      "cash": "325",
+      "cep": "57150000132"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:40:04.791Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770453613845_vya9x06u0",
+    "huraId": null,
+    "amount": 3290,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos8565@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "45704584756"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "12314",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "1231312312323333",
+      "time": "55/32",
+      "cash": "325",
+      "cep": "57150000132"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:40:13.845Z",
+    "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770453683109_tbnlsrfba",
+    "huraId": null,
+    "amount": 3290,
+    "paymentMethod": "delivery",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "marcelo",
+      "email": "marcelo9604@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "03828432409"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "123123",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3290,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": {
+      "houseNumber": "2141241241242121",
+      "time": "12/41",
+      "cash": "214",
+      "cep": "12412412412"
+    },
+    "trackingParameters": {
+      "utm_source": "organic",
+      "utm_medium": "adsetTesteUtms",
+      "utm_campaign": "CampanhaTesteUtms",
+      "utm_term": "PlacementTesteUtms/admin.html",
+      "utm_content": "ContentTesteUtms"
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-07T08:41:23.109Z",
+    "reportedStatuses": []
   }
 ]

@@ -629,10 +629,6 @@ $(document).ready(function () {
 						taxa = parseFloat(taxa);
 					}
 				}
-				let taxaCartao = 0;
-				if ($(".valores .taxaCartaoPedido").length > 0) {
-					taxaCartao = parseFloat($(".valores .taxaCartaoPedido").text());
-				}
 
 				let descontoPorPontosFidelidade = 0;
 				let pontosFidelidadeUtilizados = 0;
@@ -756,7 +752,6 @@ $(document).ready(function () {
 									meuPedido = meuPedido.replace('Forma de pagamento:', '*Forma de pagamento:*');
 									meuPedido = meuPedido.replaceAll('Entrega:', '*Entrega:*');
 									meuPedido = meuPedido.replaceAll('Taxa de entrega:', '*Taxa de entrega:*');
-									meuPedido = meuPedido.replaceAll('Taxa de cartÃ£o:', '*Taxa de cartÃ£o:*');
 									meuPedido = meuPedido.replace('Cliente:', '*Cliente:*');
 									meuPedido = meuPedido.replaceAll('&', '%26');
 									meuPedido = meuPedido.replaceAll('#', '%23');

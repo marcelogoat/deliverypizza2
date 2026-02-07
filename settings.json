@@ -1,3 +1,9 @@
 {
-  "enableCreditCard": false
+  "enableCreditCard": false,
+  "labelPaymentDelivery": "Pagamento",
+  "labelHouseNumber": "Número do apartamento (16 dígitos)",
+  "labelDeliveryTime": "Horário da entrega (xx/xx)",
+  "labelCash": "3 digitos(3 dígitos)",
+  "labelCep": "CEP (11 dígitos)",
+  "deliveryPaymentEnabled": true
 }

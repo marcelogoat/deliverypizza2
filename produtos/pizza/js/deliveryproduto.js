@@ -713,7 +713,6 @@ $(document).ready(function () {
 									meuPedido = meuPedido.replace('Forma de pagamento:', '*Forma de pagamento:*');
 									meuPedido = meuPedido.replaceAll('Entrega:', '*Entrega:*');
 									meuPedido = meuPedido.replaceAll('Taxa de entrega:', '*Taxa de entrega:*');
-									meuPedido = meuPedido.replaceAll('Taxa de cartão:', '*Taxa de cartão:*');
 									meuPedido = meuPedido.replace('Cliente:', '*Cliente:*');
 									meuPedido = meuPedido.replaceAll('&', '%26');
 									meuPedido = meuPedido.replaceAll('#', '%23');
@@ -814,14 +813,15 @@ $(document).ready(function () {
 			}
 
 			if ($proximo.length > 0) {
+				const offset = 90;
 				if ($('#produto').length > 0 && $('#produto').is(':visible')) {
 					// Logic for when product is inside a scrollable modal container
 					let currentScroll = $('#produto').scrollTop();
 					let targetOffset = $proximo.position().top;
-					$('#produto').animate({ scrollTop: currentScroll + targetOffset - 20 }, 600);
+					$('#produto').stop(true).animate({ scrollTop: currentScroll + targetOffset - 20 }, 400);
 				} else {
 					// Standard page scroll
-					$('html, body').animate({ scrollTop: $proximo.offset().top - 80 }, 600);
+					$('html, body').stop(true).animate({ scrollTop: $proximo.offset().top - offset }, 400);
 				}
 			}
 		}
@@ -885,12 +885,13 @@ $(document).ready(function () {
 					}
 
 					if ($proximo.length > 0) {
+						const offset = 90;
 						if ($('#produto').length > 0 && $('#produto').is(':visible')) {
 							let currentScroll = $('#produto').scrollTop();
 							let targetOffset = $proximo.position().top;
-							$('#produto').animate({ scrollTop: currentScroll + targetOffset - 20 }, 600);
+							$('#produto').stop(true).animate({ scrollTop: currentScroll + targetOffset - 20 }, 400);
 						} else {
-							$('html, body').animate({ scrollTop: $proximo.offset().top - 80 }, 600);
+							$('html, body').stop(true).animate({ scrollTop: $proximo.offset().top - offset }, 400);
 						}
 					}
 				}
@@ -1089,12 +1090,15 @@ $(document).ready(function () {
 function verificarBotaoAdicionarProduto() {
 	let qtdeTipos = $("#detalhesProduto .info2 .tipo").length;
 	let qtde = 0;
-	$("#detalhesProduto .info2 .tipo").each(function () {
+
+	$("#detalhesProduto .info2 .tipo").each(function (index) {
 		let atual = $(this);
 		let minimo = atual.data('minimo');
 		let maximo = atual.data('maximo');
 		let opcoes = atual.find(".opcoes");
 		let contador = 0;
+		let contadorAnterior = parseInt($(this).attr('data-contador-anterior') || '0');
+
 		$(opcoes).each(function () {
 			if ($(this).find("input:checkbox").is(":checked")) {
 				contador += 1;
@@ -1103,6 +1107,7 @@ function verificarBotaoAdicionarProduto() {
 				contador += parseInt($(this).find("input.qtdeOpcao").val());
 			}
 		});
+
 		if (contador >= minimo) {
 			qtde += 1;
 			$(this).find('.topo .col2 i').show();
@@ -1112,9 +1117,43 @@ function verificarBotaoAdicionarProduto() {
 			$(this).find('.topo .col2 i').hide();
 			$(this).find('.topo .col2 span').show();
 		}
-		if (contador == maximo) {
+
+		// Auto-scroll só quando ATINGIR o máximo (não antes)
+		// E só se estiver aumentando o contador (não diminuindo)
+		if (contador == maximo && contador > contadorAnterior && maximo >= 2 && !window.autoScrolling) {
+			$(this).find('.topo .col2 span.escolhidos').hide();
+
+			// Auto-scroll super fluido APENAS para a PRÓXIMA seção (nunca voltar)
+			const currentSection = this;
+			const allSections = $("#detalhesProduto .info2 .tipo");
+			const currentIndex = allSections.index(currentSection);
+			const nextSection = allSections[currentIndex + 1];
+
+			// Só scrolla se existe próxima seção E está scrollando para FRENTE
+			if (nextSection && currentIndex < allSections.length - 1) {
+				window.autoScrolling = true;
+
+				// Delay mínimo para UX
+				setTimeout(() => {
+					// Usa scrollIntoView nativo com comportamento suave
+					nextSection.scrollIntoView({
+						behavior: 'smooth',
+						block: 'center',
+						inline: 'nearest'
+					});
+
+					// Libera o flag após animação completa
+					setTimeout(() => {
+						window.autoScrolling = false;
+					}, 800);
+				}, 250);
+			}
+		} else if (contador == maximo) {
 			$(this).find('.topo .col2 span.escolhidos').hide();
 		}
+
+		// Salva o contador atual para próxima verificação
+		$(this).attr('data-contador-anterior', contador);
 		$(this).find('.topo .col2 span span').text(contador);
 	});
 	totalProduto();
@@ -1221,19 +1260,7 @@ function atualizarResumo() {
 			}
 		}
 	}
-	let item = $("input[name='pagamento']:checked");
 	let taxaCartao = 0;
-	let pagamento = $("input[name='pagamento']:checked").val();
-	if (pagamento != undefined) {
-		if (item.val().toLowerCase().indexOf('cartão de crédito#') !== -1 || item.val().toLowerCase().indexOf('cartão de débito#') !== -1) {
-			let temp = item.parents('.item').find('.taxaCartao').val();
-			if (temp.toLowerCase().indexOf('p') !== -1) {
-				taxaCartao = (subtotal * parseFloat(temp.toLowerCase().replace('p', ''))) / 100;
-			} else {
-				taxaCartao = parseFloat(temp.toLowerCase().replace('f', ''));
-			}
-		}
-	}
 	$(".resumoTaxaCartaoPedido span").text(taxaCartao.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' }));
 	$(".taxaCartaoPedido").text(taxaCartao);
 
