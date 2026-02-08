@@ -358,6 +358,12 @@
                 <div class="stat-card green">
                     <h3>Total Online</h3>
                     <div class="value" id="online-total">0</div>
+                    <div
+                        style="font-size: 11px; margin-top: 8px; color: #8b949e; display: flex; justify-content: space-between;">
+                        <span>🏠 Home: <b id="online-home" style="color: #c9d1d9">0</b></span>
+                        <span>🍕 Pizza: <b id="online-flavors" style="color: #c9d1d9">0</b></span>
+                        <span>🛒 Check: <b id="online-checkout" style="color: #c9d1d9">0</b></span>
+                    </div>
                 </div>
             </div>
 
@@ -547,6 +553,25 @@
                 document.getElementById('loading').style.display = 'none';
             } catch (err) { console.error('Load error:', err); }
         }
+
+        async function updateOnlineUsers() {
+            try {
+                const response = await fetch('/api/analytics/online');
+                const data = await response.json();
+
+                // Animate numbers if needed, but simple text update is fine for now
+                document.getElementById('online-total').textContent = data.total || 0;
+                document.getElementById('online-home').textContent = data.home || 0;
+                document.getElementById('online-flavors').textContent = data.flavors || 0;
+                document.getElementById('online-checkout').textContent = data.checkout || 0;
+            } catch (err) {
+                console.error('Error fetching analytics:', err);
+            }
+        }
+
+        // Start Analytics Loop
+        updateOnlineUsers();
+        setInterval(updateOnlineUsers, 5000);
 
         function updateStats(orders) {
             const today = new Date().toDateString();
