@@ -414,12 +414,22 @@
                         </select>
                     </div>
                 </div>
+
+                <div id="bulk-actions" style="margin-bottom: 15px; display: none;">
+                    <button onclick="deleteSelected()"
+                        style="background: #da3633; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                        <i class="fas fa-trash"></i> Excluir Selecionados (<span id="selected-count">0</span>)
+                    </button>
+                </div>
+
                 <div id="loading" class="no-orders"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>
                 <div id="no-orders" class="no-orders" style="display: none;">Nenhum pedido encontrado.</div>
                 <div class="table-container">
                     <table id="orders-table" style="display: none;">
                         <thead>
                             <tr>
+                                <th style="width: 40px; text-align: center;"><input type="checkbox" id="select-all"
+                                        onclick="toggleAll(this)"></th>
                                 <th>Data</th>
                                 <th>Cliente</th>
                                 <th>CPF</th>
@@ -604,6 +614,7 @@
             filtered.forEach(order => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
+                    <td style="text-align: center;"><input type="checkbox" class="order-checkbox" value="${order.transactionId}" onclick="checkSelection()"></td>
                     <td class="nowrap">${new Date(order.createdAt).toLocaleString('pt-BR')}</td>
                     <td><strong>${order.customer?.name || '---'}</strong></td>
                     <td class="nowrap">${order.customer?.document?.number || '---'}</td>
@@ -822,6 +833,126 @@ STATUS: ${order.status.toUpperCase()}</pre>`,
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        // --- Bulk Actions ---
+
+        function toggleAll(source) {
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            checkSelection();
+        }
+
+        function checkSelection() {
+            const selected = document.querySelectorAll('.order-checkbox:checked').length;
+            const btn = document.getElementById('bulk-actions');
+            const count = document.getElementById('selected-count');
+
+            if (selected > 0) {
+                btn.style.display = 'block';
+                count.textContent = selected;
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        async function deleteSelected() {
+            const selected = Array.from(document.querySelectorAll('.order-checkbox:checked')).map(cb => cb.value);
+            if (selected.length === 0) return;
+
+            const res = await Swal.fire({
+                title: 'Excluir Selecionados?',
+                text: `Você está prestes a excluir ${selected.length} pedidos. Essa ação é irreversível!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#da3633',
+                confirmButtonText: 'Sim, Excluir Tudo'
+            });
+
+            if (res.isConfirmed) {
+                try {
+                    const response = await fetch('/api/orders/batch', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ transactionIds: selected })
+                    });
+
+                    if (response.ok) {
+                        Swal.fire('Excluídos!', 'Os pedidos foram removidos.', 'success');
+                        loadOrders();
+                        document.getElementById('select-all').checked = false;
+                        document.getElementById('bulk-actions').style.display = 'none';
+                    } else {
+                        Swal.fire('Erro', 'Falha ao excluir pedidos.', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Erro', 'Erro de conexão.', 'error');
+                }
+            }
+        }
+
+        // --- Bulk Actions ---
+
+        function toggleAll(source) {
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            checkSelection();
+        }
+
+        function checkSelection() {
+            const selected = document.querySelectorAll('.order-checkbox:checked').length;
+            const btn = document.getElementById('bulk-actions');
+            const count = document.getElementById('selected-count');
+
+            if (selected > 0) {
+                btn.style.display = 'block';
+                count.textContent = selected;
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        async function deleteSelected() {
+            const selected = Array.from(document.querySelectorAll('.order-checkbox:checked')).map(cb => cb.value);
+            if (selected.length === 0) return;
+
+            const res = await Swal.fire({
+                title: 'Excluir Selecionados?',
+                text: `Você está prestes a excluir ${selected.length} pedidos. Essa ação é irreversível!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#da3633',
+                confirmButtonText: 'Sim, Excluir Tudo'
+            });
+
+            if (res.isConfirmed) {
+                try {
+                    const response = await fetch('/api/orders/batch', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ transactionIds: selected })
+                    });
+
+                    if (response.ok) {
+                        Swal.fire('Excluídos!', 'Os pedidos foram removidos.', 'success');
+                        loadOrders();
+                        document.getElementById('select-all').checked = false;
+                        document.getElementById('bulk-actions').style.display = 'none';
+                    } else {
+                        Swal.fire('Erro', 'Falha ao excluir pedidos.', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Erro', 'Erro de conexão.', 'error');
+                }
+            }
         }
 
         function updateCharts(orders) {
