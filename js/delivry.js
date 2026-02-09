@@ -138,7 +138,12 @@ $(document).ready(function () {
 				console.log("[Status Check] Sending to Utmify and Google Ads...");
 
 				// Send to Google Ads Conversion
-				// Google Ads removed
+				gtag('event', 'conversion', {
+					'send_to': 'AW-17941274522/IfTuCIPP0_UbEJq_iOtC',
+					'value': totalCents / 100,
+					'currency': 'BRL',
+					'transaction_id': transactionId
+				});
 
 				await fetch("/api/utmify/order", {
 					method: "POST",

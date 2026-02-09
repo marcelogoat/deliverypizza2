@@ -548,47 +548,6 @@
     "createdAt": "2026-02-07T05:05:13.468Z"
   },
   {
-    "transactionId": "1a3603e7cc5c48928fe44223105c162c",
-    "amount": 4290,
-    "paymentMethod": "pix",
-    "status": "waiting_payment",
-    "customer": {
-      "name": "DAVISSON KLEBER DA SILVA SANTOS",
-      "email": "davissonkleberdasilvasantos7195@gmail.com",
-      "phone": "41999595959",
-      "document": {
-        "type": "cpf",
-        "number": "34680813326"
-      },
-      "address": {
-        "street": "Rua Nunes Machado",
-        "streetNumber": "15153",
-        "zipCode": "80220071",
-        "neighborhood": "Parolin",
-        "city": "Curitiba",
-        "state": "SP",
-        "country": "BR"
-      }
-    },
-    "items": [
-      {
-        "title": "Protocolo Detox 7 Dias",
-        "unitPrice": 4290,
-        "quantity": 1,
-        "tangible": false
-      }
-    ],
-    "trackingParameters": {
-      "utm_source": "organic",
-      "utm_medium": "adsetTesteUtms",
-      "utm_campaign": "CampanhaTesteUtms",
-      "utm_term": "PlacementTesteUtms/admin.html",
-      "utm_content": "ContentTesteUtms"
-    },
-    "createdAt": "2026-02-07T06:57:59.099Z",
-    "pixCopied": true
-  },
-  {
     "transactionId": "27d98dd4518341a29fa37a5bf9899e01",
     "amount": 5280,
     "paymentMethod": "pix",
@@ -1269,55 +1228,6 @@
     },
     "clientIp": "127.0.0.1",
     "createdAt": "2026-02-07T08:40:13.845Z",
-    "reportedStatuses": []
-  },
-  {
-    "transactionId": "order_1770453683109_tbnlsrfba",
-    "huraId": null,
-    "amount": 3290,
-    "paymentMethod": "delivery",
-    "status": "waiting_payment",
-    "customer": {
-      "name": "marcelo",
-      "email": "marcelo9604@gmail.com",
-      "phone": "41999595959",
-      "document": {
-        "type": "cpf",
-        "number": "03828432409"
-      },
-      "address": {
-        "street": "Rua Nunes Machado",
-        "streetNumber": "123123",
-        "zipCode": "80220071",
-        "neighborhood": "Parolin",
-        "city": "Curitiba",
-        "state": "SP",
-        "country": "BR"
-      }
-    },
-    "items": [
-      {
-        "title": "Guia Seca Barriga Iniciante",
-        "unitPrice": 3290,
-        "quantity": 1,
-        "tangible": false
-      }
-    ],
-    "deliveryData": {
-      "houseNumber": "2141241241242121",
-      "time": "12/41",
-      "cash": "214",
-      "cep": "12412412412"
-    },
-    "trackingParameters": {
-      "utm_source": "organic",
-      "utm_medium": "adsetTesteUtms",
-      "utm_campaign": "CampanhaTesteUtms",
-      "utm_term": "PlacementTesteUtms/admin.html",
-      "utm_content": "ContentTesteUtms"
-    },
-    "clientIp": "127.0.0.1",
-    "createdAt": "2026-02-07T08:41:23.109Z",
     "reportedStatuses": []
   }
 ]

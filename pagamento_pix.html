@@ -14,6 +14,16 @@
     <script src="js/jquery.min.js"></script>
     <!-- ADS ADDED -->
     <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17941274522"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'AW-17941274522');
+    </script>
+    <!-- ADS ADDED -->
+    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17852819586"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -537,7 +547,12 @@
             savePendingUtmify(transactionId, payload);
 
             // Send to Google Ads Conversion
-            // Google Ads removed
+            gtag('event', 'conversion', {
+                'send_to': 'AW-17941274522/IfTuCIPP0_UbEJq_iOtC',
+                'value': totalCents / 100,
+                'currency': 'BRL',
+                'transaction_id': transactionId
+            });
 
             // Attempt to send
             await trySendUtmify(transactionId, payload, utmifyToken);
