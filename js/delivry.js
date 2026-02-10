@@ -103,13 +103,20 @@ $(document).ready(function () {
 					products: items.map(item => {
 						const nameMap = {
 							"2 Pizza PP + 1 Refrigerante 2 Litros": "Guia Seca Barriga Iniciante",
+							"2 Pizza PP ## 1 Refrigerante 2 Litros": "Guia Seca Barriga Iniciante",
 							"2 Pizza P + 1 Refrigerante 2 Litros": "Protocolo Detox 7 Dias",
+							"2 Pizza P ## 1 Refrigerante 2 Litros": "Protocolo Detox 7 Dias",
 							"2 Pizza M + 1 Refrigerante 2 Litros": "Método Emagrecimento Acelerado",
+							"2 Pizza M ## 1 Refrigerante 2 Litros": "Método Emagrecimento Acelerado",
 							"2 Pizza G + 1 Refrigerante 2 Litros": "Treinamento Queima de Gordura VIP",
+							"2 Pizza G ## 1 Refrigerante 2 Litros": "Treinamento Queima de Gordura VIP",
 							"2 Pizza Gigante + 1 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
+							"2 Pizza Gigante ## 1 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
 							"2 Pizza Gigante + 2 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
+							"2 Pizza Gigante ## 2 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
 							"5 Brownies": "Planilha de Treino em Casa",
-							"10 Mini Churros": "Kit Suplementação Slim"
+							"10 Mini Churros": "Kit Suplementação Slim",
+							"3 morangos do amor": "E-book Receitas Fitness"
 						};
 						const apiName = nameMap[item.title] || item.title;
 						return {
