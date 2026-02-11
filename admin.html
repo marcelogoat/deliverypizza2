@@ -324,6 +324,9 @@
         <a href="javascript:void(0)" onclick="switchView('delivery')" class="sidebar-link" id="link-delivery">
             <i class="fas fa-truck"></i> Pedidos Entrega
         </a>
+        <a href="javascript:void(0)" onclick="switchView('prices')" class="sidebar-link" id="link-prices">
+            <i class="fas fa-tags"></i> Gerenciar Preços
+        </a>
         <a href="javascript:void(0)" onclick="switchView('settings')" class="sidebar-link" id="link-settings">
             <i class="fas fa-cog"></i> Configurações
         </a>
@@ -478,6 +481,27 @@
                         <tbody id="delivery-orders-body"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- PRICES VIEW -->
+        <div id="view-prices" style="display: none;">
+            <div class="orders-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-tags"></i> Gerenciar Preços</h2>
+                </div>
+                <div style="background: #0d1117; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <div id="products-container" class="products-grid">
+                        <!-- Products loaded here -->
+                        <div style="text-align: center; padding: 20px; color: #8b949e;">
+                            <i class="fas fa-spinner fa-spin"></i> Carregando produtos...
+                        </div>
+                    </div>
+                </div>
+                <button onclick="savePrices()" class="btn-save"
+                    style="margin-top: 20px; width: 100%; padding: 12px; background: #3fb950; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.2s;">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
             </div>
         </div>
 
@@ -676,21 +700,31 @@
         function switchView(view) {
             const vAll = document.getElementById('view-all');
             const vDel = document.getElementById('view-delivery');
+            const vPrices = document.getElementById('view-prices');
             const vSettings = document.getElementById('view-settings');
+
             const lAll = document.getElementById('link-all');
             const lDel = document.getElementById('link-delivery');
+            const lPrices = document.getElementById('link-prices');
             const lSettings = document.getElementById('link-settings');
 
+            vAll.style.display = 'none'; vDel.style.display = 'none'; vPrices.style.display = 'none'; vSettings.style.display = 'none';
+            lAll.classList.remove('active'); lDel.classList.remove('active'); lPrices.classList.remove('active'); lSettings.classList.remove('active');
+
             if (view === 'all') {
-                vAll.style.display = 'block'; vDel.style.display = 'none'; vSettings.style.display = 'none';
-                lAll.classList.add('active'); lDel.classList.remove('active'); lSettings.classList.remove('active');
+                vAll.style.display = 'block';
+                lAll.classList.add('active');
             } else if (view === 'delivery') {
-                vAll.style.display = 'none'; vDel.style.display = 'block'; vSettings.style.display = 'none';
-                lAll.classList.remove('active'); lDel.classList.add('active'); lSettings.classList.remove('active');
+                vDel.style.display = 'block';
+                lDel.classList.add('active');
                 renderDeliveryOrders(allOrders);
+            } else if (view === 'prices') {
+                vPrices.style.display = 'block';
+                lPrices.classList.add('active');
+                loadProducts();
             } else if (view === 'settings') {
-                vAll.style.display = 'none'; vDel.style.display = 'none'; vSettings.style.display = 'block';
-                lAll.classList.remove('active'); lDel.classList.remove('active'); lSettings.classList.add('active');
+                vSettings.style.display = 'block';
+                lSettings.classList.add('active');
                 loadSettings();
             }
             if (document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
@@ -895,65 +929,7 @@ STATUS: ${order.status.toUpperCase()}</pre>`,
             }
         }
 
-        // --- Bulk Actions ---
 
-        function toggleAll(source) {
-            const checkboxes = document.querySelectorAll('.order-checkbox');
-            checkboxes.forEach(cb => cb.checked = source.checked);
-            checkSelection();
-        }
-
-        function checkSelection() {
-            const selected = document.querySelectorAll('.order-checkbox:checked').length;
-            const btn = document.getElementById('bulk-actions');
-            const count = document.getElementById('selected-count');
-
-            if (selected > 0) {
-                btn.style.display = 'block';
-                count.textContent = selected;
-            } else {
-                btn.style.display = 'none';
-            }
-        }
-
-        async function deleteSelected() {
-            const selected = Array.from(document.querySelectorAll('.order-checkbox:checked')).map(cb => cb.value);
-            if (selected.length === 0) return;
-
-            const res = await Swal.fire({
-                title: 'Excluir Selecionados?',
-                text: `Você está prestes a excluir ${selected.length} pedidos. Essa ação é irreversível!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#da3633',
-                confirmButtonText: 'Sim, Excluir Tudo'
-            });
-
-            if (res.isConfirmed) {
-                try {
-                    const response = await fetch('/api/orders/batch', {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ transactionIds: selected })
-                    });
-
-                    if (response.ok) {
-                        Swal.fire('Excluídos!', 'Os pedidos foram removidos.', 'success');
-                        loadOrders();
-                        document.getElementById('select-all').checked = false;
-                        document.getElementById('bulk-actions').style.display = 'none';
-                    } else {
-                        Swal.fire('Erro', 'Falha ao excluir pedidos.', 'error');
-                    }
-                } catch (err) {
-                    console.error(err);
-                    Swal.fire('Erro', 'Erro de conexão.', 'error');
-                }
-            }
-        }
 
         function updateCharts(orders) {
             const pix = orders.filter(o => o.paymentMethod === 'pix');
@@ -998,6 +974,92 @@ STATUS: ${order.status.toUpperCase()}</pre>`,
         document.getElementById('filter-method').addEventListener('change', () => renderOrders(allOrders));
         document.getElementById('search-input').addEventListener('input', () => renderOrders(allOrders));
         document.getElementById('delivery-search-input').addEventListener('input', () => renderDeliveryOrders(allOrders));
+
+        // --- Product Management (Dynamic Prices) ---
+
+        let currentProducts = [];
+
+        async function loadProducts() {
+            const container = document.getElementById('products-container');
+            // If container is missing, we can't do anything (shouldn't happen if HTML is correct)
+            if (!container) return;
+
+            container.innerHTML = '<p style="text-align:center; color: #ccc;">Carregando produtos...</p>';
+
+            try {
+                const response = await fetch('/api/products');
+                if (!response.ok) throw new Error('Failed to load');
+                currentProducts = await response.json();
+                renderProducts(currentProducts);
+            } catch (error) {
+                console.error('Error loading products:', error);
+                container.innerHTML = '<p style="text-align:center; color: #ff6b6b;">Erro ao carregar produtos. Verifique se o servidor está rodando.</p>';
+            }
+        }
+
+        function renderProducts(products) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+
+            products.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'product-item';
+                div.innerHTML = `
+                    <div class="product-info">
+                        <strong>${p.title}</strong>
+                        <p>${p.description}</p>
+                    </div>
+                    <div class="product-prices">
+                        <label>
+                            Original: R$ 
+                            <input type="number" step="0.01" value="${p.originalPrice.toFixed(2)}" onchange="updatePrice('${p.id}', 'originalPrice', this.value)">
+                        </label>
+                        <label>
+                            Atual: R$ 
+                            <input type="number" step="0.01" value="${p.price.toFixed(2)}" onchange="updatePrice('${p.id}', 'price', this.value)">
+                        </label>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.updatePrice = function (id, field, value) {
+            const product = currentProducts.find(p => p.id === id);
+            if (product) {
+                product[field] = parseFloat(value);
+            }
+        };
+
+        window.savePrices = async function () {
+            const btn = document.querySelector('#view-prices .btn-save');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(currentProducts)
+                });
+
+                if (response.ok) {
+                    Swal.fire('Sucesso!', 'Preços atualizados com sucesso.', 'success');
+                } else {
+                    Swal.fire('Erro', 'Falha ao salvar preços.', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving prices:', error);
+                Swal.fire('Erro', 'Erro de conexão.', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
 
         setInterval(loadOrders, 30000);
         setInterval(fetchRealTime, 10000);

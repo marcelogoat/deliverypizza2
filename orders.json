@@ -1229,5 +1229,48 @@
     "clientIp": "127.0.0.1",
     "createdAt": "2026-02-07T08:40:13.845Z",
     "reportedStatuses": []
+  },
+  {
+    "transactionId": "order_1770835125686_t927x3is7",
+    "huraId": null,
+    "amount": 9896,
+    "paymentMethod": "pix",
+    "status": "created",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos5448@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "25770201711"
+      },
+      "address": {
+        "street": "cha do pilar",
+        "streetNumber": "07",
+        "zipCode": "80220071",
+        "neighborhood": "cha do pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "MINI CURSO 30 DIAS",
+        "unitPrice": 9896,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-02-11T18:38:45.686Z",
+    "reportedStatuses": []
   }
 ]

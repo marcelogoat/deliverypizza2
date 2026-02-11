@@ -232,6 +232,7 @@
 </head>
 
 <body>
+	<script> document.body.setAttribute('data-product-id', 'pizza_g'); </script>
 	<div id="opacidade" class="fechar"></div>
 	<div>
 		<div class="container containerFinalizar">
@@ -965,7 +966,7 @@
 					</div>
 					<div id="precoProduto">R$ 0,00</div>
 					<span class="precoProduto" style="display:none">14.00</span>
-					<button class="btn adicionarProduto" onclick="finalizar()">FINALIZAR PEDIDO</button>
+					<button class="btn" onclick="finalizar()">FINALIZAR PEDIDO</button>
 					<a href="https://seguro.fornalhapoop.site/api/public/shopify?product=869679137859&amp;store=8696"
 						id="finalizarPedido" style="display: none;"></a>
 				</div>
@@ -1087,6 +1088,40 @@
 
 
 	<script src="../../js/tracking.js"></script>
+	<!-- Dynamic Pricing Script -->
+	<script>
+		document.addEventListener('DOMContentLoaded', async () => {
+			const productId = document.body.getAttribute('data-product-id');
+			if (!productId) return;
+
+			try {
+				const response = await fetch('/api/products');
+				if (!response.ok) return;
+				const products = await response.json();
+				const product = products.find(p => p.id === productId);
+
+				if (product) {
+					const formatMoney = (val) => 'R$ ' + parseFloat(val).toFixed(2).replace('.', ',');
+
+					const priceEl = document.querySelector('.info1 .preco');
+					if (priceEl) {
+						const hiddenSpan = priceEl.querySelector('span');
+						if (hiddenSpan) {
+							priceEl.innerHTML = formatMoney(product.price) + '<span style="display:none;">' + product.price.toFixed(2) + '</span>';
+						} else {
+							priceEl.textContent = formatMoney(product.price);
+						}
+					}
+
+					const promoEl = document.querySelector('.info1 .precoPromocao');
+					if (promoEl) promoEl.textContent = formatMoney(product.originalPrice);
+
+					const hiddenPriceEl = document.querySelector('.info3 .precoProduto');
+					if (hiddenPriceEl) hiddenPriceEl.textContent = product.price.toFixed(2);
+				}
+			} catch (e) { console.error('Pricing update error:', e); }
+		});
+	</script>
 </body>
 <!-- Mirrored from megaacaidelivery.netlify.app/produtos/acai/pague-1-leve-2-300ml by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 11 Feb 2025 21:59:10 GMT -->
 <!-- Mirrored from poooppizzass.site/produtos/pizza/pizza4.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 20 Dec 2025 20:01:05 GMT -->

@@ -764,6 +764,50 @@ app.get('/api/analytics/online', (req, res) => {
 });
 
 // ============================================
+// Products API (Dynamic Pricing)
+// ============================================
+const PRODUCTS_FILE = path.join(__dirname, 'products.json');
+
+function readProducts() {
+    try {
+        if (fs.existsSync(PRODUCTS_FILE)) {
+            return JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf8'));
+        }
+    } catch (err) { console.error('Error reading products:', err); }
+    return [];
+}
+
+function writeProducts(products) {
+    try {
+        fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(products, null, 2));
+    } catch (err) { console.error('Error writing products:', err); }
+}
+
+app.get('/api/products', (req, res) => {
+    res.json(readProducts());
+});
+
+app.post('/api/products', (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Não autorizado' });
+    }
+    const token = authHeader.substring(7);
+    if (token !== ADMIN_TOKEN) {
+        return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    try {
+        writeProducts(req.body);
+        console.log('[API] Products updated');
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating products:', error);
+        res.status(500).json({ error: 'Failed to update products' });
+    }
+});
+
+// ============================================
 // Start Server
 // ============================================
 

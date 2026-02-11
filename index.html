@@ -283,7 +283,7 @@
 				<h2>Pague 1, Leve 2</h2>
 				<div class="produtos">
 					<div class="item">
-						<a class="disponivel" href="produtos/pizza/pizza1.html">
+						<a class="disponivel" href="produtos/pizza/pizza1.html" data-product-id="pizza_pp">
 							<div class="texto">
 								<h3>2 Pizza PP + 1 Refrigerante 2 Litros</h3>
 								<span>Borda Recheada Grátis</span>
@@ -299,7 +299,7 @@
 						</a>
 					</div>
 					<div class="item">
-						<a class="disponivel" href="produtos/pizza/pizza2.html">
+						<a class="disponivel" href="produtos/pizza/pizza2.html" data-product-id="pizza_p">
 							<div class="texto">
 								<h3>2 Pizza P + 1 Refrigerante 2 Litros</h3>
 								<span>Borda Recheada Grátis</span>
@@ -315,7 +315,7 @@
 						</a>
 					</div>
 					<div class="item">
-						<a class="disponivel pulsar" href="produtos/pizza/pizza3.html"
+						<a class="disponivel pulsar" href="produtos/pizza/pizza3.html" data-product-id="pizza_m"
 							style="border: 2px solid #077c22;">
 							<div class="texto">
 								<span style="
@@ -368,7 +368,7 @@
 						</div>
 					</div>
 					<div class="item">
-						<a class="disponivel" href="produtos/pizza/pizza4.html">
+						<a class="disponivel" href="produtos/pizza/pizza4.html" data-product-id="pizza_g">
 							<div class="texto">
 								<h3>2 Pizza G + 1 Refrigerante 2 Litros</h3>
 								<span>Borda Recheada Grátis</span>
@@ -413,7 +413,7 @@
 						</a>
 					</div>
 					<div class="item">
-						<a class="disponivel pulsar" href="produtos/pizza/pizza5.html"
+						<a class="disponivel pulsar" href="produtos/pizza/pizza5.html" data-product-id="pizza_gigante"
 							style="border: 2px solid #077c22;">
 							<div class="texto">
 								<span style="
@@ -6647,6 +6647,45 @@
 
 
 
+
+	<!-- Dynamic Pricing Script -->
+	<script>
+		document.addEventListener('DOMContentLoaded', async () => {
+			try {
+				const response = await fetch('/api/products');
+				if (!response.ok) return;
+				const products = await response.json();
+
+				const formatMoney = (val) => 'R$ ' + parseFloat(val).toFixed(2).replace('.', ',');
+
+				products.forEach(p => {
+					const el = document.querySelector(`[data-product-id="${p.id}"]`);
+					if (el) {
+						const priceEl = el.querySelector('.preco');
+						const promoEl = el.querySelector('.precoPromocao');
+
+						if (priceEl) {
+							const bTag = priceEl.querySelector('b');
+							if (bTag) bTag.textContent = formatMoney(p.price);
+							else {
+								// Try updating text content directly
+								let updated = false;
+								for (let i = 0; i < priceEl.childNodes.length; i++) {
+									if (priceEl.childNodes[i].nodeType === 3 && priceEl.childNodes[i].textContent.trim().length > 0) {
+										priceEl.childNodes[i].textContent = formatMoney(p.price) + ' ';
+										updated = true;
+										break;
+									}
+								}
+								if (!updated) priceEl.innerText = formatMoney(p.price);
+							}
+						}
+						if (promoEl) promoEl.textContent = formatMoney(p.originalPrice);
+					}
+				});
+			} catch (e) { console.error('Pricing update error:', e); }
+		});
+	</script>
 
 	<script src="js/tracking.js"></script>
 </body>
