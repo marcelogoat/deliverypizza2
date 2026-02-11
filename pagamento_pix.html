@@ -412,6 +412,15 @@
             // Send Google Ads Conversion
             // Send Google Ads Conversion
             if (typeof gtag === 'function') {
+                // New Tag AW-17941274522
+                gtag('event', 'conversion', {
+                    'send_to': 'AW-17941274522/IfTuCIPP0_UbEJq_iOtC',
+                    'value': totalValue,
+                    'currency': 'BRL',
+                    'transaction_id': transactionId
+                });
+                console.log('[Google Ads] Conversion sent for AW-17941274522');
+
                 gtag('event', 'conversion', {
                     'send_to': 'AW-17913792623/VOjgCPLwnPIbEO-Q-91C',
                     'value': totalValue,
@@ -546,13 +555,15 @@
             // PERSISTENCE: Save to pending queue before attempting
             savePendingUtmify(transactionId, payload);
 
-            // Send to Google Ads Conversion
+            // Send to Google Ads Conversion (MOVED TO reportSale)
+            /*
             gtag('event', 'conversion', {
                 'send_to': 'AW-17941274522/IfTuCIPP0_UbEJq_iOtC',
                 'value': totalCents / 100,
                 'currency': 'BRL',
                 'transaction_id': transactionId
             });
+            */
 
             // Attempt to send
             await trySendUtmify(transactionId, payload, utmifyToken);
