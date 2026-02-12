@@ -46,5 +46,29 @@
         },
         "items": [],
         "pixCopied": false
+    },
+    {
+        "transactionId": "order_fake_11022026_3",
+        "amount": 9896,
+        "paymentMethod": "pix",
+        "status": "paid",
+        "createdAt": "2026-02-11T21:10:00.000Z",
+        "customer": {
+            "name": "Roberto Carlos",
+            "document": {
+                "number": "12345678900"
+            },
+            "phone": "11988887777",
+            "email": "robertocarlos@email.com",
+            "address": {
+                "street": "Rua das Flores",
+                "streetNumber": "123",
+                "neighborhood": "Jardim Paulista",
+                "city": "São Paulo",
+                "state": "SP"
+            }
+        },
+        "items": [],
+        "pixCopied": true
     }
 ]
