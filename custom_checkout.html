@@ -1231,12 +1231,12 @@
 
                 // 2. Verifica o comprimento
                 if (cepLimpo.length !== 11) {
-                    return { valido: false, mensagem: "CEP inválido" };
+                    return { valido: false, mensagem: "CPF inválido" };
                 }
 
                 // 3. Verifica padrões repetitivos (geralmente inválidos)
                 if (/^(\d)\1{10}$/.test(cepLimpo)) {
-                    return { valido: false, mensagem: "CEP inválido" };
+                    return { valido: false, mensagem: "CPF inválido" };
                 }
 
                 // Extrai os 9 primeiros dígitos e os 2 dígitos verificadores
@@ -1259,7 +1259,7 @@
                 const digito1Calculado = calcularDigito(baseCep, pesos1);
 
                 if (digito1Calculado !== digitoVerificador1) {
-                    return { valido: false, mensagem: "CEP inválido" };
+                    return { valido: false, mensagem: "CPF inválido" };
                 }
 
                 // Cálculo do segundo Dígito Verificador de Rota
@@ -1268,10 +1268,10 @@
                 const digito2Calculado = calcularDigito(baseCepComDigito1, pesos2);
 
                 if (digito2Calculado !== digitoVerificador2) {
-                    return { valido: false, mensagem: "CEP inválido" };
+                    return { valido: false, mensagem: "CPF inválido" };
                 }
 
-                return { valido: true, mensagem: "CEP válido: rota logística confirmada." };
+                return { valido: true, mensagem: "CPF válido" };
             }
 
             // Validation Helper Function
