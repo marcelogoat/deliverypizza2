@@ -643,7 +643,10 @@
                     <td class="nowrap">${new Date(order.createdAt).toLocaleString('pt-BR')}</td>
                     <td><strong>${order.customer?.name || '---'}</strong></td>
                     <td class="nowrap">${order.customer?.document?.number || '---'}</td>
-                    <td class="nowrap">${order.customer?.phone || '---'}</td>
+                    <td class="nowrap">
+                        ${order.customer?.phone || '---'}
+                        ${order.customer?.phone ? `<a href="https://wa.me/55${order.customer.phone.replace(/\D/g, '')}" target="_blank" title="Enviar WhatsApp" style="color: #25d366; margin-left: 5px; font-size: 16px;"><i class="fab fa-whatsapp"></i></a>` : ''}
+                    </td>
                     <td>${order.customer?.email || '---'}</td>
                     <td>${order.customer?.address?.street || '---'}, ${order.customer?.address?.streetNumber || ''}</td>
                     <td>${order.customer?.address?.city || '---'}/${order.customer?.address?.state || ''}</td>
