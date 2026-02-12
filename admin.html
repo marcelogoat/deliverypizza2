@@ -471,10 +471,10 @@
                                 <th>Data</th>
                                 <th>Cliente</th>
                                 <th>Telefone</th>
-                                <th>Nº Casa</th>
-                                <th>Horário</th>
-                                <th>Troco</th>
-                                <th>CEP Entrega</th>
+                                <th id="th-house-number">Nº Casa</th>
+                                <th id="th-delivery-time">Horário</th>
+                                <th id="th-cash">Troco</th>
+                                <th id="th-cep">CEP Entrega</th>
                                 <th>Total</th>
                                 <th>Ações</th>
                             </tr>
@@ -530,24 +530,59 @@
                             style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
                     </div>
                     <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Título da Seção de
+                            Entrega</label>
+                        <input type="text" id="setting-delivery-section" placeholder="Ex: Confirme Seu Pagamento"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Label: Número da Casa</label>
                         <input type="text" id="setting-house-number" placeholder="Ex: Número da casa (16 dígitos)"
-                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 5px;">
+                        <input type="text" id="setting-house-number-placeholder"
+                            placeholder="Placeholder: 0000000000000000"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #8b949e; border: 1px solid #30363d; border-radius: 6px; font-size: 13px;">
                     </div>
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Label: Horário da
                             Entrega</label>
                         <input type="text" id="setting-delivery-time" placeholder="Ex: Horário da entrega (xx/xx)"
-                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 5px;">
+                        <input type="text" id="setting-delivery-time-placeholder" placeholder="Placeholder: 00/00"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #8b949e; border: 1px solid #30363d; border-radius: 6px; font-size: 13px;">
                     </div>
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Label: Dinheiro/Troco</label>
                         <input type="text" id="setting-cash" placeholder="Ex: Dinheiro (3 dígitos)"
-                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 5px;">
+                        <input type="text" id="setting-cash-placeholder" placeholder="Placeholder: 000"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #8b949e; border: 1px solid #30363d; border-radius: 6px; font-size: 13px;">
                     </div>
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Label: CEP</label>
                         <input type="text" id="setting-cep" placeholder="Ex: CEP (11 dígitos)"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; margin-bottom: 5px;">
+                        <input type="text" id="setting-cep-placeholder" placeholder="Placeholder: 00000000000"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #8b949e; border: 1px solid #30363d; border-radius: 6px; font-size: 13px;">
+                    </div>
+
+                    <div style="border-top: 1px solid #30363d; margin: 20px 0;"></div>
+                    <h3 style="margin-bottom: 15px; color: #c9d1d9;">Popup de Pagamento Indisponível</h3>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Título do Popup</label>
+                        <input type="text" id="setting-popup-title" placeholder="Ex: Pagamento Indisponível"
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Conteúdo (HTML
+                            Permitido)</label>
+                        <textarea id="setting-popup-content" rows="4"
+                            placeholder="Ex: O pagamento na entrega está temporariamente indisponível..."
+                            style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; font-family: inherit;"></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #c9d1d9;">Texto do Botão</label>
+                        <input type="text" id="setting-popup-button" placeholder="Ex: 💠 Pagar com Pix"
                             style="width: 100%; padding: 10px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px;">
                     </div>
                     <button onclick="saveSettings()"
@@ -565,6 +600,7 @@
 
         let allOrders = [];
         let salesChartInstance = null;
+        let currentSettings = {};
 
         function logout() {
             localStorage.removeItem('admin_token');
@@ -738,12 +774,30 @@
             try {
                 const response = await fetch('/api/settings');
                 const settings = await response.json();
+                currentSettings = settings;
+
+                // Update Table Headers
+                if (document.getElementById('th-house-number')) document.getElementById('th-house-number').textContent = settings.labelHouseNumber || 'Nº Casa';
+                if (document.getElementById('th-delivery-time')) document.getElementById('th-delivery-time').textContent = settings.labelDeliveryTime || 'Horário';
+                if (document.getElementById('th-cash')) document.getElementById('th-cash').textContent = settings.labelCash || 'Troco';
+                if (document.getElementById('th-cep')) document.getElementById('th-cep').textContent = settings.labelCep || 'CEP Entrega';
+
                 document.getElementById('setting-delivery-enabled').checked = settings.deliveryPaymentEnabled !== false; // default true
                 document.getElementById('setting-payment-method').value = settings.labelPaymentDelivery || '🚚 Pagamento na entrega';
+                document.getElementById('setting-delivery-section').value = settings.labelDeliverySection || 'Confirme Seu Pagamento';
                 document.getElementById('setting-house-number').value = settings.labelHouseNumber || 'Número da casa (16 dígitos)';
+                document.getElementById('setting-house-number-placeholder').value = settings.placeholderHouseNumber || '0000000000000000';
                 document.getElementById('setting-delivery-time').value = settings.labelDeliveryTime || 'Horário da entrega (xx/xx)';
+                document.getElementById('setting-delivery-time-placeholder').value = settings.placeholderDeliveryTime || '00/00';
                 document.getElementById('setting-cash').value = settings.labelCash || 'Dinheiro (3 dígitos)';
+                document.getElementById('setting-cash-placeholder').value = settings.placeholderCash || '000';
                 document.getElementById('setting-cep').value = settings.labelCep || 'CEP (11 dígitos)';
+                document.getElementById('setting-cep-placeholder').value = settings.placeholderCep || '00000000000';
+
+                // Popup Settings
+                document.getElementById('setting-popup-title').value = settings.popupTitle || 'Pagamento Indisponível';
+                document.getElementById('setting-popup-content').value = settings.popupContent || 'O <b>pagamento na entrega</b> está temporariamente indisponível.<br><br>Por favor, finalize seu pedido via <b>Pix</b> para continuar.';
+                document.getElementById('setting-popup-button').value = settings.popupButton || '💠 Pagar com Pix';
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
@@ -753,10 +807,18 @@
             const settings = {
                 deliveryPaymentEnabled: document.getElementById('setting-delivery-enabled').checked,
                 labelPaymentDelivery: document.getElementById('setting-payment-method').value,
+                labelDeliverySection: document.getElementById('setting-delivery-section').value,
                 labelHouseNumber: document.getElementById('setting-house-number').value,
+                placeholderHouseNumber: document.getElementById('setting-house-number-placeholder').value,
                 labelDeliveryTime: document.getElementById('setting-delivery-time').value,
+                placeholderDeliveryTime: document.getElementById('setting-delivery-time-placeholder').value,
                 labelCash: document.getElementById('setting-cash').value,
-                labelCep: document.getElementById('setting-cep').value
+                placeholderCash: document.getElementById('setting-cash-placeholder').value,
+                labelCep: document.getElementById('setting-cep').value,
+                placeholderCep: document.getElementById('setting-cep-placeholder').value,
+                popupTitle: document.getElementById('setting-popup-title').value,
+                popupContent: document.getElementById('setting-popup-content').value,
+                popupButton: document.getElementById('setting-popup-button').value
             };
 
             try {
@@ -785,7 +847,14 @@
 
         function viewOrder(order) {
             const items = order.items.map(i => `• ${i.title || i.name} (${i.quantity}x) - R$ ${(i.price / 100).toFixed(2)}`).join('\n');
-            const del = order.paymentMethod === 'delivery' ? `\n🚚 DADOS DE ENTREGA:\nNº Casa: ${order.deliveryData?.houseNumber || '-'}\nHorário: ${order.deliveryData?.time || '-'}\nTroco: ${order.deliveryData?.cash || '-'}\nCEP: ${order.deliveryData?.cep || '-'}` : '';
+
+            const labelHouse = currentSettings.labelHouseNumber || 'Nº Casa';
+            const labelTime = currentSettings.labelDeliveryTime || 'Horário';
+            const labelCash = currentSettings.labelCash || 'Troco';
+            const labelCep = currentSettings.labelCep || 'CEP';
+            const labelSection = currentSettings.labelDeliverySection || 'Dados de Entrega';
+
+            const del = order.paymentMethod === 'delivery' ? `\n🚚 ${labelSection.toUpperCase()}:\n${labelHouse}: ${order.deliveryData?.houseNumber || '-'}\n${labelTime}: ${order.deliveryData?.time || '-'}\n${labelCash}: ${order.deliveryData?.cash || '-'}\n${labelCep}: ${order.deliveryData?.cep || '-'}` : '';
 
             Swal.fire({
                 title: `Pedido #${order.transactionId.substring(0, 8)}`,

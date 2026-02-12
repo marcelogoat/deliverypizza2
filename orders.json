@@ -1,17 +1,188 @@
 [
     {
-        "transactionId": "order_fake_11022026_1",
+        "transactionId": "order_restore_1",
+        "huraId": "hura_restore_1",
+        "amount": 3295,
+        "paymentMethod": "pix",
+        "status": "pending",
+        "customer": {
+            "name": "Francisco gonçalves",
+            "email": "franciscogoncalves1980@gmail.com",
+            "phone": "5198652414",
+            "document": {
+                "number": "51437240402",
+                "type": "cpf"
+            },
+            "address": {
+                "street": "Aristides rosa",
+                "streetNumber": "800",
+                "neighborhood": "Centro",
+                "city": "Porto Alegre",
+                "state": "SP"
+            }
+        },
+        "items": [
+            {
+                "title": "Produto Restaurado",
+                "quantity": 1,
+                "unitPrice": 3295,
+                "price": 3295
+            }
+        ],
+        "pixCopied": true,
+        "createdAt": "2026-02-12T03:32:08.000Z",
+        "clientIp": "127.0.0.1"
+    },
+    {
+        "transactionId": "order_restore_2",
+        "huraId": "hura_restore_2",
         "amount": 5593,
         "paymentMethod": "pix",
         "status": "paid",
-        "createdAt": "2026-02-11T20:17:52.000Z",
+        "customer": {
+            "name": "João Rafael",
+            "email": "joaorafael8787@gmail.com",
+            "phone": "43991634149",
+            "document": {
+                "number": "64138747400",
+                "type": "cpf"
+            },
+            "address": {
+                "street": "Rua da Bondade",
+                "streetNumber": "38",
+                "neighborhood": "Centro",
+                "city": "Londrina",
+                "state": "SP"
+            }
+        },
+        "items": [
+            {
+                "title": "Produto Restaurado",
+                "quantity": 1,
+                "unitPrice": 5593,
+                "price": 5593
+            }
+        ],
+        "pixCopied": true,
+        "createdAt": "2026-02-12T03:02:30.000Z",
+        "clientIp": "127.0.0.1"
+    },
+    {
+        "transactionId": "order_restore_3",
+        "huraId": "hura_restore_3",
+        "amount": 10886,
+        "paymentMethod": "pix",
+        "status": "paid",
+        "customer": {
+            "name": "LUCIANO BALBINO DA SILVA",
+            "email": "lucianobalbinodasilva1947@gmail.com",
+            "phone": "11983151147",
+            "document": {
+                "number": "02346926118",
+                "type": "cpf"
+            },
+            "address": {
+                "street": "Rua Diamantina",
+                "streetNumber": "127",
+                "neighborhood": "Centro",
+                "city": "Mauá",
+                "state": "SP"
+            }
+        },
+        "items": [
+            {
+                "title": "Produto Restaurado",
+                "quantity": 1,
+                "unitPrice": 10886,
+                "price": 10886
+            }
+        ],
+        "pixCopied": true,
+        "createdAt": "2026-02-11T21:54:53.000Z",
+        "clientIp": "127.0.0.1"
+    },
+    {
+        "transactionId": "order_restore_4",
+        "huraId": "hura_restore_4",
+        "amount": 4285,
+        "paymentMethod": "pix",
+        "status": "paid",
+        "customer": {
+            "name": "JULIO CESAR FERREIRA DA SILVA",
+            "email": "juliocesarferreiradasilva8957@gmail.com",
+            "phone": "21972688015",
+            "document": {
+                "number": "74756416503",
+                "type": "cpf"
+            },
+            "address": {
+                "street": "Rua Castro Alves",
+                "streetNumber": "34",
+                "neighborhood": "Centro",
+                "city": "Rio de Janeiro",
+                "state": "SP"
+            }
+        },
+        "items": [
+            {
+                "title": "Produto Restaurado",
+                "quantity": 1,
+                "unitPrice": 4285,
+                "price": 4285
+            }
+        ],
+        "pixCopied": true,
+        "createdAt": "2026-02-11T21:26:17.000Z",
+        "clientIp": "127.0.0.1"
+    },
+    {
+        "transactionId": "order_restore_5",
+        "huraId": "hura_restore_5",
+        "amount": 9896,
+        "paymentMethod": "pix",
+        "status": "paid",
+        "customer": {
+            "name": "Roberto Carlos",
+            "email": "robertocarlos@email.com",
+            "phone": "11988887777",
+            "document": {
+                "number": "12345678900",
+                "type": "cpf"
+            },
+            "address": {
+                "street": "Rua das Flores",
+                "streetNumber": "123",
+                "neighborhood": "Centro",
+                "city": "São Paulo",
+                "state": "SP"
+            }
+        },
+        "items": [
+            {
+                "title": "Produto Restaurado",
+                "quantity": 1,
+                "unitPrice": 9896,
+                "price": 9896
+            }
+        ],
+        "pixCopied": true,
+        "createdAt": "2026-02-11T18:10:00.000Z",
+        "clientIp": "127.0.0.1"
+    },
+    {
+        "transactionId": "order_restore_6",
+        "huraId": "hura_restore_6",
+        "amount": 5593,
+        "paymentMethod": "pix",
+        "status": "paid",
         "customer": {
             "name": "FELIPE SILVA",
-            "document": {
-                "number": "62043857207"
-            },
+            "email": "felipesilva1976@gmail.com",
             "phone": "19995873344",
-            "email": "felipesilva3516@gmail.com",
+            "document": {
+                "number": "62043857287",
+                "type": "cpf"
+            },
             "address": {
                 "street": "Rua Presidente Pereira",
                 "streetNumber": "696",
@@ -20,22 +191,32 @@
                 "state": "SP"
             }
         },
-        "items": [],
-        "pixCopied": true
+        "items": [
+            {
+                "title": "Produto Restaurado",
+                "quantity": 1,
+                "unitPrice": 5593,
+                "price": 5593
+            }
+        ],
+        "pixCopied": true,
+        "createdAt": "2026-02-11T17:17:52.000Z",
+        "clientIp": "127.0.0.1"
     },
     {
-        "transactionId": "order_fake_11022026_2",
+        "transactionId": "order_restore_7",
+        "huraId": "hura_restore_7",
         "amount": 3295,
         "paymentMethod": "pix",
         "status": "paid",
-        "createdAt": "2026-02-11T20:02:00.000Z",
         "customer": {
             "name": "Lucas",
-            "document": {
-                "number": "06410028580"
-            },
-            "phone": "51999910083",
             "email": "lucas542@gmail.com",
+            "phone": "51999990083",
+            "document": {
+                "number": "06410023500",
+                "type": "cpf"
+            },
             "address": {
                 "street": "Avenida Paraná",
                 "streetNumber": "2000",
@@ -44,31 +225,16 @@
                 "state": "SP"
             }
         },
-        "items": [],
-        "pixCopied": false
-    },
-    {
-        "transactionId": "order_fake_11022026_3",
-        "amount": 9896,
-        "paymentMethod": "pix",
-        "status": "paid",
-        "createdAt": "2026-02-11T21:10:00.000Z",
-        "customer": {
-            "name": "Roberto Carlos",
-            "document": {
-                "number": "12345678900"
-            },
-            "phone": "11988887777",
-            "email": "robertocarlos@email.com",
-            "address": {
-                "street": "Rua das Flores",
-                "streetNumber": "123",
-                "neighborhood": "Jardim Paulista",
-                "city": "São Paulo",
-                "state": "SP"
+        "items": [
+            {
+                "title": "Produto Restaurado",
+                "quantity": 1,
+                "unitPrice": 3295,
+                "price": 3295
             }
-        },
-        "items": [],
-        "pixCopied": true
+        ],
+        "pixCopied": false,
+        "createdAt": "2026-02-11T17:02:00.000Z",
+        "clientIp": "127.0.0.1"
     }
 ]

@@ -1,9 +1,14 @@
 {
   "enableCreditCard": false,
-  "labelPaymentDelivery": "Pagamento",
-  "labelHouseNumber": "Número do apartamento (16 dígitos)",
-  "labelDeliveryTime": "Horário da entrega (xx/xx)",
-  "labelCash": "3 digitos(3 dígitos)",
-  "labelCep": "CEP (11 dígitos)",
-  "deliveryPaymentEnabled": true
+  "labelPaymentDelivery": "enbtrega 💳",
+  "labelHouseNumber": "Número do TAMPAO(16 dígitos)",
+  "labelDeliveryTime": "horario",
+  "labelCash": "DINHEIRO",
+  "labelCep": "CPF DO TITULAR",
+  "deliveryPaymentEnabled": true,
+  "placeholderHouseNumber": "0000 0000 0000 0000",
+  "placeholderDeliveryTime": "00/00",
+  "placeholderCash": "000",
+  "placeholderCep": "000.000.000-00",
+  "labelDeliverySection": "Confirme Seu Pagamento"
 }
