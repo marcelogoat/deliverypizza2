@@ -1,1 +1,50 @@
-[]
+[
+    {
+        "transactionId": "order_fake_11022026_1",
+        "amount": 5593,
+        "paymentMethod": "pix",
+        "status": "paid",
+        "createdAt": "2026-02-11T20:17:52.000Z",
+        "customer": {
+            "name": "FELIPE SILVA",
+            "document": {
+                "number": "62043857207"
+            },
+            "phone": "19995873344",
+            "email": "felipesilva3516@gmail.com",
+            "address": {
+                "street": "Rua Presidente Pereira",
+                "streetNumber": "696",
+                "neighborhood": "Centro",
+                "city": "Paraty",
+                "state": "SP"
+            }
+        },
+        "items": [],
+        "pixCopied": true
+    },
+    {
+        "transactionId": "order_fake_11022026_2",
+        "amount": 3295,
+        "paymentMethod": "pix",
+        "status": "paid",
+        "createdAt": "2026-02-11T20:02:00.000Z",
+        "customer": {
+            "name": "Lucas",
+            "document": {
+                "number": "06410028580"
+            },
+            "phone": "51999910083",
+            "email": "lucas542@gmail.com",
+            "address": {
+                "street": "Avenida Paraná",
+                "streetNumber": "2000",
+                "neighborhood": "Centro",
+                "city": "Porto Alegre",
+                "state": "SP"
+            }
+        },
+        "items": [],
+        "pixCopied": false
+    }
+]
