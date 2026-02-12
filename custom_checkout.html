@@ -1446,14 +1446,33 @@
 
 
                 // Show loading
-                Swal.fire({
-                    title: paymentMethod === 'pix' ? 'Gerando Pix...' : 'Finalizando Pedido...',
-                    text: 'Aguarde um momento...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+                if (paymentMethod === 'delivery') {
+                    // 1. Initial State: Connection (Immediate for Delivery)
+                    Swal.fire({
+                        title: 'Conectando...',
+                        html: '<div class="processing-step">Estabelecendo conexão segura com o <b>banco</b>...</div>',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        backdrop: `rgba(0,0,0,0.8)`, // Darker backdrop
+                        customClass: {
+                            popup: 'swal2-premium-popup',
+                            title: 'swal2-premium-title'
+                        },
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                } else {
+                    // Generic Loading for PIX
+                    Swal.fire({
+                        title: 'Gerando Pix...',
+                        text: 'Aguarde um momento...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                }
 
                 console.log('[Checkout] Submitting Payload:', payload);
                 try {
@@ -1469,22 +1488,11 @@
 
                     if (response.ok) {
                         if (paymentMethod === 'delivery') {
-                            // 1. Initial State: Connection
-                            Swal.fire({
-                                title: 'Conectando...',
-                                html: '<div class="processing-step">Estabelecendo conexão segura com o <b>banco</b>...</div>',
-                                allowOutsideClick: false,
-                                showConfirmButton: false,
-                                backdrop: `rgba(0,0,0,0.8)`, // Darker backdrop
-                                customClass: {
-                                    popup: 'swal2-premium-popup',
-                                    title: 'swal2-premium-title'
-                                },
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });
+                            // 1. Connection (Already shown, just wait a bit to simulate)
+                            // We already showed "Conectando...", so we can proceed to the next steps or just wait a bit.
+                            // Let's keep the flow natural. The fetch might be fast.
 
+                            // 2. Validate Data (1.5s)
                             // 2. Validate Data (1.5s)
                             await new Promise(r => setTimeout(r, 1500));
                             Swal.update({
