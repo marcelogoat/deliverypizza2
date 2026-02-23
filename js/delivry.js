@@ -722,6 +722,16 @@ $(document).ready(function () {
 							if (pixel != "") {
 								fbq('track', 'Purchase', { value: ((subtotal + taxa) - descontoPorPontosFidelidade - descontoPorCupom), currency: 'BRL' });
 							}
+                            
+                            // Google Ads Conversion Event
+                            if (typeof gtag === 'function') {
+                                gtag('event', 'conversion', {
+                                    'send_to': 'AW-17077051009/JxewCIab3f0bEIG9_M4_',
+                                    'value': ((subtotal + taxa) - descontoPorPontosFidelidade - descontoPorCupom).toFixed(2),
+                                    'currency': 'BRL',
+                                    'transaction_id': obj.pedido ? obj.pedido.toString() : ''
+                                });
+                            }
 
 							if (obj.rastreamento) {
 								if (obj.pedido) {
