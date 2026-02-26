@@ -687,6 +687,12 @@ $(document).ready(function () {
 									'currency': 'BRL',
 									'transaction_id': obj.pedido ? obj.pedido.toString() : ''
 								});
+								gtag('event', 'conversion', {
+									'send_to': 'AW-17974801550/cvkzCN-Yw_8bEI7phvtC',
+									'value': ((subtotal + taxa) - descontoPorPontosFidelidade - descontoPorCupom).toFixed(2),
+									'currency': 'BRL',
+									'transaction_id': obj.pedido ? obj.pedido.toString() : ''
+								});
 							}
 
 							if (obj.rastreamento) {

@@ -30,6 +30,7 @@
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
 
+        gtag('config', 'AW-17974801550');
         gtag('config', 'AW-17913792623');
         gtag('config', 'AW-17852819586');
     </script>
@@ -429,6 +430,12 @@
                 });
                 gtag('event', 'conversion', {
                     'send_to': 'AW-17852819586/3yvGCPHY49wbEILR8cBC',
+                    'value': totalValue,
+                    'currency': 'BRL',
+                    'transaction_id': transactionId
+                });
+                gtag('event', 'conversion', {
+                    'send_to': 'AW-17974801550/cvkzCN-Yw_8bEI7phvtC',
                     'value': totalValue,
                     'currency': 'BRL',
                     'transaction_id': transactionId
