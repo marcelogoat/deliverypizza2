@@ -121,7 +121,7 @@ app.post('/api/payment/create', async (req, res) => {
                 local_id: localTransactionId,
                 order_id: localTransactionId
             },
-            postback_url: "https://www.ofertasdelivery.shop.shop/api/webhook/hurapay",
+            postback_url: "https://www.ofertasdelivery.shop/api/webhook/hurapay",
             customer: {
                 name: customer.name,
                 email: customer.email,
