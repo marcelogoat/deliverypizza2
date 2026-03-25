@@ -169,8 +169,16 @@ app.post('/api/payment/create', async (req, res) => {
                 const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
                 if (idx !== -1) {
                     currentOrders[idx].huraId = txId;
+                    
+                    // Marcar como pendente e já notificar a Utmify para registrar a venda gerada
+                    if (currentOrders[idx].status === 'created') {
+                        currentOrders[idx].status = 'waiting_payment';
+                    }
                     writeOrders(currentOrders);
                     console.log(`[API] Order ${localTransactionId} linked to HuraId ${txId}`);
+                    
+                    // Enviar IMEDIATAMENTE para a Utmify a venda pendente
+                    await sendToUtmify(currentOrders[idx]);
                 }
             } catch (err) {
                 console.error('[API] Error in background ID update:', err);
