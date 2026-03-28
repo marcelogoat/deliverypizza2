@@ -125,6 +125,8 @@ const HURA_BASE_URL = 'https://api.hurapayments.com.br/v1';
 const BLACKOUT_API_KEY = process.env.BLACKOUT_API_KEY;
 const BLACKOUT_BASE_URL = 'https://api.blackoutpaybr.com/v1/payment';
 
+const GHOSTSPAY_BASE_URL = 'https://api.ghostspaysv2.com/functions/v1/transactions';
+
 // Helper for Hura Pay Auth
 function getHuraAuth() {
     return 'Basic ' + Buffer.from(`${process.env.HURA_PUBLIC_KEY}:${process.env.HURA_SECRET_KEY}`).toString('base64');
@@ -133,6 +135,13 @@ function getHuraAuth() {
 // Helper for Blackout Pay Auth
 function getBlackoutAuth() {
     return `Bearer ${process.env.BLACKOUT_API_KEY}`;
+}
+
+// Helper for GhostsPay Auth
+function getGhostspayAuth(secretKey, companyId) {
+    const sk = secretKey || process.env.GHOSTSPAY_SECRET_KEY;
+    const cid = companyId || process.env.GHOSTSPAY_COMPANY_ID;
+    return 'Basic ' + Buffer.from(`${sk}:${cid}`).toString('base64');
 }
 
 // POST /api/payment/create - Create Pix transaction (Hura Pay)
@@ -328,6 +337,92 @@ app.post('/api/payment/create', async (req, res) => {
                 pix: { qrcode: pixCode }
             });
 
+        } else if (activeGateway === 'ghostspay') {
+            const gsSettings = settings.gateways?.ghostspay || {};
+            const secretKey = gsSettings.secretKey || process.env.GHOSTSPAY_SECRET_KEY;
+            const companyId = gsSettings.companyId || process.env.GHOSTSPAY_COMPANY_ID;
+
+            const order = {
+                transactionId: localTransactionId,
+                amount: amount,
+                paymentMethod: 'pix',
+                gateway: 'ghostspay',
+                status: 'created',
+                customer: customer,
+                items: items,
+                trackingParameters: trackingParameters,
+                clientIp: clientIp,
+                createdAt: new Date().toISOString(),
+                reportedStatuses: []
+            };
+            const orders = readOrders();
+            orders.push(order);
+            writeOrders(orders);
+
+            const payload = {
+                amount: amount,
+                paymentMethod: "PIX",
+                customer: {
+                    name: customer.name,
+                    email: customer.email,
+                    phone: customer.phone.replace(/\D/g, ''),
+                    document: {
+                        number: customer.document.number.replace(/\D/g, ''),
+                        type: "CPF"
+                    }
+                },
+                items: items.map(item => ({
+                    title: item.title,
+                    unitPrice: item.unitPrice,
+                    quantity: item.quantity
+                })),
+                pix: { expiresInDays: 1 },
+                postbackUrl: gsSettings.webhookUrl || `https://${req.headers.host}/api/webhook/ghostspay`
+            };
+
+            const response = await fetch(GHOSTSPAY_BASE_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': getGhostspayAuth(secretKey, companyId),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const responseText = await response.text();
+            let data = {};
+            try {
+                data = JSON.parse(responseText);
+            } catch (err) {
+                console.error('[API] GhostsPay Error parsing JSON:', responseText);
+                return res.status(response.status).json({ error: 'GhostsPay API Error', details: responseText });
+            }
+
+            if (!response.ok) {
+                console.error('[API] GhostsPay Error:', data);
+                return res.status(response.status).json({ error: 'GhostsPay Payment failed', details: data });
+            }
+
+            const pixCode = data.pix?.qrcode || data.pix?.qrCode || data.qrcode;
+            const gsId = data.id;
+
+            (async () => {
+                const currentOrders = readOrders();
+                const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
+                if (idx !== -1) {
+                    currentOrders[idx].huraId = gsId;
+                    currentOrders[idx].status = 'waiting_payment';
+                    writeOrders(currentOrders);
+                    console.log(`[API] GHOSTSPAY: Pix generated. Status updated locally. Utmify skipped per user request.`);
+                }
+            })();
+
+            return res.json({
+                id: localTransactionId,
+                ghostspayId: gsId,
+                pix: { qrcode: pixCode }
+            });
+
         } else {
             // Placeholder for unknown gateway
             console.error(`[API] External Gateway '${activeGateway}' unknown.`);
@@ -495,48 +590,55 @@ app.post('/api/webhook/blackout', (req, res) => {
     })();
 });
 
-// POST /api/webhook/blackout - Blackout Pay Webhook Listener
-app.post('/api/webhook/blackout', (req, res) => {
+// POST /api/webhook/ghostspay - GhostsPay Webhook Listener
+app.post('/api/webhook/ghostspay', (req, res) => {
     const settings = readSettings();
-    if (settings.blackoutWebhookEnabled === false) {
-        console.log('[Webhook] Blackout Pay is DISABLED in settings. Ignoring notification.');
+    if (settings.ghostspayWebhookEnabled === false) {
+        console.log('[Webhook] GhostsPay is DISABLED in settings. Ignoring notification.');
         return res.json({ success: false, message: 'Webhook disabled' });
     }
 
-    const notification = req.body;
-    const externalId = notification.externalRef || notification.external_ref || notification.externalId;
-    const blackoutStatus = (notification.status || notification.event || '').toLowerCase();
+    const { data } = req.body;
+    const gsId = data?.id;
+    const gsStatus = (data?.status || '').toLowerCase();
 
-    console.log(`[Webhook] BLACKOUT RECEIVED: ExtId=${externalId}, Status=${blackoutStatus}`);
+    console.log(`[Webhook] GHOSTSPAY RECEIVED: GsId=${gsId}, Status=${gsStatus}`);
 
-    // Respond to Blackout
+    // Respond to GhostsPay
     res.json({ success: true });
 
-    if (!externalId) return;
+    if (!gsId) return;
 
     (async () => {
         try {
-            // Map Blackout status (Assuming 'paid' or 'confirmed' means payment successful)
-            const isPaid = ['paid', 'confirmed', 'completed', 'approved', 'succeeded'].includes(blackoutStatus);
-            const mappedStatus = isPaid ? 'paid' : 'waiting_payment';
+            const isPaid = ['paid', 'confirmed', 'succeeded'].includes(gsStatus);
+            if (!isPaid) return; // Só processamos se for pago
 
+            const mappedStatus = 'paid';
             const orders = readOrders();
-            const orderIndex = orders.findIndex(o => String(o.transactionId) === String(externalId));
+            
+            // Na GhostsPay, buscamos pelo huraId (onde salvamos o ID da transação deles)
+            const orderIndex = orders.findIndex(o => String(o.huraId) === String(gsId));
 
             if (orderIndex !== -1) {
                 const order = orders[orderIndex];
                 if (order.status !== mappedStatus) {
-                    console.log(`[Webhook] BLACKOUT REPORTING: ${order.status} -> ${mappedStatus} for ${order.transactionId}`);
+                    console.log(`[Webhook] GHOSTSPAY ADMIN UPDATE: ${order.status} -> ${mappedStatus} for ${order.transactionId}`);
+                    
                     orders[orderIndex].status = mappedStatus;
                     writeOrders(orders);
-                    await sendToUtmify(orders[orderIndex]);
+                    
+                    // REMOVIDO: sendToUtmify (já integrado direto no gateway)
+                    console.log(`[Webhook] GHOSTSPAY: Status updated in Admin Panel. Utmify skipped per user request.`);
                 }
             }
         } catch (err) {
-            console.error('[Webhook] Blackout Background Error:', err);
+            console.error('[Webhook] GhostsPay Background Error:', err);
         }
     })();
 });
+
+
 
 // Helper to map Hura Pay status (kept for compatibility if needed elsewhere)
 function mapHuraPayStatus(mpStatus) {
@@ -552,12 +654,19 @@ async function sendToUtmify(order) {
 
     // WEBHOOK TOGGLE CHECK: Stop Utmify if the gateway toggle is OFF
     if (order.paymentMethod === 'pix') {
-        if (order.gateway === 'hurapay' && settings.huraWebhookEnabled === false) {
-            console.log(`[Utmify] BLOCKED: Hura Pay reporting is disabled.`);
+        // Determinamos o gateway: ou pela flag explícita ou pelo contexto do pedido
+        const effectiveGateway = order.gateway || (order.huraId ? 'hurapay' : settings.gateways?.active);
+
+        if (effectiveGateway === 'hurapay' && settings.huraWebhookEnabled === false) {
+            console.log(`[Utmify] BLOCKED: Hura Pay reporting is disabled (Manual or Auto).`);
             return;
         }
-        if (order.gateway === 'blackout' && settings.blackoutWebhookEnabled === false) {
+        if (effectiveGateway === 'blackout' && settings.blackoutWebhookEnabled === false) {
             console.log(`[Utmify] BLOCKED: Blackout Pay reporting is disabled.`);
+            return;
+        }
+        if (effectiveGateway === 'ghostspay' && settings.ghostspayWebhookEnabled === false) {
+            console.log(`[Utmify] BLOCKED: GhostsPay reporting is disabled.`);
             return;
         }
     }

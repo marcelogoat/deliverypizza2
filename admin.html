@@ -615,6 +615,7 @@
                             <select id="gateway-active-selection" style="width: 100%; padding: 14px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 8px; font-size: 16px; cursor: pointer;">
                                 <option value="hurapay">Hura Pay</option>
                                 <option value="blackout">Blackout Gateway</option>
+                                <option value="ghostspay">GhostsPay</option>
                             </select>
                             <p style="font-size: 12px; color: #8b949e; margin-top: 8px;">
                                 <i class="fas fa-info-circle"></i> Os webhooks já estão pré-configurados para o domínio pizzapromododia.shop.
@@ -648,6 +649,17 @@
                                 </label>
                             </div>
 
+                            <div class="switch-container">
+                                <div class="switch-label">
+                                    <i class="fas fa-link" style="color: #8b949e;"></i>
+                                    <span>GhostsPay Webhook</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-ghostspay-webhook" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
                             <p style="font-size: 11px; color: #8b949e; margin-top: 10px; font-style: italic;">
                                 <i class="fas fa-info-circle"></i> Ao desativar, as notificações automáticas de pagamento destes gateways serão ignoradas.
                             </p>
@@ -660,12 +672,7 @@
                         </div>
                     </div>
 
-                    <div style="background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #21262d; margin-top: 20px; opacity: 0.6; cursor: not-allowed;">
-                        <h3 style="margin-bottom: 10px; color: #8b949e;">
-                            <i class="fas fa-plus-circle"></i> Próximo Gateway (Em breve)
-                        </h3>
-                        <p style="font-size: 12px; color: #8b949e;">Aguardando nova integração...</p>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -982,6 +989,7 @@
                 // Webhook Toggles
                 document.getElementById('setting-hura-webhook').checked = settings.huraWebhookEnabled !== false;
                 document.getElementById('setting-blackout-webhook').checked = settings.blackoutWebhookEnabled !== false;
+                document.getElementById('setting-ghostspay-webhook').checked = settings.ghostspayWebhookEnabled !== false;
 
                 // Popup Settings
                 document.getElementById('setting-popup-title').value = settings.popupTitle || 'Pagamento Indisponível';
@@ -1013,7 +1021,7 @@
             try {
                 const response = await fetch('/api/settings', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(settings)
                 });
                 const data = await response.json();
@@ -1298,10 +1306,12 @@ STATUS: ${order.status.toUpperCase()}</pre>`,
         async function saveGateways() {
             const huraEnabled = document.getElementById('setting-hura-webhook').checked;
             const blackoutEnabled = document.getElementById('setting-blackout-webhook').checked;
+            const ghostspayEnabled = document.getElementById('setting-ghostspay-webhook').checked;
 
             const gatewaySettings = {
                 huraWebhookEnabled: huraEnabled,
                 blackoutWebhookEnabled: blackoutEnabled,
+                ghostspayWebhookEnabled: ghostspayEnabled,
                 gateways: {
                     active: document.getElementById('gateway-active-selection').value
                 }

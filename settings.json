@@ -12,6 +12,9 @@
   "placeholderCep": "000.000.000-00",
   "labelDeliverySection": "Confirme Seu Pagamento",
   "gateways": {
-    "active": "blackout"
-  }
+    "active": "hurapay"
+  },
+  "huraWebhookEnabled": true,
+  "blackoutWebhookEnabled": true,
+  "ghostspayWebhookEnabled": true
 }
