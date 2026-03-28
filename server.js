@@ -30,6 +30,12 @@ const upload = multer({ storage: storage });
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Request logging for debugging
+app.use((req, res, next) => {
+    console.log(`[DEBUG] ${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
 app.use(express.static(__dirname)); // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -70,6 +76,11 @@ app.post(['/api/orders/:transactionId/receipt', '/api/order/:transactionId/recei
 // Root redirect
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Health check route
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
 // Custom Admin Routes
@@ -218,7 +229,7 @@ app.post('/api/payment/create', async (req, res) => {
                 payment_method: "pix",
                 external_id: localTransactionId,
                 metadata: { local_id: localTransactionId, order_id: localTransactionId },
-                postback_url: huraSettings.webhookUrl || "https://www.pizzapromododia.shop/api/webhook/hurapay",
+                postback_url: huraSettings.webhookUrl || "https://www.pizzaempromo.shop/api/webhook/hurapay",
                 customer: {
                     name: customer.name,
                     email: customer.email,
@@ -377,7 +388,7 @@ app.post('/api/payment/create', async (req, res) => {
                     quantity: item.quantity
                 })),
                 pix: { expiresInDays: 1 },
-                postbackUrl: gsSettings.webhookUrl || `https://${req.headers.host}/api/webhook/ghostspay`
+                postbackUrl: gsSettings.webhookUrl || "https://www.pizzaempromo.shop/api/webhook/ghostspay"
             };
 
             const response = await fetch(GHOSTSPAY_BASE_URL, {
@@ -1047,6 +1058,28 @@ function writeSettings(settings) {
         fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
     } catch (err) { console.error('Error writing settings:', err); }
 }
+
+app.get('/api/public/settings', (req, res) => {
+    const settings = readSettings();
+    const publicSettings = {
+        enableCreditCard: settings.enableCreditCard,
+        labelPaymentDelivery: settings.labelPaymentDelivery,
+        labelHouseNumber: settings.labelHouseNumber,
+        labelDeliveryTime: settings.labelDeliveryTime,
+        labelCash: settings.labelCash,
+        labelCep: settings.labelCep,
+        deliveryPaymentEnabled: settings.deliveryPaymentEnabled !== false,
+        placeholderHouseNumber: settings.placeholderHouseNumber,
+        placeholderDeliveryTime: settings.placeholderDeliveryTime,
+        placeholderCash: settings.placeholderCash,
+        placeholderCep: settings.placeholderCep,
+        labelDeliverySection: settings.labelDeliverySection,
+        popupTitle: settings.popupTitle,
+        popupContent: settings.popupContent,
+        popupButton: settings.popupButton
+    };
+    res.json(publicSettings);
+});
 
 app.get('/api/settings', (req, res) => {
     const authHeader = req.headers.authorization;

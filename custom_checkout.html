@@ -857,7 +857,7 @@
         // Fetch and apply custom labels from admin settings
         async function loadCustomLabels() {
             try {
-                const response = await fetch('/api/settings');
+                const response = await fetch('/api/public/settings');
                 const settings = await response.json();
 
                 // Check if delivery payment is enabled (default: true)

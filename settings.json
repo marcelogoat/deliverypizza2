@@ -1,9 +1,9 @@
 {
   "enableCreditCard": false,
-  "labelPaymentDelivery": "entrega 💳",
-  "labelHouseNumber": "Número do TAMPAO(16 dígitos)",
-  "labelDeliveryTime": "horário",
-  "labelCash": "DINHEIRO",
+  "labelPaymentDelivery": "sadasdsa",
+  "labelHouseNumber": "asdadsds",
+  "labelDeliveryTime": "asdas",
+  "labelCash": "asd",
   "labelCep": "CPF DO TITULAR",
   "deliveryPaymentEnabled": true,
   "placeholderHouseNumber": "0000 0000 0000 0000",
@@ -16,5 +16,8 @@
   },
   "huraWebhookEnabled": true,
   "blackoutWebhookEnabled": true,
-  "ghostspayWebhookEnabled": true
+  "ghostspayWebhookEnabled": true,
+  "popupTitle": "Pagamento Indisponível",
+  "popupContent": "O <b>pagamento na entrega</b> está temporariamente indisponível.<br><br>Por favor, finalize seu pedido via <b>Pix</b> para continuar.",
+  "popupButton": "💠 Pagar com Pix"
 }
