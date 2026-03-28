@@ -229,7 +229,7 @@ app.post('/api/payment/create', async (req, res) => {
                 payment_method: "pix",
                 external_id: localTransactionId,
                 metadata: { local_id: localTransactionId, order_id: localTransactionId },
-                postback_url: huraSettings.webhookUrl || "https://www.pizzaempromo.shop/api/webhook/hurapay",
+                postback_url: huraSettings.webhookUrl || "https://www.pizzapromododia.shop/api/webhook/hurapay",
                 customer: {
                     name: customer.name,
                     email: customer.email,
@@ -388,7 +388,7 @@ app.post('/api/payment/create', async (req, res) => {
                     quantity: item.quantity
                 })),
                 pix: { expiresInDays: 1 },
-                postbackUrl: gsSettings.webhookUrl || "https://www.pizzaempromo.shop/api/webhook/ghostspay"
+                postbackUrl: gsSettings.webhookUrl || "https://www.pizzapromododia.shop/api/webhook/ghostspay"
             };
 
             const response = await fetch(GHOSTSPAY_BASE_URL, {
