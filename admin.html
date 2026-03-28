@@ -290,14 +290,73 @@
             cursor: pointer;
         }
 
-        .btn-delete {
-            padding: 6px 10px;
-            background: #da3633;
-            border: none;
-            border-radius: 4px;
-            color: white;
+        .btn-delete:hover {
+            background: #b62324;
+        }
+
+        /* --- Stylish Switch UI --- */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: #0d1117;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #30363d;
+        }
+
+        .switch-label {
+            font-size: 14px;
+            color: #c9d1d9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
             cursor: pointer;
-            margin-left: 5px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #30363d;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #3fb950;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
         }
 
         .funnel-stats {
@@ -563,13 +622,35 @@
                         </div>
 
                         <div style="background: #0d1117; padding: 20px; border-radius: 10px; border: 1px dashed #30363d; margin-bottom: 20px;">
-                            <p style="font-size: 13px; color: #c9d1d9; margin-bottom: 10px;">
-                                <i class="fas fa-shield-alt" style="color: #3fb950;"></i> Webhooks Ativos:
+                            <p style="font-size: 14px; color: #58a6ff; margin-bottom: 15px; font-weight: bold;">
+                                <i class="fas fa-shield-alt"></i> Controle de Webhooks
                             </p>
-                            <ul style="font-size: 11px; color: #8b949e; list-style: none; padding: 0; margin: 0;">
-                                <li style="margin-bottom: 5px;"><i class="fas fa-link"></i> Hura Pay: .../api/webhook/hurapay</li>
-                                <li><i class="fas fa-link"></i> Blackout: .../api/webhook/blackout</li>
-                            </ul>
+                            
+                            <div class="switch-container">
+                                <div class="switch-label">
+                                    <i class="fas fa-link" style="color: #8b949e;"></i>
+                                    <span>Hura Pay Webhook</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-hura-webhook" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="switch-container">
+                                <div class="switch-label">
+                                    <i class="fas fa-link" style="color: #8b949e;"></i>
+                                    <span>Blackout Webhook</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-blackout-webhook" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <p style="font-size: 11px; color: #8b949e; margin-top: 10px; font-style: italic;">
+                                <i class="fas fa-info-circle"></i> Ao desativar, as notificações automáticas de pagamento destes gateways serão ignoradas.
+                            </p>
                         </div>
 
                         <div style="border-top: 1px solid #30363d; padding-top: 20px;">
@@ -898,6 +979,10 @@
                 document.getElementById('setting-cep').value = settings.labelCep || 'CEP (11 dígitos)';
                 document.getElementById('setting-cep-placeholder').value = settings.placeholderCep || '00000000000';
 
+                // Webhook Toggles
+                document.getElementById('setting-hura-webhook').checked = settings.huraWebhookEnabled !== false;
+                document.getElementById('setting-blackout-webhook').checked = settings.blackoutWebhookEnabled !== false;
+
                 // Popup Settings
                 document.getElementById('setting-popup-title').value = settings.popupTitle || 'Pagamento Indisponível';
                 document.getElementById('setting-popup-content').value = settings.popupContent || 'O <b>pagamento na entrega</b> está temporariamente indisponível.<br><br>Por favor, finalize seu pedido via <b>Pix</b> para continuar.';
@@ -1211,7 +1296,12 @@ STATUS: ${order.status.toUpperCase()}</pre>`,
         }
 
         async function saveGateways() {
+            const huraEnabled = document.getElementById('setting-hura-webhook').checked;
+            const blackoutEnabled = document.getElementById('setting-blackout-webhook').checked;
+
             const gatewaySettings = {
+                huraWebhookEnabled: huraEnabled,
+                blackoutWebhookEnabled: blackoutEnabled,
                 gateways: {
                     active: document.getElementById('gateway-active-selection').value
                 }
