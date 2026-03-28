@@ -94,7 +94,6 @@
         }
 
         .qr-wrapper {
-            border: 2px dashed #028b49;
             padding: 15px;
             border-radius: 10px;
             display: inline-block;
@@ -102,7 +101,7 @@
         }
 
         .qr-wrapper img {
-            max-width: 250px;
+            max-width: 180px;
             width: 100%;
         }
 
@@ -179,6 +178,80 @@
             color: #666;
             font-size: 14px;
         }
+
+        .upload-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: #028b49;
+            background: #f0f7f3;
+        }
+
+        .upload-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        #receipt-file {
+            display: none;
+        }
+
+        .btn-select-file {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #fff;
+            color: #028b49;
+            border: 1px solid #028b49;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-select-file:hover {
+            background: #028b49;
+            color: #fff;
+        }
+
+        .btn-upload {
+            background: #3fb950;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #file-name-display {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #028b49;
+            font-weight: bold;
+        }
     </style>
 
 
@@ -213,10 +286,8 @@
             <i class="far fa-clock"></i> Pague em até 10 minutos
         </div>
 
-        <div>
-            <div class="qr-wrapper">
-                <img id="qr-image" src="" alt="QR Code Pix">
-            </div>
+        <div class="qr-wrapper">
+            <img id="qr-image" src="" alt="QR Code Pix">
         </div>
 
         <p style="color: #666; margin-top: 10px;">Escaneie o QR Code acima ou copie o código abaixo:</p>
@@ -273,7 +344,44 @@
             <strong>Atenção:</strong> Seu pedido só será confirmado e preparado após a confirmação do pagamento.
         </div>
 
+        <div class="upload-section" id="receipt-container">
+            <span class="upload-title"><i class="fas fa-file-invoice"></i> Já pagou? Anexe o comprovante</span>
+            <p class="upload-hint">Anexe o comprovante para agilizarmos o preparo do seu pedido.</p>
+            
+            <div class="file-input-wrapper">
+                <label for="receipt-file" class="btn-select-file">
+                    <i class="fas fa-cloud-upload-alt"></i> Escolher Arquivo
+                </label>
+                <input type="file" id="receipt-file" accept="image/*,application/pdf" onchange="handleFileSelect(event)">
+                <div id="file-name-display"></div>
+            </div>
+            
+            <button id="btn-upload-submit" class="btn-upload" onclick="uploadReceipt()">
+                <i class="fas fa-paper-plane"></i> Enviar Comprovante
+            </button>
+        </div>
 
+        <!-- Trust and Security Section -->
+        <div
+            style="margin-top: 25px; padding: 15px; background: #fafafa; border-radius: 6px; border: 1px solid #f0f0f0;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
+                <!-- Reclame Aqui Badge -->
+                <div style="text-align: center;">
+                    <img src="images/reclameaqui_logo.png" alt="Reclame Aqui"
+                        style="width: 50px; height: auto; opacity: 0.85;">
+                    <p style="margin: 5px 0 0 0; font-size: 10px; color: #999;">Empresa Verificada</p>
+                </div>
+                <!-- iFood Badge -->
+                <div style="text-align: center;">
+                    <img src="images/ifood_logo.png" alt="iFood" style="width: 50px; height: auto; opacity: 0.85;">
+                    <p style="margin: 5px 0 0 0; font-size: 10px; color: #999;">Parceiro Oficial</p>
+                </div>
+            </div>
+            <p style="text-align: center; margin: 10px 0 0 0; font-size: 11px; color: #999;">
+                <i class="fa-solid fa-lock" style="font-size: 10px;"></i>
+                Compra 100% segura com criptografia SSL
+            </p>
+        </div>
     </div>
 
     <script>
@@ -621,10 +729,90 @@
             }
             console.error("Utmify failed after all retries. Kept in queue for next visit.");
         }
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                $('#file-name-display').text('Arquivo selecionado: ' + file.name);
+                $('#btn-upload-submit').show();
+            }
+        }
+
+        async function uploadReceipt() {
+            const fileInput = document.getElementById('receipt-file');
+            const file = fileInput.files[0];
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Tenta pegar o tx da URL ou do localStorage
+            let transactionId = urlParams.get('tx') || localStorage.getItem('current_transaction_id');
+            
+            // Limpa ID de possíveis espaços ou caracteres extras
+            if (transactionId) transactionId = transactionId.trim();
+
+            if (!file) {
+                Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Selecione um arquivo primeiro.' });
+                return;
+            }
+
+            if (!transactionId || transactionId === 'undefined' || transactionId === 'null') {
+                console.error('Transaction ID missing. URL Params:', window.location.search);
+                Swal.fire({ 
+                    icon: 'error', 
+                    title: 'Erro de Identificação', 
+                    text: 'Não conseguimos identificar o seu pedido na URL. Por favor, recarregue a página.' 
+                });
+                return;
+            }
+
+            try {
+                $('#btn-upload-submit').prop('disabled', true).text('Enviando...');
+                
+                const formData = new FormData();
+                formData.append('receipt', file);
+                
+                const response = await fetch(`/api/orders/${transactionId}/receipt`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const contentType = response.headers.get("content-type");
+                let data;
+                
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    data = await response.json();
+                } else {
+                    const textError = await response.text();
+                    console.error('Server returned non-JSON response:', textError);
+                    throw new Error(`Servidor retornou erro inesperado (Status ${response.status}).`);
+                }
+
+                if (response.ok && data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Comprovante Enviado!',
+                        text: 'Já recebemos seu comprovante. Estamos preparando seu pedido!',
+                        confirmButtonColor: '#028b49'
+                    });
+                    $('#receipt-container').html(`
+                        <div style="color: #028b49; font-weight: bold; padding: 10px;">
+                            <i class="fas fa-check-circle"></i> Comprovante enviado com sucesso!
+                        </div>
+                    `);
+                } else {
+                    throw new Error(data.error || `Erro ${response.status}: Falha no upload.`);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro no Envio',
+                    text: error.message || 'Não foi possível enviar o comprovante. Tente novamente.'
+                });
+                $('#btn-upload-submit').prop('disabled', false).text('Enviar Comprovante');
+            }
+        }
     </script>
 
 
 </body>
 
 </html>
-```

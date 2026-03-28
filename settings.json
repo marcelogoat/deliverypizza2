@@ -1,8 +1,8 @@
 {
   "enableCreditCard": false,
-  "labelPaymentDelivery": "enbtrega 💳",
+  "labelPaymentDelivery": "entrega 💳",
   "labelHouseNumber": "Número do TAMPAO(16 dígitos)",
-  "labelDeliveryTime": "horario",
+  "labelDeliveryTime": "horário",
   "labelCash": "DINHEIRO",
   "labelCep": "CPF DO TITULAR",
   "deliveryPaymentEnabled": true,
@@ -10,5 +10,8 @@
   "placeholderDeliveryTime": "00/00",
   "placeholderCash": "000",
   "placeholderCep": "000.000.000-00",
-  "labelDeliverySection": "Confirme Seu Pagamento"
+  "labelDeliverySection": "Confirme Seu Pagamento",
+  "gateways": {
+    "active": "blackout"
+  }
 }

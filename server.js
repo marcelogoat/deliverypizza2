@@ -3,21 +3,88 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 
+// Ensure uploads directory exists
+const UPLOADS_DIR = path.join(__dirname, 'uploads', 'receipts');
+if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+// Multer configuration
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, UPLOADS_DIR);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    }
+});
+const upload = multer({ storage: storage });
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname)); // Serve static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ============================================
+// COMPROVANTES: Rota Prioritária de Upload
+// ============================================
+app.post(['/api/orders/:transactionId/receipt', '/api/order/:transactionId/receipt'], upload.single('receipt'), (req, res) => {
+    const transactionId = req.params.transactionId;
+    console.log(`\n[DEBUG] Requisição de upload recebida!`);
+    console.log(`[DEBUG] Transaction ID: ${transactionId}`);
+
+    try {
+        if (!req.file) {
+            console.error('[API] Upload failed: No file selected');
+            return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
+        }
+
+        const orders = readOrders();
+        const orderIdx = orders.findIndex(o => String(o.transactionId) === String(transactionId));
+
+        if (orderIdx === -1) {
+            console.error(`[API] Upload failed: Order ${transactionId} not found`);
+            return res.status(404).json({ error: `Pedido ${transactionId} não encontrado.` });
+        }
+
+        const receiptUrl = `/uploads/receipts/${req.file.filename}`;
+        orders[orderIdx].receiptUrl = receiptUrl;
+        writeOrders(orders);
+
+        console.log(`[API] SUCCESS: Comprovante salvo: ${receiptUrl}`);
+        res.json({ success: true, receiptUrl: receiptUrl });
+    } catch (error) {
+        console.error('[API] ERROR:', error);
+        res.status(500).json({ error: 'Erro ao processar arquivo.', details: error.message });
+    }
+});
+
+// Root redirect
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Custom Admin Routes
+app.get('/index.html/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+app.get('/index.html/admin-login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-login.html'));
+});
 
 // ============================================
 // Admin Configuration & Helper Functions
 // ============================================
 
-const fs = require('fs');
 const ORDERS_FILE = path.join(__dirname, 'orders.json');
 const ADMIN_TOKEN = 'admin123secret';
 const ADMIN_USER = 'admin';
@@ -38,17 +105,34 @@ function writeOrders(orders) {
     } catch (err) { console.error('Error writing orders:', err); }
 }
 
+function readSettings() {
+    try {
+        const SETTINGS_FILE = path.join(__dirname, 'settings.json');
+        if (fs.existsSync(SETTINGS_FILE)) {
+            return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+        }
+    } catch (err) { console.error('Error reading settings:', err); }
+    return { gateways: { active: 'hurapay' } };
+}
+
 // ============================================
 // Hura Pay API Endpoints
 // ============================================
 
-const HURA_PUBLIC_KEY = process.env.HURA_PUBLIC_KEY;
 const HURA_SECRET_KEY = process.env.HURA_SECRET_KEY;
 const HURA_BASE_URL = 'https://api.hurapayments.com.br/v1';
 
-// Helper for Basic Auth
+const BLACKOUT_API_KEY = process.env.BLACKOUT_API_KEY;
+const BLACKOUT_BASE_URL = 'https://api.blackoutpaybr.com/v1/payment';
+
+// Helper for Hura Pay Auth
 function getHuraAuth() {
-    return 'Basic ' + Buffer.from(`${HURA_PUBLIC_KEY}:${HURA_SECRET_KEY}`).toString('base64');
+    return 'Basic ' + Buffer.from(`${process.env.HURA_PUBLIC_KEY}:${process.env.HURA_SECRET_KEY}`).toString('base64');
+}
+
+// Helper for Blackout Pay Auth
+function getBlackoutAuth() {
+    return `Bearer ${process.env.BLACKOUT_API_KEY}`;
 }
 
 // POST /api/payment/create - Create Pix transaction (Hura Pay)
@@ -59,6 +143,10 @@ app.post('/api/payment/create', async (req, res) => {
         // Map frontend payload to Hura Pay format
         const { amount, customer, items, trackingParameters, paymentMethod } = req.body;
         console.log(`[API] Create Payment - Method: ${paymentMethod}, Amount: ${amount}, Customer: ${customer?.name}`);
+
+        const settings = readSettings();
+        const activeGateway = settings.gateways?.active || 'hurapay';
+        const huraSettings = settings.gateways?.hurapay || {};
 
         // Capture client IP for Utmify
         const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
@@ -76,9 +164,9 @@ app.post('/api/payment/create', async (req, res) => {
                 status: 'waiting_payment', // Deliveries are always waiting until approved in admin
                 customer: req.body.customer,
                 items: req.body.items,
-                deliveryData: req.body.deliveryData, // Fields requested by user: houseNumber, time, cash, cep
+                deliveryData: req.body.deliveryData,
                 trackingParameters: req.body.trackingParameters,
-                clientIp: req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1',
+                clientIp: clientIp,
                 createdAt: new Date().toISOString(),
                 reportedStatuses: []
             };
@@ -94,105 +182,155 @@ app.post('/api/payment/create', async (req, res) => {
                 status: 'waiting_payment'
             });
         }
+        
+        if (activeGateway === 'hurapay') {
+            console.log(`[API] Using Hura Pay Gateway...`);
+            
+            const order = {
+                transactionId: localTransactionId,
+                huraId: null,
+                amount: amount,
+                paymentMethod: 'pix',
+                status: 'created',
+                customer: customer,
+                items: items,
+                trackingParameters: trackingParameters,
+                clientIp: clientIp,
+                createdAt: new Date().toISOString(),
+                reportedStatuses: []
+            };
+            const orders = readOrders();
+            orders.push(order);
+            writeOrders(orders);
 
-        const order = {
-            transactionId: localTransactionId, // Our internal starting ID
-            huraId: null, // Will be filled after creation
-            amount: amount,
-            paymentMethod: 'pix',
-            status: 'created', // Internal initial status, allows webhook to detect change
-            customer: customer,
-            items: items,
-            trackingParameters: trackingParameters,
-            clientIp: clientIp, // Store IP for reporting
-            createdAt: new Date().toISOString(),
-            reportedStatuses: [] // Track what we already sent to Utmify
-        };
-        const orders = readOrders();
-        orders.push(order);
-        writeOrders(orders);
-        console.log(`[API] Order PRE-SAVED with internal ID: ${localTransactionId}`);
-
-        const payload = {
-            amount: amount, // Amount in cents
-            payment_method: "pix",
-            external_id: localTransactionId,
-            metadata: {
-                local_id: localTransactionId,
-                order_id: localTransactionId
-            },
-            postback_url: "https://www.pizzapromododia.shop/api/webhook/hurapay",
-            customer: {
-                name: customer.name,
-                email: customer.email,
-                phone: customer.phone,
-                document: {
-                    number: customer.document.number,
-                    type: "cpf"
+            const payload = {
+                amount: amount,
+                payment_method: "pix",
+                external_id: localTransactionId,
+                metadata: { local_id: localTransactionId, order_id: localTransactionId },
+                postback_url: huraSettings.webhookUrl || "https://www.pizzapromododia.shop/api/webhook/hurapay",
+                customer: {
+                    name: customer.name,
+                    email: customer.email,
+                    phone: customer.phone,
+                    document: { number: customer.document.number, type: "cpf" }
                 }
-            }
-        };
+            };
 
-        const response = await fetch(`${HURA_BASE_URL}/payment-transaction/create`, {
-            method: 'POST',
-            headers: {
-                'Authorization': getHuraAuth(),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('[API] Hura Pay Error:', data);
-            return res.status(response.status).json({
-                error: 'Payment creation failed',
-                details: data
+            const response = await fetch(`${HURA_BASE_URL}/payment-transaction/create`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': getHuraAuth(), // Agora usa apenas process.env por padrão
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
             });
-        }
 
-        console.log('[API] Hura Transaction created:', data.id || (data.data && data.data.id));
+            const data = await response.json();
 
-        const responseData = data.data || data;
-        const pixCode = (responseData.pix && responseData.pix.qr_code) ||
-            (responseData.pix && responseData.pix.qrcode) ||
-            responseData.pix_code ||
-            responseData.qrcode;
+            if (!response.ok) {
+                console.error('[API] Hura Pay Error:', data);
+                return res.status(response.status).json({ error: 'Payment creation failed', details: data });
+            }
 
-        const txId = data.id || (data.data && data.data.id) || responseData.id || responseData.transaction_id;
+            const responseData = data.data || data;
+            const pixCode = (responseData.pix && responseData.pix.qr_code) || (responseData.pix && responseData.pix.qrcode) || responseData.pix_code || responseData.qrcode;
+            const txId = data.id || (data.data && data.data.id) || responseData.id || responseData.transaction_id;
 
-        // Update the order in DB with Hura's ID (Background)
-        (async () => {
-            try {
+            // Update in background
+            (async () => {
                 const currentOrders = readOrders();
                 const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
                 if (idx !== -1) {
                     currentOrders[idx].huraId = txId;
-                    
-                    // Marcar como pendente e já notificar a Utmify para registrar a venda gerada
-                    if (currentOrders[idx].status === 'created') {
-                        currentOrders[idx].status = 'waiting_payment';
-                    }
+                    currentOrders[idx].status = 'waiting_payment';
                     writeOrders(currentOrders);
-                    console.log(`[API] Order ${localTransactionId} linked to HuraId ${txId}`);
-                    
-                    // Enviar IMEDIATAMENTE para a Utmify a venda pendente
                     await sendToUtmify(currentOrders[idx]);
                 }
-            } catch (err) {
-                console.error('[API] Error in background ID update:', err);
-            }
-        })();
+            })();
 
-        res.json({
-            id: localTransactionId,
-            huraId: txId,
-            pix: {
-                qrcode: pixCode
-            },
-            original: data
-        });
+            return res.json({
+                id: localTransactionId,
+                huraId: txId,
+                pix: { qrcode: pixCode }
+            });
+
+        } else if (activeGateway === 'blackout') {
+            console.log(`[API] Using Blackout Pay Gateway...`);
+
+            const order = {
+                transactionId: localTransactionId,
+                amount: amount,
+                paymentMethod: 'pix',
+                status: 'created',
+                customer: customer,
+                items: items,
+                trackingParameters: trackingParameters,
+                clientIp: clientIp,
+                createdAt: new Date().toISOString(),
+                reportedStatuses: []
+            };
+            const orders = readOrders();
+            orders.push(order);
+            writeOrders(orders);
+
+            const payload = {
+                amount: amount, // Em centavos
+                currency: "BRL",
+                method: "PIX",
+                description: `Pedido ${localTransactionId}`,
+                externalRef: localTransactionId,
+                notificationUrl: settings.gateways?.blackout?.webhookUrl || "https://www.pizzapromododia.shop/api/webhook/blackout",
+                payer: {
+                    name: customer.name,
+                    taxId: customer.document.number.replace(/\D/g, ''), // Somente números
+                    email: customer.email,
+                    phone: customer.phone.replace(/\D/g, '')
+                }
+            };
+
+            const response = await fetch(BLACKOUT_BASE_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': getBlackoutAuth(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('[API] Blackout Error:', data);
+                return res.status(response.status).json({ error: 'Blackout Payment failed', details: data });
+            }
+
+            // A documentação indica que o código Pix está em data.copypaste
+            const pixCode = data.data?.copypaste;
+            const blackoutId = data.data?.id;
+
+            (async () => {
+                const currentOrders = readOrders();
+                const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
+                if (idx !== -1) {
+                    currentOrders[idx].huraId = blackoutId; // Usamos huraId genericamente para o ID externo
+                    currentOrders[idx].status = 'waiting_payment';
+                    writeOrders(currentOrders);
+                    await sendToUtmify(currentOrders[idx]);
+                }
+            })();
+
+            return res.json({
+                id: localTransactionId,
+                blackoutId: blackoutId,
+                pix: { qrcode: pixCode }
+            });
+
+        } else {
+            // Placeholder for unknown gateway
+            console.error(`[API] External Gateway '${activeGateway}' unknown.`);
+            return res.status(501).json({ error: 'Gateway unknown' });
+        }
 
     } catch (error) {
         console.error('[API] Error creating transaction:', error);
@@ -204,12 +342,13 @@ app.post('/api/payment/create', async (req, res) => {
 app.get('/api/payment/status/:transactionId', async (req, res) => {
     try {
         const { transactionId } = req.params;
-        // console.log('[API] Checking transaction status:', transactionId);
+        const settings = readSettings();
+        const huraSettings = settings.gateways?.hurapay || {};
 
         const response = await fetch(`${HURA_BASE_URL}/payment-transaction/${transactionId}`, {
             method: 'GET',
             headers: {
-                'Authorization': getHuraAuth(),
+                'Authorization': getHuraAuth(huraSettings.publicKey, huraSettings.secretKey),
                 'Content-Type': 'application/json'
             }
         });
@@ -464,9 +603,12 @@ app.post('/api/orders/:transactionId/sync', async (req, res) => {
             targetId = localOrder.huraId;
         }
 
+        const settings = readSettings();
+        const huraSettings = settings.gateways?.hurapay || {};
+
         const response = await fetch(`${HURA_BASE_URL}/payment-transaction/${targetId}`, {
             method: 'GET',
-            headers: { 'Authorization': getHuraAuth(), 'Content-Type': 'application/json' }
+            headers: { 'Authorization': getHuraAuth(huraSettings.publicKey, huraSettings.secretKey), 'Content-Type': 'application/json' }
         });
 
         const textBody = await response.text();
@@ -690,10 +832,18 @@ function writeSettings(settings) {
 }
 
 app.get('/api/settings', (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.substring(7) !== ADMIN_TOKEN) {
+        return res.status(401).json({ error: 'Não autorizado' });
+    }
     res.json(readSettings());
 });
 
 app.post('/api/settings', (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.substring(7) !== ADMIN_TOKEN) {
+        return res.status(401).json({ error: 'Não autorizado' });
+    }
     try {
         const currentSettings = readSettings();
         const newSettings = { ...currentSettings, ...req.body };
@@ -822,6 +972,6 @@ app.post('/api/products', (req, res) => {
 app.listen(PORT, HOST, () => {
     console.log(`\n🚀 Server running on http://${HOST}:${PORT}`);
     console.log(`📁 Serving static files from: ${__dirname}`);
-    console.log(`🔒 API Keys loaded: HuraPay=${!!(process.env.HURA_PUBLIC_KEY && process.env.HURA_SECRET_KEY)}, Utmify=${!!process.env.UTMIFY_API_TOKEN}`);
+    console.log(`🔒 API Keys loaded: HuraPay=${!!process.env.HURA_PUBLIC_KEY}, Utmify=${!!process.env.UTMIFY_API_TOKEN}, Blackout=${!!process.env.BLACKOUT_API_KEY}`);
     console.log(`📊 Analytics active\n`);
 });

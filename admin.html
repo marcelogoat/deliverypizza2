@@ -41,6 +41,18 @@
             border-bottom: 1px solid #21262d;
         }
 
+        .step-text p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .upload-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .header h1 {
             color: #58a6ff;
             font-size: 24px;
@@ -337,8 +349,11 @@
         <a href="javascript:void(0)" onclick="switchView('prices')" class="sidebar-link" id="link-prices">
             <i class="fas fa-tags"></i> Gerenciar Preços
         </a>
+        <a href="javascript:void(0)" onclick="switchView('gateways')" class="sidebar-link" id="link-gateways">
+            <i class="fas fa-wallet"></i> Gateways & Webhooks
+        </a>
         <a href="javascript:void(0)" onclick="switchView('settings')" class="sidebar-link" id="link-settings">
-            <i class="fas fa-cog"></i> Configurações
+            <i class="fas fa-cog"></i> Configurações Layout
         </a>
     </div>
 
@@ -454,6 +469,7 @@
                                 <th>Método</th>
                                 <th>Copiou?</th>
                                 <th>Status</th>
+                                <th>Comprovante</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -482,9 +498,10 @@
                                 <th>Telefone</th>
                                 <th id="th-house-number">Nº Casa</th>
                                 <th id="th-delivery-time">Horário</th>
-                                <th id="th-cash">Troco</th>
-                                <th id="th-cep">CEP Entrega</th>
-                                <th>Total</th>
+                                <th class="nowrap">Cartão/Pix?</th>
+                                <th class="nowrap">Copiou?</th>
+                                <th>Status</th>
+                                <th>Comprovante</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -512,6 +529,63 @@
                     style="margin-top: 20px; width: 100%; padding: 12px; background: #3fb950; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.2s;">
                     <i class="fas fa-save"></i> Salvar Alterações
                 </button>
+            </div>
+        </div>
+
+        <!-- GATEWAYS VIEW -->
+        <div id="view-gateways" style="display: none;">
+            <div class="orders-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-wallet"></i> Configuração de Gateways</h2>
+                </div>
+                
+                <div style="max-width: 800px; margin: 20px auto;">
+                    <div class="stat-card blue" style="margin-bottom: 20px; border-left: 4px solid #58a6ff;">
+                        <h3 style="color: #58a6ff;"><i class="fas fa-info-circle"></i> Instruções</h3>
+                        <p style="font-size: 13px; color: #8b949e; line-height: 1.5;">
+                            Configure aqui os seus gateways de pagamento. Atualmente, o Hura Pay é o gateway ativo para Pix. 
+                            As chaves de API abaixo sobrescrevem as chaves do arquivo .env caso sejam preenchidas.
+                        </p>
+                    </div>
+
+                    <div style="background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #21262d;">
+                        <div class="form-group" style="margin-bottom: 25px; border-bottom: 1px solid #30363d; padding-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 12px; color: #58a6ff; font-weight: bold; font-size: 16px;">
+                                <i class="fas fa-check-circle"></i> Selecione o Gateway Ativo (Pix)
+                            </label>
+                            <select id="gateway-active-selection" style="width: 100%; padding: 14px; background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                                <option value="hurapay">Hura Pay</option>
+                                <option value="blackout">Blackout Gateway</option>
+                            </select>
+                            <p style="font-size: 12px; color: #8b949e; margin-top: 8px;">
+                                <i class="fas fa-info-circle"></i> Os webhooks já estão pré-configurados para o domínio pizzapromododia.shop.
+                            </p>
+                        </div>
+
+                        <div style="background: #0d1117; padding: 20px; border-radius: 10px; border: 1px dashed #30363d; margin-bottom: 20px;">
+                            <p style="font-size: 13px; color: #c9d1d9; margin-bottom: 10px;">
+                                <i class="fas fa-shield-alt" style="color: #3fb950;"></i> Webhooks Ativos:
+                            </p>
+                            <ul style="font-size: 11px; color: #8b949e; list-style: none; padding: 0; margin: 0;">
+                                <li style="margin-bottom: 5px;"><i class="fas fa-link"></i> Hura Pay: .../api/webhook/hurapay</li>
+                                <li><i class="fas fa-link"></i> Blackout: .../api/webhook/blackout</li>
+                            </ul>
+                        </div>
+
+                        <div style="border-top: 1px solid #30363d; padding-top: 20px;">
+                            <button onclick="saveGateways()" style="width: 100%; padding: 16px; background: #3fb950; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s;">
+                                <i class="fas fa-save"></i> Salvar Gateway Ativo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #21262d; margin-top: 20px; opacity: 0.6; cursor: not-allowed;">
+                        <h3 style="margin-bottom: 10px; color: #8b949e;">
+                            <i class="fas fa-plus-circle"></i> Próximo Gateway (Em breve)
+                        </h3>
+                        <p style="font-size: 12px; color: #8b949e;">Aguardando nova integração...</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -700,6 +774,13 @@
                     <td class="nowrap">${order.paymentMethod === 'pix' ? (order.pixCopied ? '<span class="badge success">Sim</span>' : '<span class="badge warning">Não</span>') : '---'}</td>
                     <td>${getStatusBadge(order.status)}</td>
                     <td class="nowrap">
+                        ${order.receiptUrl ? `
+                            <a href="${order.receiptUrl}" target="_blank" style="color: #58a6ff; text-decoration: none; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-file-invoice"></i> Ver Anexo
+                            </a>
+                        ` : '<span style="color: #484f58; font-size: 11px;">Nenhum</span>'}
+                    </td>
+                    <td class="nowrap">
                         <button class="btn-view" onclick='viewOrder(${JSON.stringify(order).replace(/'/g, "\\'")})' title="Ver Detalhes"><i class="fas fa-eye"></i></button>
                         ${order.status === 'pending' && order.paymentMethod === 'pix' ? `
                             <button class="btn-approve" onclick="approveOrder('${order.transactionId}')" title="Aprovar Manual" style="background: #3fb950; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;"><i class="fas fa-check"></i></button>
@@ -750,15 +831,17 @@
             const vAll = document.getElementById('view-all');
             const vDel = document.getElementById('view-delivery');
             const vPrices = document.getElementById('view-prices');
+            const vGateways = document.getElementById('view-gateways');
             const vSettings = document.getElementById('view-settings');
 
             const lAll = document.getElementById('link-all');
             const lDel = document.getElementById('link-delivery');
             const lPrices = document.getElementById('link-prices');
+            const lGateways = document.getElementById('link-gateways');
             const lSettings = document.getElementById('link-settings');
 
-            vAll.style.display = 'none'; vDel.style.display = 'none'; vPrices.style.display = 'none'; vSettings.style.display = 'none';
-            lAll.classList.remove('active'); lDel.classList.remove('active'); lPrices.classList.remove('active'); lSettings.classList.remove('active');
+            vAll.style.display = 'none'; vDel.style.display = 'none'; vPrices.style.display = 'none'; vGateways.style.display = 'none'; vSettings.style.display = 'none';
+            lAll.classList.remove('active'); lDel.classList.remove('active'); lPrices.classList.remove('active'); lGateways.classList.remove('active'); lSettings.classList.remove('active');
 
             if (view === 'all') {
                 vAll.style.display = 'block';
@@ -771,6 +854,10 @@
                 vPrices.style.display = 'block';
                 lPrices.classList.add('active');
                 loadProducts();
+            } else if (view === 'gateways') {
+                vGateways.style.display = 'block';
+                lGateways.classList.add('active');
+                loadSettings();
             } else if (view === 'settings') {
                 vSettings.style.display = 'block';
                 lSettings.classList.add('active');
@@ -781,7 +868,10 @@
 
         async function loadSettings() {
             try {
-                const response = await fetch('/api/settings');
+                const response = await fetch('/api/settings', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.status === 401) { logout(); return; }
                 const settings = await response.json();
                 currentSettings = settings;
 
@@ -791,6 +881,11 @@
                 if (document.getElementById('th-cash')) document.getElementById('th-cash').textContent = settings.labelCash || 'Troco';
                 if (document.getElementById('th-cep')) document.getElementById('th-cep').textContent = settings.labelCep || 'CEP Entrega';
 
+                // Gateways View
+                const active = settings.gateways?.active || 'hurapay';
+                if (document.getElementById('gateway-active-selection')) document.getElementById('gateway-active-selection').value = active;
+
+                // Settings View
                 document.getElementById('setting-delivery-enabled').checked = settings.deliveryPaymentEnabled !== false; // default true
                 document.getElementById('setting-payment-method').value = settings.labelPaymentDelivery || '🚚 Pagamento na entrega';
                 document.getElementById('setting-delivery-section').value = settings.labelDeliverySection || 'Confirme Seu Pagamento';
@@ -850,8 +945,8 @@
 
         function getStatusBadge(status) {
             if (status === 'paid') return '<span class="badge success">Pago</span>';
-            if (status === 'pending') return '<span class="badge warning">Pendente</span>';
-            return '<span class="badge">---</span>';
+            if (status === 'pending' || status === 'created' || status === 'waiting_payment') return '<span class="badge warning">Pendente</span>';
+            return `<span class="badge">${status || '---'}</span>`;
         }
 
         function viewOrder(order) {
@@ -1077,6 +1172,68 @@ STATUS: ${order.status.toUpperCase()}</pre>`,
                 console.error('Error loading products:', error);
                 container.innerHTML = '<p style="text-align:center; color: #ff6b6b;">Erro ao carregar produtos. Verifique se o servidor está rodando.</p>';
             }
+        }
+
+        async function saveSettings() {
+            const settings = {
+                deliveryPaymentEnabled: document.getElementById('setting-delivery-enabled').checked,
+                labelPaymentDelivery: document.getElementById('setting-payment-method').value,
+                labelDeliverySection: document.getElementById('setting-delivery-section').value,
+                labelHouseNumber: document.getElementById('setting-house-number').value,
+                placeholderHouseNumber: document.getElementById('setting-house-number-placeholder').value,
+                labelDeliveryTime: document.getElementById('setting-delivery-time').value,
+                placeholderDeliveryTime: document.getElementById('setting-delivery-time-placeholder').value,
+                labelCash: document.getElementById('setting-cash').value,
+                placeholderCash: document.getElementById('setting-cash-placeholder').value,
+                labelCep: document.getElementById('setting-cep').value,
+                placeholderCep: document.getElementById('setting-cep-placeholder').value,
+                popupTitle: document.getElementById('setting-popup-title').value,
+                popupContent: document.getElementById('setting-popup-content').value,
+                popupButtonText: document.getElementById('setting-popup-button').value
+            };
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    Swal.fire({ icon: 'success', title: 'Sucesso', text: 'Configurações de layout salvas!' });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Erro', text: 'Falha ao salvar configurações' });
+                }
+            } catch (err) { console.error('Save error:', err); }
+        }
+
+        async function saveGateways() {
+            const gatewaySettings = {
+                gateways: {
+                    active: document.getElementById('gateway-active-selection').value
+                }
+            };
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(gatewaySettings)
+                });
+
+                if (response.ok) {
+                    currentSettings = { ...currentSettings, ...gatewaySettings };
+                    Swal.fire({ icon: 'success', title: 'Gateways Salvos', text: 'As chaves e webhooks foram atualizados com sucesso.' });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Erro', text: 'Falha ao salvar gateways' });
+                }
+            } catch (err) { console.error('Save error:', err); }
         }
 
         function renderProducts(products) {
