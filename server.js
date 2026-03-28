@@ -191,6 +191,7 @@ app.post('/api/payment/create', async (req, res) => {
                 huraId: null,
                 amount: amount,
                 paymentMethod: 'pix',
+                gateway: 'hurapay',
                 status: 'created',
                 customer: customer,
                 items: items,
@@ -262,6 +263,7 @@ app.post('/api/payment/create', async (req, res) => {
                 transactionId: localTransactionId,
                 amount: amount,
                 paymentMethod: 'pix',
+                gateway: 'blackout',
                 status: 'created',
                 customer: customer,
                 items: items,
@@ -493,6 +495,49 @@ app.post('/api/webhook/blackout', (req, res) => {
     })();
 });
 
+// POST /api/webhook/blackout - Blackout Pay Webhook Listener
+app.post('/api/webhook/blackout', (req, res) => {
+    const settings = readSettings();
+    if (settings.blackoutWebhookEnabled === false) {
+        console.log('[Webhook] Blackout Pay is DISABLED in settings. Ignoring notification.');
+        return res.json({ success: false, message: 'Webhook disabled' });
+    }
+
+    const notification = req.body;
+    const externalId = notification.externalRef || notification.external_ref || notification.externalId;
+    const blackoutStatus = (notification.status || notification.event || '').toLowerCase();
+
+    console.log(`[Webhook] BLACKOUT RECEIVED: ExtId=${externalId}, Status=${blackoutStatus}`);
+
+    // Respond to Blackout
+    res.json({ success: true });
+
+    if (!externalId) return;
+
+    (async () => {
+        try {
+            // Map Blackout status (Assuming 'paid' or 'confirmed' means payment successful)
+            const isPaid = ['paid', 'confirmed', 'completed', 'approved', 'succeeded'].includes(blackoutStatus);
+            const mappedStatus = isPaid ? 'paid' : 'waiting_payment';
+
+            const orders = readOrders();
+            const orderIndex = orders.findIndex(o => String(o.transactionId) === String(externalId));
+
+            if (orderIndex !== -1) {
+                const order = orders[orderIndex];
+                if (order.status !== mappedStatus) {
+                    console.log(`[Webhook] BLACKOUT REPORTING: ${order.status} -> ${mappedStatus} for ${order.transactionId}`);
+                    orders[orderIndex].status = mappedStatus;
+                    writeOrders(orders);
+                    await sendToUtmify(orders[orderIndex]);
+                }
+            }
+        } catch (err) {
+            console.error('[Webhook] Blackout Background Error:', err);
+        }
+    })();
+});
+
 // Helper to map Hura Pay status (kept for compatibility if needed elsewhere)
 function mapHuraPayStatus(mpStatus) {
     const status = String(mpStatus).toLowerCase();
@@ -503,6 +548,20 @@ function mapHuraPayStatus(mpStatus) {
 
 // Reusable Utmify Reporting Function
 async function sendToUtmify(order) {
+    const settings = readSettings();
+
+    // WEBHOOK TOGGLE CHECK: Stop Utmify if the gateway toggle is OFF
+    if (order.paymentMethod === 'pix') {
+        if (order.gateway === 'hurapay' && settings.huraWebhookEnabled === false) {
+            console.log(`[Utmify] BLOCKED: Hura Pay reporting is disabled.`);
+            return;
+        }
+        if (order.gateway === 'blackout' && settings.blackoutWebhookEnabled === false) {
+            console.log(`[Utmify] BLOCKED: Blackout Pay reporting is disabled.`);
+            return;
+        }
+    }
+
     const utmifyToken = process.env.UTMIFY_API_TOKEN;
     if (!utmifyToken) {
         console.warn('[Utmify] ERROR: TOKEN NOT CONFIGURED IN ENVIRONMENT VARIABLES!');
