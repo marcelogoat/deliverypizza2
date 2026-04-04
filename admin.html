@@ -909,11 +909,6 @@
                     </td>
                     <td class="nowrap">
                         <button class="btn-view" onclick='viewOrder(${JSON.stringify(order).replace(/'/g, "\\'")})' title="Ver Detalhes"><i class="fas fa-eye"></i></button>
-                        ${(order.status === 'pending' || order.status === 'waiting_payment' || order.status === 'created') && order.paymentMethod === 'pix' ? `
-                            <button class="btn-approve" onclick="approveOrder('${order.transactionId}')" title="Aprovar Manual" style="background: #3fb950; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;"><i class="fas fa-check"></i></button>
-                            <button class="btn-sync" onclick="syncOrder('${order.transactionId}')" title="Sincronizar" style="background: #d29922; color: #0d1117; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;"><i class="fas fa-sync-alt"></i></button>
-                        ` : ''}
-
                         <button class="btn-delete" onclick="deleteOrder('${order.transactionId}')" title="Excluir"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
