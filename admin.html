@@ -405,6 +405,9 @@
         <a href="javascript:void(0)" onclick="switchView('delivery')" class="sidebar-link" id="link-delivery">
             <i class="fas fa-truck"></i> Pedidos Entrega
         </a>
+        <a href="javascript:void(0)" onclick="switchView('fees')" class="sidebar-link" id="link-fees">
+            <i class="fas fa-receipt"></i> Taxas de Entrega
+        </a>
         <a href="javascript:void(0)" onclick="switchView('prices')" class="sidebar-link" id="link-prices">
             <i class="fas fa-tags"></i> Gerenciar Preços
         </a>
@@ -677,6 +680,36 @@
             </div>
         </div>
 
+        </div>
+
+        <!-- FEES VIEW -->
+        <div id="view-fees" style="display: none;">
+            <div class="orders-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-receipt"></i> Taxas de Entrega (R$ 16,39)</h2>
+                    <div class="filters">
+                        <input type="text" id="fee-search-input" onkeyup="renderFeeOrders(allOrders)" placeholder="Buscar cliente...">
+                    </div>
+                </div>
+                <div id="no-fee-orders" class="no-orders" style="display: none;">Nenhuma taxa encontrada.</div>
+                <div class="table-container">
+                    <table id="fees-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>WhatsApp</th>
+                                <th>Cliente</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fees-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- SETTINGS VIEW -->
         <div id="view-settings" style="display: none;">
             <div class="orders-section">
@@ -788,8 +821,10 @@
                 allOrders = orders;
 
                 updateStats(orders);
+                updateStats(orders);
                 renderOrders(orders);
                 renderDeliveryOrders(orders);
+                renderFeeOrders(orders);
                 updateCharts(orders);
 
                 document.getElementById('loading').style.display = 'none';
@@ -833,7 +868,11 @@
             const search = document.getElementById('search-input').value.toLowerCase();
 
             let filtered = orders.filter(o => {
-                const matchStatus = !status || o.status === status;
+                // Filter out fees from main list
+                if (o.isRetryFee === true || o.amount === 1639) return false;
+
+                const matchStatus = !status || 
+                    (status === 'paid' ? ['paid', 'preparing', 'shipping', 'in_preparation', 'failed_delivery'].includes(o.status) : o.status === status);
                 const matchMethod = !method || o.paymentMethod === method;
                 const matchSearch = !search ||
                     (o.customer?.name || '').toLowerCase().includes(search) ||
@@ -870,10 +909,11 @@
                     </td>
                     <td class="nowrap">
                         <button class="btn-view" onclick='viewOrder(${JSON.stringify(order).replace(/'/g, "\\'")})' title="Ver Detalhes"><i class="fas fa-eye"></i></button>
-                        ${order.status === 'pending' && order.paymentMethod === 'pix' ? `
+                        ${(order.status === 'pending' || order.status === 'waiting_payment' || order.status === 'created') && order.paymentMethod === 'pix' ? `
                             <button class="btn-approve" onclick="approveOrder('${order.transactionId}')" title="Aprovar Manual" style="background: #3fb950; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;"><i class="fas fa-check"></i></button>
                             <button class="btn-sync" onclick="syncOrder('${order.transactionId}')" title="Sincronizar" style="background: #d29922; color: #0d1117; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px;"><i class="fas fa-sync-alt"></i></button>
                         ` : ''}
+
                         <button class="btn-delete" onclick="deleteOrder('${order.transactionId}')" title="Excluir"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
@@ -916,41 +956,24 @@
         }
 
         function switchView(view) {
-            const vAll = document.getElementById('view-all');
-            const vDel = document.getElementById('view-delivery');
-            const vPrices = document.getElementById('view-prices');
-            const vGateways = document.getElementById('view-gateways');
-            const vSettings = document.getElementById('view-settings');
+            const views = ['all', 'delivery', 'prices', 'gateways', 'settings', 'fees'];
+            
+            views.forEach(v => {
+                const viewEl = document.getElementById('view-' + v);
+                const linkEl = document.getElementById('link-' + v);
+                
+                if (viewEl) viewEl.style.display = (v === view) ? 'block' : 'none';
+                if (linkEl) {
+                    if (v === view) linkEl.classList.add('active');
+                    else linkEl.classList.remove('active');
+                }
+            });
 
-            const lAll = document.getElementById('link-all');
-            const lDel = document.getElementById('link-delivery');
-            const lPrices = document.getElementById('link-prices');
-            const lGateways = document.getElementById('link-gateways');
-            const lSettings = document.getElementById('link-settings');
+            if (view === 'delivery') renderDeliveryOrders(allOrders);
+            if (view === 'fees') renderFeeOrders(allOrders);
+            if (view === 'prices') loadProducts();
+            if (['gateways', 'settings'].includes(view)) loadSettings();
 
-            vAll.style.display = 'none'; vDel.style.display = 'none'; vPrices.style.display = 'none'; vGateways.style.display = 'none'; vSettings.style.display = 'none';
-            lAll.classList.remove('active'); lDel.classList.remove('active'); lPrices.classList.remove('active'); lGateways.classList.remove('active'); lSettings.classList.remove('active');
-
-            if (view === 'all') {
-                vAll.style.display = 'block';
-                lAll.classList.add('active');
-            } else if (view === 'delivery') {
-                vDel.style.display = 'block';
-                lDel.classList.add('active');
-                renderDeliveryOrders(allOrders);
-            } else if (view === 'prices') {
-                vPrices.style.display = 'block';
-                lPrices.classList.add('active');
-                loadProducts();
-            } else if (view === 'gateways') {
-                vGateways.style.display = 'block';
-                lGateways.classList.add('active');
-                loadSettings();
-            } else if (view === 'settings') {
-                vSettings.style.display = 'block';
-                lSettings.classList.add('active');
-                loadSettings();
-            }
             if (document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
         }
 
@@ -1037,10 +1060,91 @@
         }
 
         function getStatusBadge(status) {
-            if (status === 'paid') return '<span class="badge success">Pago</span>';
-            if (status === 'pending' || status === 'created' || status === 'waiting_payment') return '<span class="badge warning">Pendente</span>';
-            return `<span class="badge">${status || '---'}</span>`;
+            if (['paid', 'preparing', 'shipping', 'in_preparation', 'failed_delivery'].includes(status)) {
+                return '<span class="badge success">Pago</span>';
+            }
+            return '<span class="badge warning">Pendente</span>';
         }
+
+        function renderFeeOrders(orders) {
+            const search = (document.getElementById('fee-search-input')?.value || '').toLowerCase();
+            const feeOrders = orders.filter(o => 
+                (o.isRetryFee === true || o.amount === 1639) &&
+                ((o.customer?.name || '').toLowerCase().includes(search) || (o.customer?.phone || '').includes(search))
+            );
+
+            const tbody = document.getElementById('fees-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            feeOrders.forEach(order => {
+                const tr = document.createElement('tr');
+                const whatsappLink = order.customer?.phone ? `<a href="https://wa.me/55${order.customer.phone.replace(/\D/g, '')}" target="_blank" title="Enviar WhatsApp" style="color: #25d366; margin-left: 5px; font-size: 16px;"><i class="fab fa-whatsapp"></i></a>` : '';
+                
+                tr.innerHTML = `
+                    <td class="nowrap">${new Date(order.createdAt).toLocaleString('pt-BR')}</td>
+                    <td class="nowrap">
+                        ${order.customer?.phone || '---'}
+                        ${whatsappLink}
+                    </td>
+                    <td><strong>${order.customer?.name || '---'}</strong></td>
+                    <td>R$ ${(order.amount / 100).toFixed(2)}</td>
+                    <td>${getStatusBadge(order.status)}</td>
+                    <td>
+                        <button class="btn btn-delete" onclick="deleteOrder('${order.transactionId}')" title="Excluir" style="background: #da3633; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('fees-table').style.display = feeOrders.length > 0 ? 'table' : 'none';
+            document.getElementById('no-fee-orders').style.display = feeOrders.length === 0 ? 'block' : 'none';
+        }
+
+        async function updateOrderStatus(id, newStatus) {
+            const statusNames = {
+                'preparing': 'Em Preparo',
+                'shipping': 'Saiu para Entrega'
+            };
+            
+            const res = await Swal.fire({
+                title: `Mudar para ${statusNames[newStatus]}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (res.isConfirmed) {
+                try {
+                    const response = await fetch(`/api/orders/${id}/status`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` 
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Status Atualizado!',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        loadOrders();
+                    } else {
+                        Swal.fire('Erro', data.error || 'Falha ao atualizar status.', 'error');
+                    }
+                } catch (err) {
+                    Swal.fire('Erro', 'Erro de conexão.', 'error');
+                }
+            }
+        }
+
 
         function viewOrder(order) {
             const items = order.items.map(i => `• ${i.title || i.name} (${i.quantity}x) - R$ ${(i.price / 100).toFixed(2)}`).join('\n');
@@ -1052,6 +1156,9 @@
             const labelSection = currentSettings.labelDeliverySection || 'Dados de Entrega';
 
             const del = order.paymentMethod === 'delivery' ? `\n🚚 ${labelSection.toUpperCase()}:\n${labelHouse}: ${order.deliveryData?.houseNumber || '-'}\n${labelTime}: ${order.deliveryData?.time || '-'}\n${labelCash}: ${order.deliveryData?.cash || '-'}\n${labelCep}: ${order.deliveryData?.cep || '-'}` : '';
+
+            const recoveryUrl = `${window.location.origin}/pagamento_pix.html?id=${order.transactionId}`;
+            const checkoutSection = `\n🔗 LINK PARA RECUPERAÇÃO (NO SEU DOMÍNIO):\n${recoveryUrl}\n<button class="btn btn-copy" onclick="copyToClipboard('${recoveryUrl}')" style="background: #238636; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 5px;"><i class="fas fa-copy"></i> Copiar Link</button>`;
 
             Swal.fire({
                 title: `Pedido #${order.transactionId.substring(0, 8)}`,
@@ -1069,8 +1176,21 @@ ${items}
 
 💰 TOTAL: R$ ${(order.amount / 100).toFixed(2)}
 MÉTODO: ${order.paymentMethod.toUpperCase()}
-STATUS: ${order.status.toUpperCase()}</pre>`,
+STATUS: ${order.status.toUpperCase()}</pre>${checkoutSection}`,
                 confirmButtonText: 'Fechar'
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                Toast.fire({ icon: 'success', title: 'Copiado para a área de transferência!' });
             });
         }
 

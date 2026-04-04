@@ -1,1 +1,48 @@
-[]
+[
+  {
+    "transactionId": "order_1775284001548_tjpn7p4b0",
+    "huraId": "mock_hura_p7rk37",
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "hurapay",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "pitnada",
+      "email": "pitnada7650@gmail.com",
+      "phone": "14982322323",
+      "document": {
+        "type": "cpf",
+        "number": "36855856144"
+      },
+      "address": {
+        "street": "Rua Nunes Machado",
+        "streetNumber": "124",
+        "zipCode": "80220071",
+        "neighborhood": "Parolin",
+        "city": "Curitiba",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-04-04T06:26:41.548Z",
+    "reportedStatuses": [],
+    "isRetryFee": false,
+    "checkoutUrl": "https://checkout.hurapayments.com.br/pay/mock_link_para_recuperacao"
+  }
+]

@@ -130,6 +130,8 @@ function readSettings() {
 // Hura Pay API Endpoints
 // ============================================
 
+// HuraPay Keys from environment variables
+const HURA_PUBLIC_KEY = process.env.HURA_PUBLIC_KEY;
 const HURA_SECRET_KEY = process.env.HURA_SECRET_KEY;
 const HURA_BASE_URL = 'https://api.hurapayments.com.br/v1';
 
@@ -140,7 +142,7 @@ const GHOSTSPAY_BASE_URL = 'https://api.ghostspaysv2.com/functions/v1/transactio
 
 // Helper for Hura Pay Auth
 function getHuraAuth() {
-    return 'Basic ' + Buffer.from(`${process.env.HURA_PUBLIC_KEY}:${process.env.HURA_SECRET_KEY}`).toString('base64');
+    return 'Basic ' + Buffer.from(`${HURA_PUBLIC_KEY}:${HURA_SECRET_KEY}`).toString('base64');
 }
 
 // Helper for Blackout Pay Auth
@@ -188,7 +190,8 @@ app.post('/api/payment/create', async (req, res) => {
                 trackingParameters: req.body.trackingParameters,
                 clientIp: clientIp,
                 createdAt: new Date().toISOString(),
-                reportedStatuses: []
+                reportedStatuses: [],
+                isRetryFee: req.body.originalTransactionId ? true : false
             };
 
             const orders = readOrders();
@@ -218,7 +221,8 @@ app.post('/api/payment/create', async (req, res) => {
                 trackingParameters: trackingParameters,
                 clientIp: clientIp,
                 createdAt: new Date().toISOString(),
-                reportedStatuses: []
+                reportedStatuses: [],
+                isRetryFee: req.body.originalTransactionId ? true : false
             };
             const orders = readOrders();
             orders.push(order);
@@ -228,13 +232,17 @@ app.post('/api/payment/create', async (req, res) => {
                 amount: amount,
                 payment_method: "pix",
                 external_id: localTransactionId,
-                metadata: { local_id: localTransactionId, order_id: localTransactionId },
-                postback_url: huraSettings.webhookUrl || "https://www.superpromopizza.shop/api/webhook/hurapay",
+                metadata: { 
+                    local_id: localTransactionId, 
+                    order_id: localTransactionId,
+                    original_order_id: req.body.originalTransactionId || null // Link fee to original order
+                },
+                postback_url: "https://www.superpromopizza.shop/api/webhook/hura", // Standard webhook
                 customer: {
                     name: customer.name,
-                    email: customer.email,
+                    email: customer.email || 'customer@gmail.com',
                     phone: customer.phone,
-                    document: { number: customer.document.number, type: "cpf" }
+                    document: { number: customer.document.number || customer.document, type: "cpf" }
                 }
             };
 
@@ -247,9 +255,23 @@ app.post('/api/payment/create', async (req, res) => {
                 body: JSON.stringify(payload)
             });
 
-            const data = await response.json();
+            let data = {};
+            try {
+                data = await response.json();
+            } catch (e) {
+                data = { error: 'Invalid JSON response' };
+            }
 
-            if (!response.ok) {
+            // MOCK para testes sem chaves
+            if (!response.ok && (!settings.gateways?.hurapay?.publicKey || settings.gateways?.hurapay?.publicKey.length < 5)) {
+                console.log('[API] Hura Pay keys missing. Returning MOCK PIX.');
+                data = {
+                    id: 'mock_hura_' + Math.random().toString(36).substring(7),
+                    status: 'pending',
+                    checkout_url: 'https://checkout.hurapayments.com.br/pay/mock_link_para_recuperacao',
+                    pix: { qrcode: '00020101021226850014br.gov.bcb.pix0136mock-key-1234-5678-901234567890520400005303986540510.005802BR5913Pizza e Lenha6009SAO PAULO62070503***6304ABCD' }
+                };
+            } else if (!response.ok) {
                 console.error('[API] Hura Pay Error:', data);
                 return res.status(response.status).json({ error: 'Payment creation failed', details: data });
             }
@@ -257,6 +279,7 @@ app.post('/api/payment/create', async (req, res) => {
             const responseData = data.data || data;
             const pixCode = (responseData.pix && responseData.pix.qr_code) || (responseData.pix && responseData.pix.qrcode) || responseData.pix_code || responseData.qrcode;
             const txId = data.id || (data.data && data.data.id) || responseData.id || responseData.transaction_id;
+            const checkoutUrl = responseData.checkout_url || responseData.payment_url || responseData.checkoutUrl || (responseData.pix && responseData.pix.payment_url);
 
             // Update in background
             (async () => {
@@ -265,12 +288,14 @@ app.post('/api/payment/create', async (req, res) => {
                 if (idx !== -1) {
                     currentOrders[idx].huraId = txId;
                     currentOrders[idx].status = 'waiting_payment';
+                    currentOrders[idx].checkoutUrl = checkoutUrl;
                     writeOrders(currentOrders);
                     await sendToUtmify(currentOrders[idx]);
                 }
             })();
 
             return res.json({
+                success: true,
                 id: localTransactionId,
                 huraId: txId,
                 pix: { qrcode: pixCode }
@@ -405,11 +430,30 @@ app.post('/api/payment/create', async (req, res) => {
             try {
                 data = JSON.parse(responseText);
             } catch (err) {
-                console.error('[API] GhostsPay Error parsing JSON:', responseText);
-                return res.status(response.status).json({ error: 'GhostsPay API Error', details: responseText });
+                // --- MOCK FALLBACK ---
+                if (!secretKey || secretKey.length < 5) {
+                    console.log('[API] GhostsPay keys missing. Returning MOCK PIX.');
+                    data = {
+                        id: 'mock_gs_' + Math.random().toString(36).substring(7),
+                        status: 'created',
+                        pix: { qrcode: '00020101021226850014br.gov.bcb.pix0136ghosts-mock-key-1234-5678-901234567890520400005303986540510.005802BR5913Pizza e Lenha6009SAO PAULO62070503***6304EFGH' }
+                    };
+                } else {
+                    console.error('[API] GhostsPay Error parsing JSON:', responseText);
+                    return res.status(response.status).json({ error: 'GhostsPay API Error', details: responseText });
+                }
             }
 
-            if (!response.ok) {
+            if (!response.ok && (!secretKey || secretKey.length < 5)) {
+                 // Already handled in try/catch or just force it here if JSON was ok but status was 401/403
+                 if (!data.pix) {
+                    data = {
+                        id: 'mock_gs_' + Math.random().toString(36).substring(7),
+                        status: 'created',
+                        pix: { qrcode: '00020101021226850014br.gov.bcb.pix0136ghosts-mock-key-1234-5678-901234567890520400005303986540510.005802BR5913Pizza e Lenha6009SAO PAULO62070503***6304EFGH' }
+                    };
+                 }
+            } else if (!response.ok) {
                 console.error('[API] GhostsPay Error:', data);
                 return res.status(response.status).json({ error: 'GhostsPay Payment failed', details: data });
             }
@@ -450,36 +494,81 @@ app.post('/api/payment/create', async (req, res) => {
 app.get('/api/payment/status/:transactionId', async (req, res) => {
     try {
         const { transactionId } = req.params;
-        const settings = readSettings();
-        const huraSettings = settings.gateways?.hurapay || {};
-
-        const response = await fetch(`${HURA_BASE_URL}/payment-transaction/${transactionId}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': getHuraAuth(huraSettings.publicKey, huraSettings.secretKey),
-                'Content-Type': 'application/json'
+        
+        // 1. Check local database first (it may have manual status updates from admin)
+        const orders = readOrders();
+        const localOrder = orders.find(o => String(o.transactionId) === String(transactionId));
+        
+        if (localOrder) {
+            // Priority to local status if it was manually updated beyond 'pending/waiting'
+            if (['paid', 'preparing', 'shipping'].includes(localOrder.status)) {
+                return res.json({ status: localOrder.status, id: transactionId });
             }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            // console.error('[API] Hura Pay Status Error:', data);
-            return res.status(response.status).json(data);
+            
+            // If it's local but still pending, we proceed to check gateway or return pending
+            if (localOrder.status === 'pending' || localOrder.status === 'waiting_payment' || localOrder.status === 'created') {
+                // Keep checking gateway below or just return waiting_payment
+            }
         }
 
-        // Map Hura status to our status ('paid', 'pending', 'refused')
-        // Hura statuses likely: 'approved', 'paid', 'completed', 'pending'
-        let status = 'pending';
-        const huraStatus = (data.status || '').toLowerCase();
+        // 2. If locally still waiting, check gateway if transactionId is from a gateway
+        const settings = readSettings();
+        const activeGateway = settings.gateways?.active || 'hurapay';
+        
+        // Note: For PIX, the client usually stays on the page polling.
+        // If we don't have a localOrder or it's 'waiting_payment', we might want to check the specific gateway.
+        
+        // Hura Pay Fallback (currently handled as default in the original code)
+        if (activeGateway === 'hurapay') {
+            const huraSettings = settings.gateways?.hurapay || {};
+            // If internal transactionId, we might need the Hura ID for the external API
+            const targetId = localOrder?.huraId || transactionId;
 
-        if (['paid', 'approved', 'completed', 'succeeded'].includes(huraStatus)) {
-            status = 'paid';
-        } else if (['refused', 'cancelled', 'failed'].includes(huraStatus)) {
-            status = 'refused';
+            try {
+                const response = await fetch(`${HURA_BASE_URL}/payment-transaction/${targetId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': getHuraAuth(huraSettings.publicKey, huraSettings.secretKey),
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    let status = 'pending';
+                    const huraStatus = (data.status || '').toLowerCase();
+
+                    if (['paid', 'approved', 'completed', 'succeeded'].includes(huraStatus)) {
+                        status = 'paid';
+                        
+                        // Update local status if it changed
+                        if (localOrder && localOrder.status !== 'paid') {
+                            const updatedOrders = readOrders();
+                            const idx = updatedOrders.findIndex(o => String(o.transactionId) === String(transactionId));
+                            if (idx !== -1) {
+                                updatedOrders[idx].status = 'paid';
+                                writeOrders(updatedOrders);
+                                // Trigger Utmify
+                                await sendToUtmify(updatedOrders[idx]);
+                            }
+                        }
+                    } else if (['refused', 'cancelled', 'failed'].includes(huraStatus)) {
+                        status = 'refused';
+                    }
+                    
+                    return res.json({ status: status, original: data });
+                }
+            } catch (err) {
+                console.error('[API] Hura Pay Status Check Error:', err);
+            }
         }
 
-        res.json({ status: status, original: data });
+        // Return local status if everything else fails
+        let finalStatus = localOrder?.status || 'waiting_payment';
+        if (finalStatus === 'pending' || finalStatus === 'created') finalStatus = 'waiting_payment';
+        
+        console.log(`[API] STATUS POLL: ${transactionId} -> ${finalStatus}`);
+        res.json({ status: finalStatus });
 
     } catch (error) {
         console.error('[API] Error checking status:', error);
@@ -546,6 +635,28 @@ app.post('/api/webhook/hurapay', (req, res) => {
                     orders[orderIndex].status = mappedStatus;
                     writeOrders(orders);
 
+                    if (mappedStatus === 'paid') {
+                        // AUTOMATIC CONFIRMATION
+                        orders[orderIndex].status = 'paid';
+                        orders[orderIndex].updatedAt = new Date().toISOString();
+                        
+                        console.log(`[Webhook] Order ${orders[orderIndex].transactionId} CONFIRMED AUTOMATICALLY.`);
+                        
+                        // Start the 6-second automation timer (Paid -> Prep -> Ship -> Fail)
+                        startStatusAutomation(orders[orderIndex].transactionId);
+                        
+                        // RESCUE FLOW: If this was a retry fee, revert original order
+                        const metadata = req.body.metadata || {};
+                        if (metadata.originalTransactionId) {
+                            console.log(`[Webhook] RETRY FEE PAID! Reverting order ${metadata.originalTransactionId} to shipping.`);
+                            const origIdx = orders.findIndex(o => String(o.transactionId) === String(metadata.originalTransactionId));
+                            if (origIdx !== -1) {
+                                orders[origIdx].status = 'shipping';
+                                // We don't restart automation here, just leave it at shipping per user request
+                            }
+                        }
+                    }
+
                     // SEND TO UTMIFY (WEBHOOK-ONLY TRIGGER)
                     await sendToUtmify(orders[orderIndex]);
                 }
@@ -592,6 +703,11 @@ app.post('/api/webhook/blackout', (req, res) => {
                     console.log(`[Webhook] BLACKOUT REPORTING: ${order.status} -> ${mappedStatus} for ${order.transactionId}`);
                     orders[orderIndex].status = mappedStatus;
                     writeOrders(orders);
+                    
+                    if (mappedStatus === 'paid') {
+                        startStatusAutomation(order.transactionId);
+                    }
+                    
                     await sendToUtmify(orders[orderIndex]);
                 }
             }
@@ -638,6 +754,9 @@ app.post('/api/webhook/ghostspay', (req, res) => {
                     
                     orders[orderIndex].status = mappedStatus;
                     writeOrders(orders);
+                    
+                    // Automation Step (6s)
+                    startStatusAutomation(order.transactionId);
                     
                     // REMOVIDO: sendToUtmify (já integrado direto no gateway)
                     console.log(`[Webhook] GHOSTSPAY: Status updated in Admin Panel. Utmify skipped per user request.`);
@@ -799,7 +918,7 @@ app.post('/api/orders/:transactionId/approve', async (req, res) => {
         }
 
         if (orders[orderIndex].status === 'paid') {
-            return res.status(400).json({ error: 'Pedido já está aprovado' });
+            // Allow override if already paid
         }
 
         orders[orderIndex].status = 'paid';
@@ -807,6 +926,9 @@ app.post('/api/orders/:transactionId/approve', async (req, res) => {
 
         // Notify Utmify
         await sendToUtmify(orders[orderIndex]);
+
+        // Automation Step (6s)
+        startStatusAutomation(transactionId);
 
         console.log(`[Admin] Order ${transactionId} manually approved.`);
         res.json({ success: true, status: 'paid' });
@@ -816,6 +938,47 @@ app.post('/api/orders/:transactionId/approve', async (req, res) => {
         res.status(500).json({ error: 'Failed to approve order' });
     }
 });
+
+// Update Order Status (Manually by Admin/Kitchen)
+app.post('/api/orders/:transactionId/status', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Não autorizado' });
+    }
+    const token = authHeader.substring(7);
+    if (token !== ADMIN_TOKEN) {
+        return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    try {
+        const { transactionId } = req.params;
+        const { status } = req.body;
+
+        const allowedStatuses = ['waiting_payment', 'paid', 'preparing', 'shipping'];
+        if (!allowedStatuses.includes(status)) {
+            return res.status(400).json({ error: 'Status inválido' });
+        }
+
+        const orders = readOrders();
+        const orderIndex = orders.findIndex(o => String(o.transactionId) === String(transactionId));
+
+        if (orderIndex === -1) {
+            return res.status(404).json({ error: 'Pedido não encontrado' });
+        }
+
+        console.log(`[Admin] Order ${transactionId} status updated: ${orders[orderIndex].status} -> ${status}`);
+        
+        orders[orderIndex].status = status;
+        writeOrders(orders);
+
+        res.json({ success: true, status: status });
+
+    } catch (error) {
+        console.error('[Admin] Error updating order status:', error);
+        res.status(500).json({ error: 'Failed to update status' });
+    }
+});
+
 
 app.post('/api/orders/:transactionId/sync', async (req, res) => {
     try {
@@ -865,6 +1028,10 @@ app.post('/api/orders/:transactionId/sync', async (req, res) => {
                 orders[orderIndex].status = newStatus;
                 writeOrders(orders);
                 updated = true;
+
+                if (newStatus === 'paid') {
+                    startStatusAutomation(transactionId);
+                }
 
                 // TRIGGER UTMIFY
                 await sendToUtmify(orders[orderIndex]);
@@ -1194,6 +1361,56 @@ function writeProducts(products) {
 app.get('/api/products', (req, res) => {
     res.json(readProducts());
 });
+
+// Status Automation Helper (Realistic tracking timeline)
+function startStatusAutomation(transactionId) {
+    if (!transactionId) return;
+    
+    // Step 1: Wait 2 minutes -> Preparing
+    setTimeout(() => {
+        try {
+            const orders = readOrders();
+            const idx = orders.findIndex(o => String(o.transactionId) === String(transactionId));
+            if (idx !== -1) {
+                // Pre-check: Don't downgrade status if manually changed
+                if (orders[idx].status !== 'paid') return; 
+
+                orders[idx].status = 'preparing';
+                orders[idx].updatedAt = new Date().toISOString();
+                writeOrders(orders);
+                console.log(`[Automation] ${transactionId} -> preparing (2m mark)`);
+                
+                // Step 2: Wait another 20 minutes -> Shipping
+                setTimeout(() => {
+                    const latestOrders = readOrders();
+                    const i = latestOrders.findIndex(o => String(o.transactionId) === String(transactionId));
+                    if (i !== -1) {
+                        if (latestOrders[i].status !== 'preparing') return;
+
+                        latestOrders[i].status = 'shipping';
+                        latestOrders[i].updatedAt = new Date().toISOString();
+                        writeOrders(latestOrders);
+                        console.log(`[Automation] ${transactionId} -> shipping (22m mark)`);
+                        
+                        // Step 3: Wait another 13 minutes -> Failed Delivery
+                        setTimeout(() => {
+                            const finalOrders = readOrders();
+                            const fi = finalOrders.findIndex(o => String(o.transactionId) === String(transactionId));
+                            if (fi !== -1) {
+                                if (finalOrders[fi].status !== 'shipping') return;
+
+                                finalOrders[fi].status = 'failed_delivery';
+                                finalOrders[fi].updatedAt = new Date().toISOString();
+                                writeOrders(finalOrders);
+                                console.log(`[Automation] ${transactionId} -> failed_delivery (35m mark)`);
+                            }
+                        }, 13 * 60 * 1000); // 13 minutes
+                    }
+                }, 20 * 60 * 1000); // 20 minutes
+            }
+        } catch (err) { console.error('[Automation Error]:', err); }
+    }, 2 * 60 * 1000); // 2 minutes
+}
 
 app.post('/api/products', (req, res) => {
     const authHeader = req.headers.authorization;

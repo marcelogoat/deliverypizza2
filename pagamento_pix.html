@@ -252,6 +252,153 @@
             color: #028b49;
             font-weight: bold;
         }
+
+        /* Order Status Tracker */
+        .order-status-tracker {
+            margin-top: 40px;
+            padding: 20px 10px;
+            background: #fff;
+            border-radius: 12px;
+            border-top: 1px solid #eee;
+        }
+
+        .tracker-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 12%;
+            right: 12%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 15px;
+            left: 12%;
+            height: 2px;
+            background: #028b49;
+            z-index: 2;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .step {
+            z-index: 3;
+            width: 25%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-icon {
+            border-color: #028b49;
+            color: #028b49;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(2, 139, 73, 0.2);
+        }
+
+        .step.completed .step-icon {
+            background: #028b49;
+            border-color: #028b49;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #999;
+            max-width: 70px;
+            line-height: 1.2;
+        }
+
+        .step.active .step-label, .step.completed .step-label {
+            color: #028b49;
+        }
+
+        .step.active .step-icon i {
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .failed-alert {
+            display: none;
+            background: #fff5f5;
+            border: 2px solid #e53e3e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .failed-alert h3 {
+            color: #c53030;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-retry {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .btn-retry:hover {
+            background: #c53030;
+        }
     </style>
 
 
@@ -361,6 +508,52 @@
             </button>
         </div>
 
+        <!-- Order Status Tracker UI -->
+        <div class="order-status-tracker" id="status-tracker">
+            <div class="tracker-title">
+                <i class="fas fa-motorcycle"></i> Status do seu Pedido
+            </div>
+            <div class="stepper">
+                <div class="progress-line" id="status-progress"></div>
+                
+                <div class="step active" id="step-waiting">
+                    <div class="step-icon"><i class="fas fa-clock"></i></div>
+                    <div class="step-label">Aguardando Pagamento</div>
+                </div>
+
+                <div class="step" id="step-paid">
+                    <div class="step-icon"><i class="fas fa-check"></i></div>
+                    <div class="step-label">Pedido Confirmado</div>
+                </div>
+
+                <div class="step" id="step-preparing">
+                    <div class="step-icon"><i class="fas fa-fire"></i></div>
+                    <div class="step-label">Em Preparo</div>
+                </div>
+
+                <div class="step" id="step-shipping">
+                    <div class="step-icon"><i class="fas fa-truck-fast"></i></div>
+                    <div class="step-label">Saiu para Entrega</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Failed Delivery Alert (Hidden by default) -->
+        <div id="failed-delivery-alert" class="failed-alert">
+            <h3><i class="fas fa-exclamation-triangle"></i> Entrega não realizada!</h3>
+            <p style="color: #4a5568; font-size: 14px; line-height: 1.5;">
+                Infelizmente não foi possível realizar a entrega do seu pedido no endereço informado. 
+                <br><strong>Motivo:</strong> Destinatário ausente ou endereço não localizado.
+            </p>
+            <div style="background: #fed7d7; padding: 10px; border-radius: 6px; margin: 15px 0; font-size: 15px; color: #9b2c2c;">
+                <strong>Taxa de Re-entrega: R$ 16,39</strong>
+            </div>
+            <p style="font-size: 13px; color: #718096;">Deseja que enviemos o entregador novamente agora?</p>
+            <button class="btn-retry" onclick="generateRetryFeePix()">
+                <i class="fas fa-truck-pickup"></i> PAGAR TAXA E REFAZER ENTREGA
+            </button>
+        </div>
+
         <!-- Trust and Security Section -->
         <div
             style="margin-top: 25px; padding: 15px; background: #fafafa; border-radius: 6px; border: 1px solid #f0f0f0;">
@@ -426,8 +619,15 @@
 
                 // Use Web Worker for polling (avoids background throttling)
                 // Prepare Utmify Payload for Worker
-                const customer = JSON.parse(localStorage.getItem(`customer_data_${transactionId}`));
-                const items = JSON.parse(localStorage.getItem(`items_data_${transactionId}`));
+                let customer = null, items = null;
+                try {
+                    const rawCust = localStorage.getItem(`customer_data_${transactionId}`);
+                    const rawItems = localStorage.getItem(`items_data_${transactionId}`);
+                    customer = rawCust ? JSON.parse(rawCust) : null;
+                    items = rawItems ? JSON.parse(rawItems) : null;
+                } catch (e) {
+                    console.warn('[Status] LocalData parse error:', e);
+                }
 
                 // Calculate total
                 let totalCents = 0;
@@ -450,7 +650,6 @@
                     worker.postMessage({
                         type: 'start',
                         transactionId: transactionId,
-                        auth: auth,
                         utmifyData: {
                             customer: customer,
                             items: items,
@@ -460,43 +659,125 @@
                     });
 
                     worker.onmessage = function (e) {
+                        // The worker might only return 'paid'
+                        // We will add regular polling for the new statuses below anyway
                         if (e.data.status === 'paid' || e.data.status === 'paid_and_sent') {
-                            aprovado();
+                            // aprovado(); // Redirect removed - now handled by status updater
+                            updateStatusUI('paid');
                         }
                     };
-                } else {
-                    // Fallback for older browsers
-                    const checkStatus = setInterval(async () => {
-                        try {
-                            const response = await fetch(`/api/payment/status/${transactionId}`);
-                            const data = await response.json();
-
-                            if (data.status === 'paid') {
-                                window.isPaid = true; // Mark as paid to disable warning
-                                clearInterval(checkStatus);
-                                aprovado();
-                            }
-                        } catch (error) {
-                            console.error('Polling Error:', error);
-                        }
-                    }, 5000);
                 }
+
+                // Regular Polling for Status Tracker (Independent of Worker if needed)
+                const checkStatus = setInterval(async () => {
+                    try {
+                        const response = await fetch(`/api/payment/status/${transactionId}`);
+                        const data = await response.json();
+
+                        if (data.status) {
+                            console.log('[Polling] Status:', data.status);
+                            updateStatusUI(data.status);
+                            
+                            // If status is 'paid' (or higher) for the first time, run approved() effects (ads) but DON'T redirect
+                            const isPaidOrBetter = ['paid', 'preparing', 'shipping'].includes(data.status);
+                            if (isPaidOrBetter && !window.paymentReported) {
+                                window.paymentReported = true;
+                                window.isPaid = true;
+                                await aprovadoSilently(); 
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Polling Error:', error);
+                    }
+                }, 4000);
             }
         });
+
+        function updateStatusUI(status) {
+            // Check for failed delivery first (special state)
+            if (status === 'failed_delivery') {
+                $('h2').first().text('Falha na Entrega!');
+                $('#status-tracker').hide();
+                $('#failed-delivery-alert').fadeIn();
+                return;
+            }
+
+            // Map possible aliases or pending statuses to our tracker steps
+            let currentStatus = status;
+            if (currentStatus === 'pending' || currentStatus === 'created' || currentStatus === 'waiting_payment') {
+                currentStatus = 'waiting_payment';
+            }
+
+            const steps = ['waiting_payment', 'paid', 'preparing', 'shipping'];
+            const currentIdx = steps.indexOf(currentStatus);
+            if (currentIdx === -1) {
+                console.warn('[Tracker] Unrecognized status:', status);
+                return;
+            }
+
+            // Ensure tracker is visible if not failed
+            $('#status-tracker').show();
+            $('#failed-delivery-alert').hide();
+
+            // Update Progress Line
+            const progress = document.getElementById('status-progress');
+            const percent = (currentIdx / (steps.length - 1)) * 76; // 76% is the distance between first and last dot
+            if (progress) progress.style.width = percent + '%';
+
+            // Update Steps
+            steps.forEach((s, idx) => {
+                const stepId = 'step-' + (s === 'waiting_payment' ? 'waiting' : s);
+                const el = document.getElementById(stepId);
+                if (!el) return;
+
+                if (idx < currentIdx) {
+                    el.classList.remove('active');
+                    el.classList.add('completed');
+                } else if (idx === currentIdx) {
+                    el.classList.add('active');
+                    el.classList.remove('completed');
+                } else {
+                    el.classList.remove('active', 'completed');
+                }
+            });
+
+            // Special case: if status arrived at Paid or beyond, make sure UI reflects confirmation
+            if (currentIdx === 1) {
+                $('h2').first().text('Pagamento Recebido!');
+            } else if (currentIdx === 2) {
+                $('h2').first().text('Preparando seu Pedido...');
+            } else if (currentIdx === 3) {
+                $('h2').first().text('Pedido Saiu para Entrega!');
+            } else if (status === 'failed_delivery') {
+                $('h2').first().text('Falha na Entrega!');
+                $('#status-tracker').hide();
+                $('#failed-delivery-alert').fadeIn();
+            }
+            
+            if (currentIdx >= 1) {
+                $('.clock-box').fadeOut();
+                $('.qr-wrapper').fadeOut();
+                $('.btn-copy').fadeOut();
+                $('.code-box').fadeOut();
+                $('.pix-instructions').fadeOut();
+            }
+        }
 
 
     </script>
     <script>
         // Função de Polling com Web Worker para evitar throttling 
         // (Vendas aprovadas mesmo em segundo plano)
-        async function aprovado() {
-            await reportSale();
+        // Função para reportar sem redirecionar
+        async function aprovadoSilently() {
+            await reportSale(true);
         }
 
-        // Google Ads conversion removed
+        async function aprovado() {
+            await reportSale(false);
+        }
 
-
-        async function reportSale() {
+        async function reportSale(silent = false) {
             // Obter dados da transação
             const urlParams = new URLSearchParams(window.location.search);
             const transactionId = urlParams.get('tx') || localStorage.getItem('current_transaction_id');
@@ -509,48 +790,10 @@
             }
             const totalValue = totalCents / 100; // Converter de centavos para reais
 
-            // Send to Utmify (WEBHOOK ONLY MODE - Frontend disabled)
-            /*
-            try {
-                await sendUtmifyApproved();
-                console.log('[Utmify] Paid order sent successfully');
-            } catch (error) {
-                console.error('[Utmify] Error sending paid order:', error);
-            }
-            */
-
-            // Send Google Ads Conversion
             // Send Google Ads Conversion
             if (typeof gtag === 'function') {
-                // New Tag AW-17941274522
                 gtag('event', 'conversion', {
                     'send_to': 'AW-17941274522/IfTuCIPP0_UbEJq_iOtC',
-                    'value': totalValue,
-                    'currency': 'BRL',
-                    'transaction_id': transactionId
-                });
-                console.log('[Google Ads] Conversion sent for AW-17941274522');
-
-                gtag('event', 'conversion', {
-                    'send_to': 'AW-17913792623/VOjgCPLwnPIbEO-Q-91C',
-                    'value': totalValue,
-                    'currency': 'BRL',
-                    'transaction_id': transactionId
-                });
-                gtag('event', 'conversion', {
-                    'send_to': 'AW-17852819586/3yvGCPHY49wbEILR8cBC',
-                    'value': totalValue,
-                    'currency': 'BRL',
-                    'transaction_id': transactionId
-                });
-                gtag('event', 'conversion', {
-                    'send_to': 'AW-17974801550/cvkzCN-Yw_8bEI7phvtC',
-                    'value': totalValue,
-                    'currency': 'BRL',
-                    'transaction_id': transactionId
-                });
-                gtag('event', 'conversion', {
-                    'send_to': 'AW-17970229782/sOG_CLDaoIAcEJbk7_hC',
                     'value': totalValue,
                     'currency': 'BRL',
                     'transaction_id': transactionId
@@ -558,16 +801,26 @@
                 console.log('[Google Ads] Conversion sent');
             }
 
-            // Mostrar mensagem de sucesso
-            Swal.fire({
-                icon: 'success',
-                title: 'Pagamento Confirmado!',
-                text: 'Redirecionando...',
-                timer: 2000,
-                showConfirmButton: false
-            }).then(() => {
-                window.location.href = 'escolha_entrega.html';
-            });
+            if (!silent) {
+                // Mostrar mensagem de sucesso e redirecionar
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Pagamento Confirmado!',
+                    text: 'Redirecionando...',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = 'escolha_entrega.html';
+                });
+            } else {
+                console.log('[Status] Payment confirmed silently. Staying on page for tracker.');
+                // Optional: Change header text
+                $('h2').first().text('Pagamento Recebido!');
+                $('.clock-box').hide();
+                $('.qr-wrapper').fadeOut();
+                $('.btn-copy').fadeOut();
+                $('.code-box').fadeOut();
+            }
         }
 
         function copyPix() {
@@ -809,6 +1062,90 @@
                 });
                 $('#btn-upload-submit').prop('disabled', false).text('Enviar Comprovante');
             }
+        }
+        async function generateRetryFeePix() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const originalTxId = urlParams.get('tx') || localStorage.getItem('current_transaction_id');
+            
+            if (!originalTxId) {
+                Swal.fire('Erro', 'Não foi possível localizar o pedido original.', 'error');
+                return;
+            }
+
+            // Get original customer data
+            const rawCust = localStorage.getItem(`customer_data_${originalTxId}`);
+            if (!rawCust) {
+                Swal.fire('Dados Ausentes', 'Por favor, realize o pedido novamente.', 'warning');
+                return;
+            }
+            const customer = JSON.parse(rawCust);
+
+            Swal.fire({
+                title: 'Gerando Pix da Taxa...',
+                html: '<div style="margin-top: 15px;"><i class="fas fa-spinner fa-spin fa-2x" style="color: #028b49;"></i></div>',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                customClass: { popup: 'swal2-premium-popup' }
+            });
+
+            try {
+                const response = await fetch('/api/payment/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: 1639, // R$ 16,39
+                        paymentMethod: 'pix',
+                        originalTransactionId: originalTxId,
+                        customer: customer,
+                        items: [{ title: 'Taxa de Re-entrega Administrativa', unitPrice: 1639, quantity: 1 }]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.pix && data.pix.qrcode) {
+                    const qrCode = data.pix.qrcode;
+                    const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrCode)}`;
+
+                    Swal.fire({
+                        title: 'Taxa Gerada!',
+                        html: `
+                            <p style="font-size: 14px; color: #666;">Pague o Pix de <b>R$ 16,39</b> abaixo para refazer sua entrega agora.</p>
+                            <div style="margin: 20px 0;">
+                                <img src="${qrImage}" style="width: 200px; border-radius: 10px; border: 1px solid #ddd;">
+                            </div>
+                            <div id="pix-fee-code" style="background: #f4f4f4; padding: 10px; border-radius: 6px; font-size: 11px; word-break: break-all; color: #333; margin-bottom: 15px;">
+                                ${qrCode}
+                            </div>
+                            <button class="btn-copy" onclick="copyPixCode()" style="background: #028b49; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer;">
+                                <i class="far fa-copy"></i> COPIAR CÓDIGO PIX
+                            </button>
+                        `,
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        customClass: { popup: 'swal2-premium-popup' }
+                    });
+                } else {
+                    throw new Error(data.message || 'Erro ao gerar Pix.');
+                }
+            } catch (err) {
+                console.error('Fee Pix Error:', err);
+                Swal.fire('Erro', 'Não foi possível gerar o Pix. Tente novamente.', 'error');
+            }
+        }
+
+        function copyPixCode() {
+            const code = $('#pix-fee-code').text().trim();
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = $('.btn-copy');
+                const originalText = btn.html();
+                btn.html('<i class="fas fa-check"></i> CÓDIGO COPIADO!');
+                btn.css('background-color', '#27ae60');
+                setTimeout(() => {
+                    btn.html(originalText);
+                    btn.css('background-color', '#028b49');
+                }, 2000);
+            });
         }
     </script>
 
