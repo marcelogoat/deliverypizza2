@@ -83,59 +83,6 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// ============================================
-// DIAGNOSTIC ENDPOINT - Testa a Hura Pay
-// ============================================
-app.get('/api/diagnostico', async (req, res) => {
-    const settings = readSettings();
-    const activeGateway = settings.gateways?.active || 'hurapay';
-    const huraPublicKey = process.env.HURA_PUBLIC_KEY;
-    const huraSecretKey = process.env.HURA_SECRET_KEY;
-
-    const result = {
-        gatewayAtivo: activeGateway,
-        huraPublicKey: huraPublicKey ? `${huraPublicKey.substring(0, 6)}...` : 'NÃO CONFIGURADO',
-        huraSecretKey: huraSecretKey ? `${huraSecretKey.substring(0, 6)}...` : 'NÃO CONFIGURADO',
-        huraBaseUrl: 'https://api.hurapayments.com.br/v1',
-        testeConexao: null,
-        erro: null
-    };
-
-    try {
-        const testResponse = await fetchWithTimeout(`https://api.hurapayments.com.br/v1/payment-transaction/create`, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Basic ' + Buffer.from(`${huraPublicKey}:${huraSecretKey}`).toString('base64'),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                amount: 100,
-                payment_method: 'pix',
-                external_id: 'diagnostico_test_' + Date.now(),
-                postback_url: 'https://example.com/webhook',
-                customer: {
-                    name: 'Teste Diagnostico',
-                    email: 'teste@gmail.com',
-                    phone: '11999999999',
-                    document: { number: '12345678909', type: 'cpf' }
-                }
-            })
-        }, 15000);
-
-        const data = await testResponse.json();
-        result.testeConexao = {
-            status: testResponse.status,
-            statusText: testResponse.statusText,
-            resposta: data
-        };
-    } catch (err) {
-        result.erro = err.message;
-    }
-
-    res.json(result);
-});
-
-
 // Custom Admin Routes
 app.get('/index.html/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
@@ -305,16 +252,24 @@ app.post('/api/payment/create', async (req, res) => {
                 metadata: { 
                     local_id: localTransactionId, 
                     order_id: localTransactionId,
-                    original_order_id: req.body.originalTransactionId || null // Link fee to original order
+                    original_order_id: req.body.originalTransactionId || null
                 },
-                postback_url: "https://www.superpromopizza.shop/api/webhook/hura", // Standard webhook
+                postback_url: "https://www.superpromopizza.shop/api/webhook/hura",
                 customer: {
                     name: customer.name,
                     email: customer.email || 'customer@gmail.com',
                     phone: customer.phone,
                     document: { number: customer.document.number || customer.document, type: "cpf" }
-                }
+                },
+                items: (items || []).map(item => ({
+                    title: item.title,
+                    unit_price: item.unitPrice || item.unit_price,
+                    quantity: item.quantity || 1,
+                    tangible: false
+                })),
+                pix: { expires_in_days: 1 }
             };
+            console.log('[API] HuraPay payload:', JSON.stringify(payload, null, 2));
 
             console.log('[API] Calling HuraPay API...');
             const response = await fetchWithTimeout(`${HURA_BASE_URL}/payment-transaction/create`, {
@@ -327,10 +282,18 @@ app.post('/api/payment/create', async (req, res) => {
             }, 30000);
 
             let data = {};
+            const rawText = await response.text();
+            console.log('[API] HuraPay raw response status:', response.status);
+            console.log('[API] HuraPay raw response body:', rawText.substring(0, 500));
             try {
-                data = await response.json();
+                data = JSON.parse(rawText);
             } catch (e) {
-                data = { error: 'Invalid JSON response' };
+                console.error('[API] HuraPay response is NOT valid JSON. Raw:', rawText.substring(0, 300));
+                return res.status(500).json({ 
+                    error: 'Payment creation failed', 
+                    message: `Hura Pay retornou resposta inválida (status ${response.status})`,
+                    details: rawText.substring(0, 300)
+                });
             }
 
             if (!response.ok) {

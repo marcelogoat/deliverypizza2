@@ -44,5 +44,187 @@
     "reportedStatuses": [],
     "isRetryFee": false,
     "checkoutUrl": "https://checkout.hurapayments.com.br/pay/mock_link_para_recuperacao"
+  },
+  {
+    "transactionId": "order_1775681952660_odklihxsu",
+    "huraId": null,
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "hurapay",
+    "status": "created",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos3352@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "57434316390"
+      },
+      "address": {
+        "street": "cha do pilar",
+        "streetNumber": "07",
+        "zipCode": "57150000",
+        "neighborhood": "cha do pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-04-08T20:59:12.660Z",
+    "reportedStatuses": [],
+    "isRetryFee": false
+  },
+  {
+    "transactionId": "order_1775682033655_yc64b6sga",
+    "huraId": null,
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "hurapay",
+    "status": "created",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos7605@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "16525767466"
+      },
+      "address": {
+        "street": "cha do pilar",
+        "streetNumber": "07",
+        "zipCode": "57150000",
+        "neighborhood": "cha do pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-04-08T21:00:33.655Z",
+    "reportedStatuses": [],
+    "isRetryFee": false
+  },
+  {
+    "transactionId": "order_1775682178430_aqlonvhqt",
+    "huraId": null,
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "hurapay",
+    "status": "created",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos2283@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "70368007634"
+      },
+      "address": {
+        "street": "cha do pilar",
+        "streetNumber": "07",
+        "zipCode": "57150000",
+        "neighborhood": "cha do pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-04-08T21:02:58.430Z",
+    "reportedStatuses": [],
+    "isRetryFee": false
+  },
+  {
+    "transactionId": "order_1775683108329_f80vi5e0c",
+    "huraId": "0083767d06d64512a8b3485f6a1355a9",
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "hurapay",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos2544@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "86543160632"
+      },
+      "address": {
+        "street": "cha do pilar",
+        "streetNumber": "07",
+        "zipCode": "57150000",
+        "neighborhood": "cha do pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Guia Seca Barriga Iniciante",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-04-08T21:18:28.329Z",
+    "reportedStatuses": [],
+    "isRetryFee": false,
+    "receiptUrl": "/uploads/receipts/1775683130051-WhatsApp Image 2026-04-08 at 16.29.41.jpeg",
+    "pixCopied": true
   }
 ]
