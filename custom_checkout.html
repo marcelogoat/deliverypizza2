@@ -1627,6 +1627,14 @@
                                 footer: data.error ? `<small>${data.error}</small>` : ''
                             });
                         }
+                    } else {
+                        console.error('API Creation Failed:', data);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro na Geração do PIX',
+                            text: data.message || 'Não foi possível gerar o PIX. O gateway de pagamento reportou um erro.',
+                            footer: data.details ? `<pre style="font-size: 10px; text-align: left;">${JSON.stringify(data.details, null, 2)}</pre>` : ''
+                        });
                     }
 
                 } catch (error) {
