@@ -262,18 +262,14 @@ app.post('/api/payment/create', async (req, res) => {
                 data = { error: 'Invalid JSON response' };
             }
 
-            // MOCK para testes sem chaves
-            if (!response.ok && (!settings.gateways?.hurapay?.publicKey || settings.gateways?.hurapay?.publicKey.length < 5)) {
-                console.log('[API] Hura Pay keys missing. Returning MOCK PIX.');
-                data = {
-                    id: 'mock_hura_' + Math.random().toString(36).substring(7),
-                    status: 'pending',
-                    checkout_url: 'https://checkout.hurapayments.com.br/pay/mock_link_para_recuperacao',
-                    pix: { qrcode: '00020101021226850014br.gov.bcb.pix0136mock-key-1234-5678-901234567890520400005303986540510.005802BR5913Pizza e Lenha6009SAO PAULO62070503***6304ABCD' }
-                };
-            } else if (!response.ok) {
-                console.error('[API] Hura Pay Error:', data);
-                return res.status(response.status).json({ error: 'Payment creation failed', details: data });
+            if (!response.ok) {
+                console.error('[API] Hura Pay Error Status:', response.status);
+                console.error('[API] Hura Pay Error Data:', JSON.stringify(data, null, 2));
+                return res.status(response.status).json({ 
+                    error: 'Payment creation failed', 
+                    message: data.message || 'Hura Pay API error',
+                    details: data 
+                });
             }
 
             const responseData = data.data || data;
@@ -430,32 +426,22 @@ app.post('/api/payment/create', async (req, res) => {
             try {
                 data = JSON.parse(responseText);
             } catch (err) {
-                // --- MOCK FALLBACK ---
-                if (!secretKey || secretKey.length < 5) {
-                    console.log('[API] GhostsPay keys missing. Returning MOCK PIX.');
-                    data = {
-                        id: 'mock_gs_' + Math.random().toString(36).substring(7),
-                        status: 'created',
-                        pix: { qrcode: '00020101021226850014br.gov.bcb.pix0136ghosts-mock-key-1234-5678-901234567890520400005303986540510.005802BR5913Pizza e Lenha6009SAO PAULO62070503***6304EFGH' }
-                    };
-                } else {
-                    console.error('[API] GhostsPay Error parsing JSON:', responseText);
-                    return res.status(response.status).json({ error: 'GhostsPay API Error', details: responseText });
-                }
+                console.error('[API] GhostsPay Error parsing JSON:', responseText);
+                return res.status(response.status).json({ 
+                    error: 'GhostsPay API Error', 
+                    message: 'Erro ao processar resposta do servidor',
+                    details: responseText 
+                });
             }
 
-            if (!response.ok && (!secretKey || secretKey.length < 5)) {
-                 // Already handled in try/catch or just force it here if JSON was ok but status was 401/403
-                 if (!data.pix) {
-                    data = {
-                        id: 'mock_gs_' + Math.random().toString(36).substring(7),
-                        status: 'created',
-                        pix: { qrcode: '00020101021226850014br.gov.bcb.pix0136ghosts-mock-key-1234-5678-901234567890520400005303986540510.005802BR5913Pizza e Lenha6009SAO PAULO62070503***6304EFGH' }
-                    };
-                 }
-            } else if (!response.ok) {
-                console.error('[API] GhostsPay Error:', data);
-                return res.status(response.status).json({ error: 'GhostsPay Payment failed', details: data });
+            if (!response.ok) {
+                console.error('[API] GhostsPay Error Status:', response.status);
+                console.error('[API] GhostsPay Error Data:', JSON.stringify(data, null, 2));
+                return res.status(response.status).json({ 
+                    error: 'GhostsPay Payment failed', 
+                    message: data.message || 'GhostsPay API error',
+                    details: data 
+                });
             }
 
             const pixCode = data.pix?.qrcode || data.pix?.qrCode || data.qrcode;
