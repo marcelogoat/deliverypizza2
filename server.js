@@ -83,6 +83,59 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// ============================================
+// DIAGNOSTIC ENDPOINT - Testa a Hura Pay
+// ============================================
+app.get('/api/diagnostico', async (req, res) => {
+    const settings = readSettings();
+    const activeGateway = settings.gateways?.active || 'hurapay';
+    const huraPublicKey = process.env.HURA_PUBLIC_KEY;
+    const huraSecretKey = process.env.HURA_SECRET_KEY;
+
+    const result = {
+        gatewayAtivo: activeGateway,
+        huraPublicKey: huraPublicKey ? `${huraPublicKey.substring(0, 6)}...` : 'NÃO CONFIGURADO',
+        huraSecretKey: huraSecretKey ? `${huraSecretKey.substring(0, 6)}...` : 'NÃO CONFIGURADO',
+        huraBaseUrl: 'https://api.hurapayments.com.br/v1',
+        testeConexao: null,
+        erro: null
+    };
+
+    try {
+        const testResponse = await fetchWithTimeout(`https://api.hurapayments.com.br/v1/payment-transaction/create`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Basic ' + Buffer.from(`${huraPublicKey}:${huraSecretKey}`).toString('base64'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: 100,
+                payment_method: 'pix',
+                external_id: 'diagnostico_test_' + Date.now(),
+                postback_url: 'https://example.com/webhook',
+                customer: {
+                    name: 'Teste Diagnostico',
+                    email: 'teste@gmail.com',
+                    phone: '11999999999',
+                    document: { number: '12345678909', type: 'cpf' }
+                }
+            })
+        }, 15000);
+
+        const data = await testResponse.json();
+        result.testeConexao = {
+            status: testResponse.status,
+            statusText: testResponse.statusText,
+            resposta: data
+        };
+    } catch (err) {
+        result.erro = err.message;
+    }
+
+    res.json(result);
+});
+
+
 // Custom Admin Routes
 app.get('/index.html/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
