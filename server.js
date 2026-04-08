@@ -145,6 +145,23 @@ function getHuraAuth() {
     return 'Basic ' + Buffer.from(`${HURA_PUBLIC_KEY}:${HURA_SECRET_KEY}`).toString('base64');
 }
 
+// Helper fetch with timeout to prevent infinite hangs
+async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        return response;
+    } catch (err) {
+        if (err.name === 'AbortError') {
+            throw new Error(`Request timed out after ${timeoutMs / 1000}s. The gateway may be unavailable.`);
+        }
+        throw err;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
 // Helper for Blackout Pay Auth
 function getBlackoutAuth() {
     return `Bearer ${process.env.BLACKOUT_API_KEY}`;
@@ -246,14 +263,15 @@ app.post('/api/payment/create', async (req, res) => {
                 }
             };
 
-            const response = await fetch(`${HURA_BASE_URL}/payment-transaction/create`, {
+            console.log('[API] Calling HuraPay API...');
+            const response = await fetchWithTimeout(`${HURA_BASE_URL}/payment-transaction/create`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': getHuraAuth(), // Agora usa apenas process.env por padrão
+                    'Authorization': getHuraAuth(),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
-            });
+            }, 30000);
 
             let data = {};
             try {
@@ -412,14 +430,15 @@ app.post('/api/payment/create', async (req, res) => {
                 postbackUrl: gsSettings.webhookUrl || "https://www.superpromopizza.shop/api/webhook/ghostspay"
             };
 
-            const response = await fetch(GHOSTSPAY_BASE_URL, {
+            console.log('[API] Calling GhostsPay API...');
+            const response = await fetchWithTimeout(GHOSTSPAY_BASE_URL, {
                 method: 'POST',
                 headers: {
                     'Authorization': getGhostspayAuth(secretKey, companyId),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
-            });
+            }, 30000);
 
             const responseText = await response.text();
             let data = {};

@@ -1485,15 +1485,32 @@
 
                 console.log('[Checkout] Submitting Payload:', payload);
                 try {
-                    const response = await fetch("/api/payment/create", {
+                    const fetchController = new AbortController();
+                const fetchTimeoutId = setTimeout(() => fetchController.abort(), 35000);
+                let response, data;
+                try {
+                    response = await fetch("/api/payment/create", {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(payload)
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                        signal: fetchController.signal
                     });
+                    clearTimeout(fetchTimeoutId);
+                    data = await response.json();
+                } catch (fetchErr) {
+                    clearTimeout(fetchTimeoutId);
+                    if (fetchErr.name === 'AbortError') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Tempo Esgotado',
+                            text: 'O servidor de pagamento demorou demais para responder. Isso pode ser instabilidade temporária da Hura Pay. Tente novamente em alguns segundos.',
+                        });
+                    } else {
+                        Swal.fire('Erro', 'Erro de conexão. Verifique sua internet.', 'error');
+                    }
+                    return;
+                }
 
-                    const data = await response.json();
 
                     if (response.ok) {
                         if (paymentMethod === 'delivery') {
