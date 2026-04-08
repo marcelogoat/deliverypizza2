@@ -182,6 +182,8 @@ app.post('/api/payment/create', async (req, res) => {
         // Map frontend payload to Hura Pay format
         const { amount, customer, items, trackingParameters, paymentMethod } = req.body;
         console.log(`[API] Create Payment - Method: ${paymentMethod}, Amount: ${amount}, Customer: ${customer?.name}`);
+        console.log(`[API] Items received from frontend:`, JSON.stringify(items));
+        console.log(`[API] Items count:`, Array.isArray(items) ? items.length : 'NOT AN ARRAY');
 
         const settings = readSettings();
         const activeGateway = settings.gateways?.active || 'hurapay';
@@ -245,6 +247,25 @@ app.post('/api/payment/create', async (req, res) => {
             orders.push(order);
             writeOrders(orders);
 
+            // Build items for HuraPay - always ensure at least 1 item
+            let huraItems = [];
+            if (Array.isArray(items) && items.length > 0) {
+                huraItems = items.map(item => ({
+                    title: item.title || 'Pedido',
+                    unit_price: item.unitPrice || item.unit_price || amount,
+                    quantity: item.quantity || 1,
+                    tangible: false
+                }));
+            } else {
+                console.warn('[API] Items array is empty or missing! Creating fallback item.');
+                huraItems = [{
+                    title: 'Pedido',
+                    unit_price: amount,
+                    quantity: 1,
+                    tangible: false
+                }];
+            }
+
             const payload = {
                 amount: amount,
                 payment_method: "pix",
@@ -261,12 +282,7 @@ app.post('/api/payment/create', async (req, res) => {
                     phone: customer.phone,
                     document: { number: customer.document.number || customer.document, type: "cpf" }
                 },
-                items: (items || []).map(item => ({
-                    title: item.title,
-                    unit_price: item.unitPrice || item.unit_price,
-                    quantity: item.quantity || 1,
-                    tangible: false
-                })),
+                items: huraItems,
                 pix: { expires_in_days: 1 }
             };
             console.log('[API] HuraPay payload:', JSON.stringify(payload, null, 2));
