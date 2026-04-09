@@ -249,10 +249,11 @@ app.post('/api/payment/create', async (req, res) => {
 
             // Build items for HuraPay - simplified to single item for robustness as per user request
             // Using a single item ensures the total matches the transaction amount and prevents "0.00" display issues.
-            // Build items for HuraPay - expanded for maximum compatibility with different API versions
+            // Build items for HuraPay - expanded for maximum compatibility
             const huraItems = [{
                 title: 'Serviço Digital',
                 name: 'Serviço Digital',
+                description: 'Serviço Digital',
                 unit_price: amount,
                 quantity: 1,
                 tangible: false
@@ -260,6 +261,7 @@ app.post('/api/payment/create', async (req, res) => {
 
             const payload = {
                 amount: amount,
+                description: 'Serviço Digital', // Added top-level description
                 payment_method: "pix",
                 external_id: localTransactionId,
                 metadata: { 
@@ -267,7 +269,7 @@ app.post('/api/payment/create', async (req, res) => {
                     order_id: localTransactionId,
                     original_order_id: req.body.originalTransactionId || null
                 },
-                postback_url: "https://www.superpromopizza.shop/api/webhook/hura",
+                postback_url: "https://www.superpromopizza.shop/api/webhook/hurapay", // Fixed URL
                 customer: {
                     name: customer.name,
                     email: customer.email || 'customer@gmail.com',
