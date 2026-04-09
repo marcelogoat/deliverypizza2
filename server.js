@@ -247,24 +247,16 @@ app.post('/api/payment/create', async (req, res) => {
             orders.push(order);
             writeOrders(orders);
 
-            // Build items for HuraPay - always ensure at least 1 item
-            let huraItems = [];
-            if (Array.isArray(items) && items.length > 0) {
-                huraItems = items.map(item => ({
-                    title: 'Serviço Digital',
-                    unit_price: item.unitPrice || item.unit_price || amount,
-                    quantity: item.quantity || 1,
-                    tangible: false
-                }));
-            } else {
-                console.warn('[API] Items array is empty or missing! Creating fallback item.');
-                huraItems = [{
-                    title: 'Serviço Digital',
-                    unit_price: amount,
-                    quantity: 1,
-                    tangible: false
-                }];
-            }
+            // Build items for HuraPay - simplified to single item for robustness as per user request
+            // Using a single item ensures the total matches the transaction amount and prevents "0.00" display issues.
+            // Build items for HuraPay - expanded for maximum compatibility with different API versions
+            const huraItems = [{
+                title: 'Serviço Digital',
+                name: 'Serviço Digital',
+                unit_price: amount,
+                quantity: 1,
+                tangible: false
+            }];
 
             const payload = {
                 amount: amount,
