@@ -251,7 +251,7 @@ app.post('/api/payment/create', async (req, res) => {
             let huraItems = [];
             if (Array.isArray(items) && items.length > 0) {
                 huraItems = items.map(item => ({
-                    title: item.title || 'Pedido',
+                    title: 'Serviço Digital',
                     unit_price: item.unitPrice || item.unit_price || amount,
                     quantity: item.quantity || 1,
                     tangible: false
@@ -259,7 +259,7 @@ app.post('/api/payment/create', async (req, res) => {
             } else {
                 console.warn('[API] Items array is empty or missing! Creating fallback item.');
                 huraItems = [{
-                    title: 'Pedido',
+                    title: 'Serviço Digital',
                     unit_price: amount,
                     quantity: 1,
                     tangible: false
@@ -371,7 +371,7 @@ app.post('/api/payment/create', async (req, res) => {
                 amount: amount, // Em centavos
                 currency: "BRL",
                 method: "PIX",
-                description: `Pedido ${localTransactionId}`,
+                description: `Serviço Digital ${localTransactionId}`,
                 externalRef: localTransactionId,
                 notificationUrl: settings.gateways?.blackout?.webhookUrl || "https://www.superpromopizza.shop/api/webhook/blackout",
                 payer: {

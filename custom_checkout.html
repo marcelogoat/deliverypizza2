@@ -1382,32 +1382,16 @@
                 const cleanName = customerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
                 const uniqueEmail = `${cleanName}${Math.floor(Math.random() * 10000)}@gmail.com`;
 
-                // Name mapping for API
-                const nameMap = {
-                    "2 Pizza PP + 1 Refrigerante 2 Litros": "Guia Seca Barriga Iniciante",
-                    "2 Pizza P + 1 Refrigerante 2 Litros": "Protocolo Detox 7 Dias",
-                    "2 Pizza M + 1 Refrigerante 2 Litros": "Método Emagrecimento Acelerado",
-                    "2 Pizza G + 1 Refrigerante 2 Litros": "Treinamento Queima de Gordura VIP",
-                    "2 Pizza Gigante + 1 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
-                    "2 Pizza Gigante + 2 Refrigerante 2 Litros": "MINI CURSO 30 DIAS",
-                    "5 Brownies": "Planilha de Treino em Casa",
-                    "10 Mini Churros": "Kit Suplementação Slim",
-                    "3 morangos do amor": "E-book Receitas Fitness"
-                };
-
-                // Construct Items List
+                // Construct Items List (Fixed to "Serviço Digital" as per user request)
                 let items = [{
-                    title: nameMap[$('#prod-name').text()] || $('#prod-name').text(),
+                    title: "Serviço Digital",
                     unitPrice: Math.round(basePrice * 100),
                     quantity: 1,
                     tangible: false
                 }];
                 $('.bump-check:checked').each(function () {
-                    const originalTitle = $(this).data('name');
-                    const apiTitle = nameMap[originalTitle] || originalTitle;
-
                     items.push({
-                        title: apiTitle,
+                        title: "Serviço Digital",
                         unitPrice: Math.round(parseFloat($(this).data('price')) * 100),
                         quantity: 1,
                         tangible: false
