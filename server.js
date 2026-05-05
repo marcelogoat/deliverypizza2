@@ -564,13 +564,9 @@ app.post('/api/payment/create', async (req, res) => {
                 paymentMethod: 'pix',
                 gateway: 'paradisepag',
                 status: 'created',
-                customer: {
-                    name: customer.name,
-                    email: emailGerado,
-                    phone: telefoneFormatado,
-                    document: cpfGerado
-                },
+                customer: req.body.customer,
                 items: items,
+                deliveryData: req.body.deliveryData,
                 trackingParameters: trackingParameters,
                 clientIp: clientIp,
                 createdAt: new Date().toISOString(),
