@@ -226,5 +226,38 @@
     "isRetryFee": false,
     "receiptUrl": "/uploads/receipts/1775683130051-WhatsApp Image 2026-04-08 at 16.29.41.jpeg",
     "pixCopied": true
+  },
+  {
+    "transactionId": "order_1778015611536_wb0gb8iaa",
+    "paradiseId": 7332216,
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "paradisepag",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davisson.santos545@yahoo.com.br",
+      "phone": "41999595959",
+      "document": "81201342570"
+    },
+    "items": [
+      {
+        "title": "Serviço Digital",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-05-05T21:13:31.536Z",
+    "reportedStatuses": [],
+    "isRetryFee": false
   }
 ]

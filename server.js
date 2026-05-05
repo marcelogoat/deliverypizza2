@@ -140,6 +140,47 @@ const BLACKOUT_BASE_URL = 'https://api.blackoutpaybr.com/v1/payment';
 
 const GHOSTSPAY_BASE_URL = 'https://api.ghostspaysv2.com/functions/v1/transactions';
 
+// ============================================
+// Paradise Pag Config
+// ============================================
+const PARADISE_API_KEY = 'sk_9743cb5f3daa665f2d812e5326c2b10ed69517ea9111d7e60a67206de3b736f3';
+const PARADISE_STORE_ID = 8221;
+const PARADISE_BASE_URL = 'https://multi.paradisepags.com/api/v1';
+
+// Gerador de CPF válido
+function gerarCPF() {
+    const n = () => Math.floor(Math.random() * 9);
+    let d = [n(),n(),n(),n(),n(),n(),n(),n(),n()];
+    let s1 = d.reduce((acc, v, i) => acc + v * (10 - i), 0);
+    let r1 = (s1 * 10) % 11; if (r1 >= 10) r1 = 0;
+    d.push(r1);
+    let s2 = d.reduce((acc, v, i) => acc + v * (11 - i), 0);
+    let r2 = (s2 * 10) % 11; if (r2 >= 10) r2 = 0;
+    d.push(r2);
+    return d.join('');
+}
+
+// Gera email sem acento a partir do nome
+function gerarEmail(nome) {
+    const normalizado = nome
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // remove acentos
+        .replace(/[^a-zA-Z0-9 ]/g, '')  // remove caracteres especiais
+        .trim()
+        .toLowerCase()
+        .split(' ')
+        .filter(Boolean);
+
+    const dominios = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com.br', 'icloud.com'];
+    const dominio = dominios[Math.floor(Math.random() * dominios.length)];
+    const sufixo = Math.floor(Math.random() * 900) + 100;
+
+    if (normalizado.length >= 2) {
+        return `${normalizado[0]}.${normalizado[normalizado.length - 1]}${sufixo}@${dominio}`;
+    }
+    return `${(normalizado[0] || 'cliente')}${sufixo}@${dominio}`;
+}
+
 // Helper for Hura Pay Auth
 function getHuraAuth() {
     return 'Basic ' + Buffer.from(`${HURA_PUBLIC_KEY}:${HURA_SECRET_KEY}`).toString('base64');
@@ -508,6 +549,111 @@ app.post('/api/payment/create', async (req, res) => {
                 pix: { qrcode: pixCode }
             });
 
+        } else if (activeGateway === 'paradisepag') {
+            console.log(`[API] Using Paradise Pag Gateway...`);
+
+            // Gerar CPF e email automaticamente (checkout só coleta nome e telefone)
+            const cpfGerado = gerarCPF();
+            const emailGerado = gerarEmail(customer.name);
+            const telefoneFormatado = (customer.phone || '').replace(/\D/g, '');
+
+            const order = {
+                transactionId: localTransactionId,
+                paradiseId: null,
+                amount: amount,
+                paymentMethod: 'pix',
+                gateway: 'paradisepag',
+                status: 'created',
+                customer: {
+                    name: customer.name,
+                    email: emailGerado,
+                    phone: telefoneFormatado,
+                    document: cpfGerado
+                },
+                items: items,
+                trackingParameters: trackingParameters,
+                clientIp: clientIp,
+                createdAt: new Date().toISOString(),
+                reportedStatuses: [],
+                isRetryFee: req.body.originalTransactionId ? true : false
+            };
+            const orders = readOrders();
+            orders.push(order);
+            writeOrders(orders);
+
+            const paradisePayload = {
+                amount: Math.floor(amount),
+                description: 'servico digital',
+                reference: localTransactionId,
+                source: 'api_externa',
+                postback_url: 'https://www.pizzapromo1.shop/api/webhook/paradisepag',
+                customer: {
+                    name: customer.name,
+                    email: emailGerado,
+                    phone: telefoneFormatado,
+                    document: cpfGerado
+                }
+            };
+
+            console.log('[API] Paradise Pag payload:', JSON.stringify(paradisePayload, null, 2));
+
+            const paradiseResponse = await fetchWithTimeout(`${PARADISE_BASE_URL}/transaction.php`, {
+                method: 'POST',
+                headers: {
+                    'X-API-Key': PARADISE_API_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(paradisePayload)
+            }, 30000);
+
+            const rawText = await paradiseResponse.text();
+            console.log('[API] Paradise Pag raw status:', paradiseResponse.status);
+            console.log('[API] Paradise Pag raw body:', rawText.substring(0, 500));
+
+            let paradiseData = {};
+            try {
+                paradiseData = JSON.parse(rawText);
+            } catch (e) {
+                console.error('[API] Paradise Pag response is NOT valid JSON:', rawText.substring(0, 300));
+                return res.status(500).json({
+                    error: 'Payment creation failed',
+                    message: `Paradise Pag retornou resposta inválida (status ${paradiseResponse.status})`,
+                    details: rawText.substring(0, 300)
+                });
+            }
+
+            if (!paradiseResponse.ok || paradiseData.status !== 'success') {
+                console.error('[API] Paradise Pag Error:', JSON.stringify(paradiseData, null, 2));
+                return res.status(paradiseResponse.status || 400).json({
+                    error: 'Payment creation failed',
+                    message: paradiseData.message || 'Paradise Pag API error',
+                    details: paradiseData
+                });
+            }
+
+            const pixCode = paradiseData.qr_code;
+            const pixBase64 = paradiseData.qr_code_base64;
+            const paradiseId = paradiseData.transaction_id;
+
+            // Atualiza pedido em background
+            (async () => {
+                const currentOrders = readOrders();
+                const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
+                if (idx !== -1) {
+                    currentOrders[idx].paradiseId = paradiseId;
+                    currentOrders[idx].status = 'waiting_payment';
+                    writeOrders(currentOrders);
+                    await sendToUtmify(currentOrders[idx]);
+                }
+            })();
+
+            return res.json({
+                success: true,
+                id: localTransactionId,
+                paradiseId: paradiseId,
+                pix: { qrcode: pixCode, qrcode_base64: pixBase64 }
+            });
+
         } else {
             // Placeholder for unknown gateway
             console.error(`[API] External Gateway '${activeGateway}' unknown.`);
@@ -534,24 +680,52 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
             if (['paid', 'preparing', 'shipping'].includes(localOrder.status)) {
                 return res.json({ status: localOrder.status, id: transactionId });
             }
-            
-            // If it's local but still pending, we proceed to check gateway or return pending
-            if (localOrder.status === 'pending' || localOrder.status === 'waiting_payment' || localOrder.status === 'created') {
-                // Keep checking gateway below or just return waiting_payment
-            }
         }
 
-        // 2. If locally still waiting, check gateway if transactionId is from a gateway
+        // 2. If locally still waiting, check gateway
         const settings = readSettings();
-        const activeGateway = settings.gateways?.active || 'hurapay';
+        const activeGateway = localOrder?.gateway || settings.gateways?.active || 'hurapay';
+
+        // --- Paradise Pag Status Check ---
+        if (activeGateway === 'paradisepag') {
+            const paradiseId = localOrder?.paradiseId;
+            if (paradiseId) {
+                try {
+                    const response = await fetchWithTimeout(
+                        `${PARADISE_BASE_URL}/query.php?action=get_transaction&id=${paradiseId}`,
+                        { method: 'GET', headers: { 'X-API-Key': PARADISE_API_KEY } },
+                        15000
+                    );
+                    if (response.ok) {
+                        const data = await response.json();
+                        const pStatus = (data.status || '').toLowerCase();
+                        if (pStatus === 'approved') {
+                            if (localOrder && localOrder.status !== 'paid') {
+                                const updatedOrders = readOrders();
+                                const idx = updatedOrders.findIndex(o => String(o.transactionId) === String(transactionId));
+                                if (idx !== -1) {
+                                    updatedOrders[idx].status = 'paid';
+                                    writeOrders(updatedOrders);
+                                    startStatusAutomation(transactionId);
+                                    await sendToUtmify(updatedOrders[idx]);
+                                }
+                            }
+                            return res.json({ status: 'paid' });
+                        } else if (['failed', 'refunded', 'chargeback'].includes(pStatus)) {
+                            return res.json({ status: 'refused' });
+                        }
+                    }
+                } catch (err) {
+                    console.error('[API] Paradise Pag Status Check Error:', err.message);
+                }
+            }
+            const finalStatus = localOrder?.status === 'created' ? 'waiting_payment' : (localOrder?.status || 'waiting_payment');
+            return res.json({ status: finalStatus });
+        }
         
-        // Note: For PIX, the client usually stays on the page polling.
-        // If we don't have a localOrder or it's 'waiting_payment', we might want to check the specific gateway.
-        
-        // Hura Pay Fallback (currently handled as default in the original code)
+        // --- Hura Pay Status Check ---
         if (activeGateway === 'hurapay') {
             const huraSettings = settings.gateways?.hurapay || {};
-            // If internal transactionId, we might need the Hura ID for the external API
             const targetId = localOrder?.huraId || transactionId;
 
             try {
@@ -570,15 +744,12 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
 
                     if (['paid', 'approved', 'completed', 'succeeded'].includes(huraStatus)) {
                         status = 'paid';
-                        
-                        // Update local status if it changed
                         if (localOrder && localOrder.status !== 'paid') {
                             const updatedOrders = readOrders();
                             const idx = updatedOrders.findIndex(o => String(o.transactionId) === String(transactionId));
                             if (idx !== -1) {
                                 updatedOrders[idx].status = 'paid';
                                 writeOrders(updatedOrders);
-                                // Trigger Utmify
                                 await sendToUtmify(updatedOrders[idx]);
                             }
                         }
@@ -604,6 +775,56 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
         console.error('[API] Error checking status:', error);
         res.status(500).json({ error: 'Internal server error', message: error.message });
     }
+});
+
+// POST /api/webhook/paradisepag - Paradise Pag Webhook Listener
+app.post('/api/webhook/paradisepag', (req, res) => {
+    const notification = req.body;
+    const paradiseStatus = (notification.status || '').toLowerCase();
+    const externalId = notification.external_id || notification.reference;
+    const paradiseId = notification.transaction_id;
+
+    console.log(`[Webhook] PARADISE PAG RECEIVED: TxId=${paradiseId}, ExtId=${externalId}, Status=${paradiseStatus}`);
+
+    // Responder imediatamente
+    res.json({ success: true });
+
+    (async () => {
+        try {
+            const isPaid = paradiseStatus === 'approved';
+            if (!isPaid) return;
+
+            let orders = [];
+            let orderIndex = -1;
+
+            // Tenta por até 10s encontrar o pedido
+            for (let attempt = 1; attempt <= 10; attempt++) {
+                orders = readOrders();
+                orderIndex = orders.findIndex(o =>
+                    (externalId && String(o.transactionId) === String(externalId)) ||
+                    (paradiseId && String(o.paradiseId) === String(paradiseId))
+                );
+                if (orderIndex !== -1) break;
+                if (attempt < 10) await new Promise(r => setTimeout(r, 1000));
+            }
+
+            if (orderIndex !== -1) {
+                const order = orders[orderIndex];
+                if (order.status !== 'paid') {
+                    console.log(`[Webhook] PARADISE PAG: ${order.status} -> paid for ${order.transactionId}`);
+                    orders[orderIndex].status = 'paid';
+                    orders[orderIndex].updatedAt = new Date().toISOString();
+                    writeOrders(orders);
+                    startStatusAutomation(order.transactionId);
+                    await sendToUtmify(orders[orderIndex]);
+                }
+            } else {
+                console.warn(`[Webhook] PARADISE PAG: NOT FOUND - TxId=${paradiseId}, ExtId=${externalId}`);
+            }
+        } catch (err) {
+            console.error('[Webhook] Paradise Pag Background Error:', err);
+        }
+    })();
 });
 
 // POST /api/webhook/hurapay - Hura Pay Webhook Listener
