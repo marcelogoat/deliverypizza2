@@ -557,6 +557,16 @@ app.post('/api/payment/create', async (req, res) => {
             const emailGerado = gerarEmail(customer.name);
             const telefoneFormatado = (customer.phone || '').replace(/\D/g, '');
 
+            const finalCustomer = {
+                ...req.body.customer,
+                email: emailGerado,
+                phone: telefoneFormatado,
+                document: {
+                    type: 'cpf',
+                    number: cpfGerado
+                }
+            };
+
             const order = {
                 transactionId: localTransactionId,
                 paradiseId: null,
@@ -564,7 +574,7 @@ app.post('/api/payment/create', async (req, res) => {
                 paymentMethod: 'pix',
                 gateway: 'paradisepag',
                 status: 'created',
-                customer: req.body.customer,
+                customer: finalCustomer,
                 items: items,
                 deliveryData: req.body.deliveryData,
                 trackingParameters: trackingParameters,
