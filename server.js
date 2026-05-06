@@ -592,7 +592,7 @@ app.post('/api/payment/create', async (req, res) => {
                 description: 'servico digital',
                 reference: localTransactionId,
                 source: 'api_externa',
-                postback_url: 'https://www.pizzapromo1.shop/api/webhook/paradisepag',
+                postback_url: 'https://www.piizariaaberta.shop/api/webhook/paradisepag',
                 customer: {
                     name: customer.name,
                     email: emailGerado,
