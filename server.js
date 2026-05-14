@@ -10,6 +10,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Added to handle form-encoded webhooks
+
 // Ensure uploads directory exists
 const UPLOADS_DIR = path.join(__dirname, 'uploads', 'receipts');
 if (!fs.existsSync(UPLOADS_DIR)) {
@@ -28,8 +33,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+// middleware is now defined above to ensure order
 
 // Request logging for debugging
 app.use((req, res, next) => {
@@ -251,7 +255,8 @@ app.post('/api/payment/create', async (req, res) => {
                 clientIp: clientIp,
                 createdAt: new Date().toISOString(),
                 reportedStatuses: [],
-                isRetryFee: req.body.originalTransactionId ? true : false
+                isRetryFee: req.body.originalTransactionId ? true : false,
+                originalTransactionId: req.body.originalTransactionId || null
             };
 
             const orders = readOrders();
@@ -282,7 +287,8 @@ app.post('/api/payment/create', async (req, res) => {
                 clientIp: clientIp,
                 createdAt: new Date().toISOString(),
                 reportedStatuses: [],
-                isRetryFee: req.body.originalTransactionId ? true : false
+                isRetryFee: req.body.originalTransactionId ? true : false,
+                originalTransactionId: req.body.originalTransactionId || null
             };
             const orders = readOrders();
             orders.push(order);
@@ -299,17 +305,21 @@ app.post('/api/payment/create', async (req, res) => {
                 quantity: 1
             }];
 
+            const protocol = req.protocol;
+            const host = req.get('host');
+            const baseUrl = `${protocol}://${host}`;
+            
             const payload = {
                 amount: Math.floor(amount),
                 payment_method: "pix",
                 external_id: localTransactionId,
                 metadata: { 
-                    Source: 'gerador_manual', // Mirroring working example
+                    Source: 'gerador_manual', 
                     provider_name: 'serviço digital',
                     local_id: localTransactionId, 
                     order_id: localTransactionId
                 },
-                postback_url: "https://www.superpromopizza.shop/api/webhook/hurapay",
+                postback_url: `${baseUrl}/api/webhook/hurapay`,
                 customer: {
                     name: customer.name,
                     email: customer.email || 'customer@gmail.com',
@@ -581,18 +591,23 @@ app.post('/api/payment/create', async (req, res) => {
                 clientIp: clientIp,
                 createdAt: new Date().toISOString(),
                 reportedStatuses: [],
-                isRetryFee: req.body.originalTransactionId ? true : false
+                isRetryFee: req.body.originalTransactionId ? true : false,
+                originalTransactionId: req.body.originalTransactionId || null
             };
             const orders = readOrders();
             orders.push(order);
             writeOrders(orders);
+
+            const protocol = req.protocol;
+            const host = req.get('host');
+            const baseUrl = `${protocol}://${host}`;
 
             const paradisePayload = {
                 amount: Math.floor(amount),
                 description: 'servico digital',
                 reference: localTransactionId,
                 source: 'api_externa',
-                postback_url: 'https://www.piizariaaberta.shop/api/webhook/paradisepag',
+                postback_url: `${baseUrl}/api/webhook/paradisepag`,
                 customer: {
                     name: customer.name,
                     email: emailGerado,
@@ -785,25 +800,34 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
 
 // POST /api/webhook/paradisepag - Paradise Pag Webhook Listener
 app.post('/api/webhook/paradisepag', (req, res) => {
+    // Paradise Pag can send data in the body or as form parameters
     const notification = req.body;
+    
+    // Log the entire payload for debugging
+    console.log(`\n[Webhook] PARADISE PAG RAW PAYLOAD:`, JSON.stringify(notification, null, 2));
+
     const paradiseStatus = (notification.status || '').toLowerCase();
     const externalId = notification.external_id || notification.reference;
     const paradiseId = notification.transaction_id;
 
-    console.log(`[Webhook] PARADISE PAG RECEIVED: TxId=${paradiseId}, ExtId=${externalId}, Status=${paradiseStatus}`);
+    console.log(`[Webhook] PARADISE PAG PROCESSED: TxId=${paradiseId}, ExtId=${externalId}, Status=${paradiseStatus}`);
 
-    // Responder imediatamente
+    // Respond immediately
     res.json({ success: true });
 
     (async () => {
         try {
-            const isPaid = paradiseStatus === 'approved';
-            if (!isPaid) return;
+            // We consider 'approved' or 'paid' as successful
+            const isPaid = ['approved', 'paid', 'completed', 'succeeded'].includes(paradiseStatus);
+            if (!isPaid) {
+                console.log(`[Webhook] PARADISE PAG: Status ${paradiseStatus} not handled as success.`);
+                return;
+            }
 
             let orders = [];
             let orderIndex = -1;
 
-            // Tenta por até 10s encontrar o pedido
+            // Retry finding the order for 10 seconds
             for (let attempt = 1; attempt <= 10; attempt++) {
                 orders = readOrders();
                 orderIndex = orders.findIndex(o =>
@@ -818,10 +842,24 @@ app.post('/api/webhook/paradisepag', (req, res) => {
                 const order = orders[orderIndex];
                 if (order.status !== 'paid') {
                     console.log(`[Webhook] PARADISE PAG: ${order.status} -> paid for ${order.transactionId}`);
+                    
                     orders[orderIndex].status = 'paid';
                     orders[orderIndex].updatedAt = new Date().toISOString();
                     writeOrders(orders);
+                    
+                    // START AUTOMATION (Paid -> Prep -> Ship -> Fail)
                     startStatusAutomation(order.transactionId);
+                    
+                    // RESCUE FLOW: If this was a retry fee, revert original order
+                    if (order.originalTransactionId) {
+                        console.log(`[Webhook] PARADISE PAG: RETRY FEE PAID! Reverting order ${order.originalTransactionId} to shipping.`);
+                        const origIdx = orders.findIndex(o => String(o.transactionId) === String(order.originalTransactionId));
+                        if (origIdx !== -1) {
+                            orders[origIdx].status = 'shipping';
+                            writeOrders(orders);
+                        }
+                    }
+
                     await sendToUtmify(orders[orderIndex]);
                 }
             } else {
