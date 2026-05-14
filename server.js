@@ -417,7 +417,7 @@ app.post('/api/payment/create', async (req, res) => {
                 method: "PIX",
                 description: `Serviço Digital ${localTransactionId}`,
                 externalRef: localTransactionId,
-                notificationUrl: settings.gateways?.blackout?.webhookUrl || "https://www.superpromopizza.shop/api/webhook/blackout",
+                notificationUrl: settings.gateways?.blackout?.webhookUrl || "https://www.superpizzas.shop/api/webhook/blackout",
                 payer: {
                     name: customer.name,
                     taxId: customer.document.number.replace(/\D/g, ''), // Somente números
@@ -503,7 +503,7 @@ app.post('/api/payment/create', async (req, res) => {
                     quantity: item.quantity
                 })),
                 pix: { expiresInDays: 1 },
-                postbackUrl: gsSettings.webhookUrl || "https://www.superpromopizza.shop/api/webhook/ghostspay"
+                postbackUrl: gsSettings.webhookUrl || "https://www.superpizzas.shop/api/webhook/ghostspay"
             };
 
             console.log('[API] Calling GhostsPay API...');

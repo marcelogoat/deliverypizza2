@@ -13,7 +13,7 @@ async function run() {
         const payload = {
             amount: 1000,
             payment_method: "pix",
-            postback_url: "https://www.superpromopizza.shop/api/webhook/hurapay",
+            postback_url: "https://www.superpizzas.shop/api/webhook/hurapay",
             customer: {
                 name: "Teste Integração",
                 email: "teste@email.com.br",
