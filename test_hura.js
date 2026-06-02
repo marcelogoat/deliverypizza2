@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
-const SK = 'sk_live_PDrjYQJt6Z2IbnJV9yGEnYykQ7cg8Bs4';
-const PUBLIC = 'hurapay_live_2X1Pa1P85h7ngFx0EcIQlyWGPtPBb4Sz';
+const SK = process.env.HURA_SECRET_KEY || '';
+const PUBLIC = process.env.HURA_PUBLIC_KEY || '';
 
 async function test(url) {
     console.log(`Testing ${url}...`);

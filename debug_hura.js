@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 
-const HURA_PUBLIC_KEY = 'hurapay_live_2X1Pa1P85h7ngFx0EcIQlyWGPtPBb4Sz';
-const HURA_SECRET_KEY = 'sk_live_PDrjYQJt6Z2IbnJV9yGEnYykQ7cg8Bs4';
+const HURA_PUBLIC_KEY = process.env.HURA_PUBLIC_KEY || '';
+const HURA_SECRET_KEY = process.env.HURA_SECRET_KEY || '';
 const HURA_BASE_URL = 'https://api.hurapayments.com.br/v1';
 
 function getHuraAuth() {
