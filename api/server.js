@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true })); // Added to handle form-encoded
 // Ensure uploads directory exists
 const UPLOADS_DIR = process.env.VERCEL
     ? path.join('/tmp', 'uploads', 'receipts')
-    : path.join(__dirname, 'uploads', 'receipts');
+    : path.join(__dirname, '..', 'uploads', 'receipts');
 if (!fs.existsSync(UPLOADS_DIR)) {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -42,8 +42,8 @@ app.use((req, res, next) => {
     console.log(`[DEBUG] ${new Date().toISOString()} - ${req.method} ${req.url}`);
     next();
 });
-app.use(express.static(__dirname)); // Serve static files
-app.use('/uploads', express.static(process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, '..'))); // Serve static files
+app.use('/uploads', express.static(process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, '..', 'uploads')));
 
 // ============================================
 // COMPROVANTES: Rota Prioritária de Upload
@@ -81,7 +81,7 @@ app.post(['/api/orders/:transactionId/receipt', '/api/order/:transactionId/recei
 
 // Root redirect
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 // Health check route
@@ -91,11 +91,11 @@ app.get('/health', (req, res) => {
 
 // Custom Admin Routes
 app.get('/index.html/admin.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
+    res.sendFile(path.join(__dirname, '..', 'admin.html'));
 });
 
 app.get('/index.html/admin-login.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin-login.html'));
+    res.sendFile(path.join(__dirname, '..', 'admin-login.html'));
 });
 
 // ============================================
@@ -107,7 +107,7 @@ function initializeVercelFiles() {
     if (process.env.VERCEL) {
         const filesToCopy = ['orders.json', 'settings.json', 'products.json'];
         filesToCopy.forEach(file => {
-            const src = path.join(__dirname, file);
+            const src = path.join(__dirname, '..', file);
             const dest = path.join('/tmp', file);
             if (!fs.existsSync(dest)) {
                 try {
@@ -131,9 +131,9 @@ function initializeVercelFiles() {
 }
 initializeVercelFiles();
 
-const ORDERS_FILE = process.env.VERCEL ? '/tmp/orders.json' : path.join(__dirname, 'orders.json');
-const SETTINGS_FILE = process.env.VERCEL ? '/tmp/settings.json' : path.join(__dirname, 'settings.json');
-const PRODUCTS_FILE = process.env.VERCEL ? '/tmp/products.json' : path.join(__dirname, 'products.json');
+const ORDERS_FILE = process.env.VERCEL ? '/tmp/orders.json' : path.join(__dirname, '..', 'orders.json');
+const SETTINGS_FILE = process.env.VERCEL ? '/tmp/settings.json' : path.join(__dirname, '..', 'settings.json');
+const PRODUCTS_FILE = process.env.VERCEL ? '/tmp/products.json' : path.join(__dirname, '..', 'products.json');
 
 const ADMIN_TOKEN = 'admin123secret';
 const ADMIN_USER = 'admin';
@@ -2022,7 +2022,7 @@ app.post('/api/products', (req, res) => {
 if (!process.env.VERCEL) {
     app.listen(PORT, HOST, () => {
         console.log(`\n🚀 Server running on http://${HOST}:${PORT}`);
-        console.log(`📁 Serving static files from: ${__dirname}`);
+        console.log(`📁 Serving static files from: ${path.join(__dirname, '..')}`);
         console.log(`🔒 API Keys loaded: HuraPay=${!!process.env.HURA_PUBLIC_KEY}, Utmify=${!!process.env.UTMIFY_API_TOKEN}, Blackout=${!!process.env.BLACKOUT_API_KEY}`);
         console.log(`📊 Analytics active\n`);
     });

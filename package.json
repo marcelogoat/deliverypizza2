@@ -2,10 +2,10 @@
   "name": "pizza-lenha-backend",
   "version": "1.0.1",
   "description": "Backend seguro para Pizza e Lenha com proxy de APIs",
-  "main": "server.js",
+  "main": "api/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node api/server.js",
+    "dev": "node api/server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
