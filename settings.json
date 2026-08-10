@@ -12,12 +12,18 @@
   "placeholderCep": "000.000.000-00",
   "labelDeliverySection": "Confirme Seu Pagamento",
   "gateways": {
-    "active": "paradisepag"
+    "active": "blackcat",
+    "blackcat": {
+      "secretKey": "",
+      "publicKey": "",
+      "webhookUrl": "https://www.superpizzas.shop/api/webhook/blackcat"
+    }
   },
   "paradisepagWebhookEnabled": true,
   "huraWebhookEnabled": true,
   "blackoutWebhookEnabled": true,
   "ghostspayWebhookEnabled": true,
+  "blackcatWebhookEnabled": true,
   "popupTitle": "Pagamento Indisponível",
   "popupContent": "O <b>pagamento na entrega</b> está temporariamente indisponível.<br><br>Por favor, finalize seu pedido via <b>Pix</b> para continuar.",
   "popupButton": "💠 Pagar com Pix"

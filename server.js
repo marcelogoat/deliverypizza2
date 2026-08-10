@@ -16,7 +16,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Added to handle form-encoded webhooks
 
 // Ensure uploads directory exists
-const UPLOADS_DIR = path.join(__dirname, 'uploads', 'receipts');
+const UPLOADS_DIR = process.env.VERCEL
+    ? path.join('/tmp', 'uploads', 'receipts')
+    : path.join(__dirname, 'uploads', 'receipts');
 if (!fs.existsSync(UPLOADS_DIR)) {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -41,7 +43,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use(express.static(__dirname)); // Serve static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads')));
 
 // ============================================
 // COMPROVANTES: Rota Prioritária de Upload
@@ -100,7 +102,39 @@ app.get('/index.html/admin-login.html', (req, res) => {
 // Admin Configuration & Helper Functions
 // ============================================
 
-const ORDERS_FILE = path.join(__dirname, 'orders.json');
+// Writable paths for Vercel Serverless environment
+function initializeVercelFiles() {
+    if (process.env.VERCEL) {
+        const filesToCopy = ['orders.json', 'settings.json', 'products.json'];
+        filesToCopy.forEach(file => {
+            const src = path.join(__dirname, file);
+            const dest = path.join('/tmp', file);
+            if (!fs.existsSync(dest)) {
+                try {
+                    const destDir = path.dirname(dest);
+                    if (!fs.existsSync(destDir)) {
+                        fs.mkdirSync(destDir, { recursive: true });
+                    }
+                    if (fs.existsSync(src)) {
+                        fs.copyFileSync(src, dest);
+                        console.log(`[Vercel] Copied ${file} to /tmp`);
+                    } else {
+                        fs.writeFileSync(dest, file === 'orders.json' || file === 'products.json' ? '[]' : '{}');
+                        console.log(`[Vercel] Created empty ${file} in /tmp`);
+                    }
+                } catch (err) {
+                    console.error(`[Vercel] Error copying ${file}:`, err);
+                }
+            }
+        });
+    }
+}
+initializeVercelFiles();
+
+const ORDERS_FILE = process.env.VERCEL ? '/tmp/orders.json' : path.join(__dirname, 'orders.json');
+const SETTINGS_FILE = process.env.VERCEL ? '/tmp/settings.json' : path.join(__dirname, 'settings.json');
+const PRODUCTS_FILE = process.env.VERCEL ? '/tmp/products.json' : path.join(__dirname, 'products.json');
+
 const ADMIN_TOKEN = 'admin123secret';
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'pizza2024';
@@ -122,12 +156,11 @@ function writeOrders(orders) {
 
 function readSettings() {
     try {
-        const SETTINGS_FILE = path.join(__dirname, 'settings.json');
         if (fs.existsSync(SETTINGS_FILE)) {
             return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
         }
     } catch (err) { console.error('Error reading settings:', err); }
-    return { gateways: { active: 'hurapay' } };
+    return { gateways: { active: 'blackcat' } };
 }
 
 // ============================================
@@ -675,6 +708,142 @@ app.post('/api/payment/create', async (req, res) => {
                 pix: { qrcode: pixCode, qrcode_base64: pixBase64 }
             });
 
+        } else if (activeGateway === 'blackcat') {
+            console.log(`[API] Using Black Cat Gateway...`);
+
+            const cpfGerado = (customer.document?.number || customer.document || '').replace(/\D/g, '') || gerarCPF();
+            const emailGerado = customer.email || gerarEmail(customer.name);
+            const telefoneFormatado = (customer.phone || '').replace(/\D/g, '');
+
+            const finalCustomer = {
+                ...customer,
+                email: emailGerado,
+                phone: telefoneFormatado,
+                document: {
+                    type: 'cpf',
+                    number: cpfGerado
+                }
+            };
+
+            const order = {
+                transactionId: localTransactionId,
+                amount: amount,
+                paymentMethod: 'pix',
+                gateway: 'blackcat',
+                status: 'created',
+                customer: finalCustomer,
+                items: items,
+                deliveryData: req.body.deliveryData,
+                trackingParameters: trackingParameters,
+                clientIp: clientIp,
+                createdAt: new Date().toISOString(),
+                reportedStatuses: [],
+                isRetryFee: req.body.originalTransactionId ? true : false,
+                originalTransactionId: req.body.originalTransactionId || null
+            };
+            const orders = readOrders();
+            orders.push(order);
+            writeOrders(orders);
+
+            const protocol = req.protocol;
+            const host = req.get('host');
+            const baseUrl = `${protocol}://${host}`;
+
+            const bcSettings = settings.gateways?.blackcat || {};
+            const secretKey = bcSettings.secretKey || process.env.BLACKCAT_SECRET_KEY;
+
+            const blackcatPayload = {
+                amount: Math.floor(amount),
+                currency: "BRL",
+                paymentMethod: "pix",
+                items: [
+                    {
+                        title: `Pedido ${localTransactionId}`,
+                        unitPrice: Math.floor(amount),
+                        quantity: 1,
+                        tangible: false
+                    }
+                ],
+                customer: {
+                    name: customer.name,
+                    email: emailGerado,
+                    phone: telefoneFormatado,
+                    document: {
+                        number: cpfGerado,
+                        type: "cpf"
+                    }
+                },
+                postbackUrl: settings.gateways?.blackcat?.webhookUrl || `${baseUrl}/api/webhook/blackcat`,
+                externalRef: localTransactionId
+            };
+
+            if (trackingParameters) {
+                if (trackingParameters.utm_source) blackcatPayload.utm_source = trackingParameters.utm_source;
+                if (trackingParameters.utm_medium) blackcatPayload.utm_medium = trackingParameters.utm_medium;
+                if (trackingParameters.utm_campaign) blackcatPayload.utm_campaign = trackingParameters.utm_campaign;
+                if (trackingParameters.utm_content) blackcatPayload.utm_content = trackingParameters.utm_content;
+                if (trackingParameters.utm_term) blackcatPayload.utm_term = trackingParameters.utm_term;
+            }
+
+            console.log('[API] Black Cat payload:', JSON.stringify(blackcatPayload, null, 2));
+
+            const response = await fetchWithTimeout('https://api.blackcatoficial.com/api/sales/create-sale', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': secretKey
+                },
+                body: JSON.stringify(blackcatPayload)
+            }, 30000);
+
+            const rawText = await response.text();
+            console.log('[API] Black Cat raw status:', response.status);
+            console.log('[API] Black Cat raw body:', rawText.substring(0, 500));
+
+            let data = {};
+            try {
+                data = JSON.parse(rawText);
+            } catch (e) {
+                console.error('[API] Black Cat response is NOT valid JSON:', rawText.substring(0, 300));
+                return res.status(500).json({
+                    error: 'Payment creation failed',
+                    message: `Black Cat retornou resposta inválida (status ${response.status})`,
+                    details: rawText.substring(0, 300)
+                });
+            }
+
+            if (!response.ok || !data.success) {
+                console.error('[API] Black Cat Error:', JSON.stringify(data, null, 2));
+                return res.status(response.status || 400).json({
+                    error: 'Payment creation failed',
+                    message: data.message || 'Black Cat API error',
+                    details: data
+                });
+            }
+
+            const responseData = data.data;
+            const pixCode = responseData.paymentData?.copyPaste || responseData.paymentData?.qrCode;
+            const pixBase64 = responseData.paymentData?.qrCodeBase64 || '';
+            const blackcatId = responseData.transactionId;
+
+            (async () => {
+                const currentOrders = readOrders();
+                const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
+                if (idx !== -1) {
+                    currentOrders[idx].huraId = blackcatId;
+                    currentOrders[idx].status = 'waiting_payment';
+                    writeOrders(currentOrders);
+                    await sendToUtmify(currentOrders[idx]);
+                }
+            })();
+
+            return res.json({
+                success: true,
+                id: localTransactionId,
+                blackcatId: blackcatId,
+                pix: { qrcode: pixCode, qrcode_base64: pixBase64 }
+            });
+
         } else {
             // Placeholder for unknown gateway
             console.error(`[API] External Gateway '${activeGateway}' unknown.`);
@@ -743,7 +912,52 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
             const finalStatus = localOrder?.status === 'created' ? 'waiting_payment' : (localOrder?.status || 'waiting_payment');
             return res.json({ status: finalStatus });
         }
-        
+
+        // --- Black Cat Status Check ---
+        if (activeGateway === 'blackcat') {
+            const bcSettings = settings.gateways?.blackcat || {};
+            const secretKey = bcSettings.secretKey || process.env.BLACKCAT_SECRET_KEY;
+            const targetId = localOrder?.huraId || transactionId;
+
+            if (targetId) {
+                try {
+                    const response = await fetchWithTimeout(
+                        `https://api.blackcatoficial.com/api/sales/${targetId}/status`,
+                        {
+                            method: 'GET',
+                            headers: { 'X-API-Key': secretKey }
+                        },
+                        15000
+                    );
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.data) {
+                            const bcStatus = (data.data.status || '').toLowerCase();
+                            if (bcStatus === 'paid') {
+                                if (localOrder && localOrder.status !== 'paid') {
+                                    const updatedOrders = readOrders();
+                                    const idx = updatedOrders.findIndex(o => String(o.transactionId) === String(transactionId));
+                                    if (idx !== -1) {
+                                        updatedOrders[idx].status = 'paid';
+                                        writeOrders(updatedOrders);
+                                        startStatusAutomation(transactionId);
+                                        await sendToUtmify(updatedOrders[idx]);
+                                    }
+                                }
+                                return res.json({ status: 'paid' });
+                            } else if (['cancelled', 'refunded'].includes(bcStatus)) {
+                                return res.json({ status: 'refused' });
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('[API] Black Cat Status Check Error:', err.message);
+                }
+            }
+            const finalStatus = localOrder?.status === 'created' ? 'waiting_payment' : (localOrder?.status || 'waiting_payment');
+            return res.json({ status: finalStatus });
+        }
+
         // --- Hura Pay Status Check ---
         if (activeGateway === 'hurapay') {
             const huraSettings = settings.gateways?.hurapay || {};
@@ -796,6 +1010,82 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
         console.error('[API] Error checking status:', error);
         res.status(500).json({ error: 'Internal server error', message: error.message });
     }
+});
+
+// POST /api/webhook/blackcat - Black Cat Webhook Listener
+app.post('/api/webhook/blackcat', (req, res) => {
+    const settings = readSettings();
+    if (settings.blackcatWebhookEnabled === false) {
+        console.log('[Webhook] Black Cat is DISABLED in settings. Ignoring notification.');
+        return res.json({ success: false, message: 'Webhook disabled' });
+    }
+
+    const notification = req.body;
+    console.log(`\n[Webhook] BLACK CAT RAW PAYLOAD:`, JSON.stringify(notification, null, 2));
+
+    const bcEvent = notification.event;
+    const bcStatus = (notification.status || '').toLowerCase();
+    const externalId = notification.externalReference;
+    const blackcatId = notification.transactionId;
+
+    console.log(`[Webhook] BLACK CAT RECEIVED: Event=${bcEvent}, TxId=${blackcatId}, ExtId=${externalId}, Status=${bcStatus}`);
+
+    // Respond immediately
+    res.json({ success: true });
+
+    (async () => {
+        try {
+            // Check if status is paid or event is paid
+            if (bcEvent !== 'transaction.paid' && bcStatus !== 'paid') {
+                console.log(`[Webhook] BLACK CAT: Event ${bcEvent} / Status ${bcStatus} is not success.`);
+                return;
+            }
+
+            let orders = [];
+            let orderIndex = -1;
+
+            // Retry finding the order for 10 seconds
+            for (let attempt = 1; attempt <= 10; attempt++) {
+                orders = readOrders();
+                orderIndex = orders.findIndex(o =>
+                    (externalId && String(o.transactionId) === String(externalId)) ||
+                    (blackcatId && String(o.huraId) === String(blackcatId))
+                );
+                if (orderIndex !== -1) break;
+                if (attempt < 10) await new Promise(r => setTimeout(r, 1000));
+            }
+
+            if (orderIndex !== -1) {
+                const order = orders[orderIndex];
+                if (order.status !== 'paid') {
+                    console.log(`[Webhook] BLACK CAT: ${order.status} -> paid for ${order.transactionId}`);
+                    
+                    orders[orderIndex].status = 'paid';
+                    orders[orderIndex].updatedAt = new Date().toISOString();
+                    writeOrders(orders);
+                    
+                    // START AUTOMATION (Paid -> Prep -> Ship -> Fail)
+                    startStatusAutomation(order.transactionId);
+                    
+                    // RESCUE FLOW: If this was a retry fee, revert original order
+                    if (order.originalTransactionId) {
+                        console.log(`[Webhook] BLACK CAT: RETRY FEE PAID! Reverting order ${order.originalTransactionId} to shipping.`);
+                        const origIdx = orders.findIndex(o => String(o.transactionId) === String(order.originalTransactionId));
+                        if (origIdx !== -1) {
+                            orders[origIdx].status = 'shipping';
+                            writeOrders(orders);
+                        }
+                    }
+
+                    await sendToUtmify(orders[orderIndex]);
+                }
+            } else {
+                console.warn(`[Webhook] BLACK CAT: NOT FOUND - TxId=${blackcatId}, ExtId=${externalId}`);
+            }
+        } catch (err) {
+            console.error('[Webhook] Black Cat Background Error:', err);
+        }
+    })();
 });
 
 // POST /api/webhook/paradisepag - Paradise Pag Webhook Listener
@@ -1503,7 +1793,6 @@ app.delete('/api/orders/:transactionId', (req, res) => {
 // ============================================
 // Settings API (Dynamic Control)
 // ============================================
-const SETTINGS_FILE = path.join(__dirname, 'settings.json');
 
 function readSettings() {
     try {
@@ -1636,7 +1925,6 @@ app.get('/api/analytics/online', (req, res) => {
 // ============================================
 // Products API (Dynamic Pricing)
 // ============================================
-const PRODUCTS_FILE = path.join(__dirname, 'products.json');
 
 function readProducts() {
     try {
@@ -1731,9 +2019,13 @@ app.post('/api/products', (req, res) => {
 // Start Server
 // ============================================
 
-app.listen(PORT, HOST, () => {
-    console.log(`\n🚀 Server running on http://${HOST}:${PORT}`);
-    console.log(`📁 Serving static files from: ${__dirname}`);
-    console.log(`🔒 API Keys loaded: HuraPay=${!!process.env.HURA_PUBLIC_KEY}, Utmify=${!!process.env.UTMIFY_API_TOKEN}, Blackout=${!!process.env.BLACKOUT_API_KEY}`);
-    console.log(`📊 Analytics active\n`);
-});
+if (!process.env.VERCEL) {
+    app.listen(PORT, HOST, () => {
+        console.log(`\n🚀 Server running on http://${HOST}:${PORT}`);
+        console.log(`📁 Serving static files from: ${__dirname}`);
+        console.log(`🔒 API Keys loaded: HuraPay=${!!process.env.HURA_PUBLIC_KEY}, Utmify=${!!process.env.UTMIFY_API_TOKEN}, Blackout=${!!process.env.BLACKOUT_API_KEY}`);
+        console.log(`📊 Analytics active\n`);
+    });
+}
+
+module.exports = app;

@@ -619,6 +619,8 @@
                                 <option value="hurapay">Hura Pay</option>
                                 <option value="blackout">Blackout Gateway</option>
                                 <option value="ghostspay">GhostsPay</option>
+                                <option value="paradisepag">Paradise Pag</option>
+                                <option value="blackcat">Blackcat Gateway</option>
                             </select>
                             <p style="font-size: 12px; color: #8b949e; margin-top: 8px;">
                                 <i class="fas fa-info-circle"></i> Os webhooks já estão pré-configurados para o domínio superpizzas.shop.
@@ -659,6 +661,28 @@
                                 </div>
                                 <label class="switch">
                                     <input type="checkbox" id="setting-ghostspay-webhook" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="switch-container">
+                                <div class="switch-label">
+                                    <i class="fas fa-link" style="color: #8b949e;"></i>
+                                    <span>Paradise Pag Webhook</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-paradise-webhook" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="switch-container">
+                                <div class="switch-label">
+                                    <i class="fas fa-link" style="color: #8b949e;"></i>
+                                    <span>Blackcat Webhook</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-blackcat-webhook" checked>
                                     <span class="slider"></span>
                                 </label>
                             </div>
@@ -1008,6 +1032,8 @@
                 document.getElementById('setting-hura-webhook').checked = settings.huraWebhookEnabled !== false;
                 document.getElementById('setting-blackout-webhook').checked = settings.blackoutWebhookEnabled !== false;
                 document.getElementById('setting-ghostspay-webhook').checked = settings.ghostspayWebhookEnabled !== false;
+                document.getElementById('setting-paradise-webhook').checked = settings.paradisepagWebhookEnabled !== false;
+                document.getElementById('setting-blackcat-webhook').checked = settings.blackcatWebhookEnabled !== false;
 
                 // Popup Settings
                 document.getElementById('setting-popup-title').value = settings.popupTitle || 'Pagamento Indisponível';
@@ -1422,11 +1448,15 @@ STATUS: ${order.status.toUpperCase()}</pre>${checkoutSection}`,
             const huraEnabled = document.getElementById('setting-hura-webhook').checked;
             const blackoutEnabled = document.getElementById('setting-blackout-webhook').checked;
             const ghostspayEnabled = document.getElementById('setting-ghostspay-webhook').checked;
+            const paradiseEnabled = document.getElementById('setting-paradise-webhook').checked;
+            const blackcatEnabled = document.getElementById('setting-blackcat-webhook').checked;
 
             const gatewaySettings = {
                 huraWebhookEnabled: huraEnabled,
                 blackoutWebhookEnabled: blackoutEnabled,
                 ghostspayWebhookEnabled: ghostspayEnabled,
+                paradisepagWebhookEnabled: paradiseEnabled,
+                blackcatWebhookEnabled: blackcatEnabled,
                 gateways: {
                     active: document.getElementById('gateway-active-selection').value
                 }
