@@ -100,7 +100,7 @@ function initializeVercelFiles() {
     if (process.env.VERCEL) {
         const filesToCopy = ['orders.json', 'settings.json', 'products.json'];
         filesToCopy.forEach(file => {
-            const src = path.join(__dirname, file);
+            const src = path.join(__dirname, '..', file);
             const dest = path.join('/tmp', file);
             if (!fs.existsSync(dest)) {
                 try {
@@ -124,9 +124,9 @@ function initializeVercelFiles() {
 }
 initializeVercelFiles();
 
-const ORDERS_FILE = process.env.VERCEL ? '/tmp/orders.json' : path.join(__dirname, 'orders.json');
-const SETTINGS_FILE = process.env.VERCEL ? '/tmp/settings.json' : path.join(__dirname, 'settings.json');
-const PRODUCTS_FILE = process.env.VERCEL ? '/tmp/products.json' : path.join(__dirname, 'products.json');
+const ORDERS_FILE = process.env.VERCEL ? '/tmp/orders.json' : path.join(__dirname, '..', 'orders.json');
+const SETTINGS_FILE = process.env.VERCEL ? '/tmp/settings.json' : path.join(__dirname, '..', 'settings.json');
+const PRODUCTS_FILE = process.env.VERCEL ? '/tmp/products.json' : path.join(__dirname, '..', 'products.json');
 
 const ADMIN_TOKEN = 'admin123secret';
 const ADMIN_USER = 'admin';
