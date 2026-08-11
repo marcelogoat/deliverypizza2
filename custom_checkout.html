@@ -1604,7 +1604,7 @@
                             try {
                                 // await sendUtmifyOrder(payload.customer, payload.items, transactionId, 'waiting_payment', payload.amount);
                                 // Pass transaction ID via URL parameter
-                                let nextUrl = `pagamento_pix.html?tx=${transactionId}`;
+                                let nextUrl = `pagamento_pix.html?tx=${transactionId}&gw=${data.blackcatId || data.paradiseId || data.huraId || ''}`;
                                 if (window.addUTMsToURL) {
                                     nextUrl = window.addUTMsToURL(nextUrl);
                                 }

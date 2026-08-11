@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true })); // Added to handle form-encoded
 // Ensure uploads directory exists
 const UPLOADS_DIR = process.env.VERCEL
     ? path.join('/tmp', 'uploads', 'receipts')
-    : path.join(__dirname, '..', 'uploads', 'receipts');
+    : path.join(__dirname, 'uploads', 'receipts');
 if (!fs.existsSync(UPLOADS_DIR)) {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -89,14 +89,7 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// Custom Admin Routes
-app.get('/index.html/admin.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'admin.html'));
-});
-
-app.get('/index.html/admin-login.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'admin-login.html'));
-});
+// Admin routes removed (site converted to static frontend)
 
 // ============================================
 // Admin Configuration & Helper Functions
@@ -107,7 +100,7 @@ function initializeVercelFiles() {
     if (process.env.VERCEL) {
         const filesToCopy = ['orders.json', 'settings.json', 'products.json'];
         filesToCopy.forEach(file => {
-            const src = path.join(__dirname, '..', file);
+            const src = path.join(__dirname, file);
             const dest = path.join('/tmp', file);
             if (!fs.existsSync(dest)) {
                 try {
@@ -131,9 +124,9 @@ function initializeVercelFiles() {
 }
 initializeVercelFiles();
 
-const ORDERS_FILE = process.env.VERCEL ? '/tmp/orders.json' : path.join(__dirname, '..', 'orders.json');
-const SETTINGS_FILE = process.env.VERCEL ? '/tmp/settings.json' : path.join(__dirname, '..', 'settings.json');
-const PRODUCTS_FILE = process.env.VERCEL ? '/tmp/products.json' : path.join(__dirname, '..', 'products.json');
+const ORDERS_FILE = process.env.VERCEL ? '/tmp/orders.json' : path.join(__dirname, 'orders.json');
+const SETTINGS_FILE = process.env.VERCEL ? '/tmp/settings.json' : path.join(__dirname, 'settings.json');
+const PRODUCTS_FILE = process.env.VERCEL ? '/tmp/products.json' : path.join(__dirname, 'products.json');
 
 const ADMIN_TOKEN = 'admin123secret';
 const ADMIN_USER = 'admin';
@@ -1483,153 +1476,7 @@ async function sendToUtmify(order) {
     }
 }
 
-app.post('/api/orders/:transactionId/approve', async (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Não autorizado' });
-    }
-    const token = authHeader.substring(7);
-    if (token !== ADMIN_TOKEN) {
-        return res.status(401).json({ error: 'Token inválido' });
-    }
-
-    try {
-        const { transactionId } = req.params;
-        const orders = readOrders();
-        const orderIndex = orders.findIndex(o => String(o.transactionId) === String(transactionId));
-
-        if (orderIndex === -1) {
-            return res.status(404).json({ error: 'Pedido não encontrado' });
-        }
-
-        if (orders[orderIndex].status === 'paid') {
-            // Allow override if already paid
-        }
-
-        orders[orderIndex].status = 'paid';
-        writeOrders(orders);
-
-        // Notify Utmify
-        await sendToUtmify(orders[orderIndex]);
-
-        // Automation Step (6s)
-        startStatusAutomation(transactionId);
-
-        console.log(`[Admin] Order ${transactionId} manually approved.`);
-        res.json({ success: true, status: 'paid' });
-
-    } catch (error) {
-        console.error('[Admin] Error approving order:', error);
-        res.status(500).json({ error: 'Failed to approve order' });
-    }
-});
-
-// Update Order Status (Manually by Admin/Kitchen)
-app.post('/api/orders/:transactionId/status', async (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Não autorizado' });
-    }
-    const token = authHeader.substring(7);
-    if (token !== ADMIN_TOKEN) {
-        return res.status(401).json({ error: 'Token inválido' });
-    }
-
-    try {
-        const { transactionId } = req.params;
-        const { status } = req.body;
-
-        const allowedStatuses = ['waiting_payment', 'paid', 'preparing', 'shipping'];
-        if (!allowedStatuses.includes(status)) {
-            return res.status(400).json({ error: 'Status inválido' });
-        }
-
-        const orders = readOrders();
-        const orderIndex = orders.findIndex(o => String(o.transactionId) === String(transactionId));
-
-        if (orderIndex === -1) {
-            return res.status(404).json({ error: 'Pedido não encontrado' });
-        }
-
-        console.log(`[Admin] Order ${transactionId} status updated: ${orders[orderIndex].status} -> ${status}`);
-        
-        orders[orderIndex].status = status;
-        writeOrders(orders);
-
-        res.json({ success: true, status: status });
-
-    } catch (error) {
-        console.error('[Admin] Error updating order status:', error);
-        res.status(500).json({ error: 'Failed to update status' });
-    }
-});
-
-
-app.post('/api/orders/:transactionId/sync', async (req, res) => {
-    try {
-        const { transactionId } = req.params;
-        console.log('[API] Syncing transaction status:', transactionId);
-
-        let targetId = transactionId;
-        const ordersForLookup = readOrders();
-        const localOrder = ordersForLookup.find(o => String(o.transactionId) === String(transactionId));
-
-        // If it's our local ID, use the stored Hura ID for the API call
-        if (localOrder && localOrder.huraId) {
-            targetId = localOrder.huraId;
-        }
-
-        const settings = readSettings();
-        const huraSettings = settings.gateways?.hurapay || {};
-
-        const response = await fetch(`${HURA_BASE_URL}/payment-transaction/${targetId}`, {
-            method: 'GET',
-            headers: { 'Authorization': getHuraAuth(huraSettings.publicKey, huraSettings.secretKey), 'Content-Type': 'application/json' }
-        });
-
-        const textBody = await response.text();
-        let data;
-        try {
-            data = JSON.parse(textBody);
-        } catch (je) {
-            console.error('[API] Invalid JSON from Hura Sync:', textBody);
-            return res.status(500).json({ error: 'Invalid response from Hura Pay', body: textBody });
-        }
-
-        if (!response.ok) {
-            return res.status(response.status).json(data);
-        }
-
-        const newStatus = mapHuraPayStatus(data.status);
-
-        // Update local order
-        const orders = readOrders();
-        const orderIndex = orders.findIndex(o => String(o.transactionId) === String(transactionId));
-
-        let updated = false;
-        if (orderIndex !== -1) {
-            if (orders[orderIndex].status !== newStatus) {
-                console.log(`[Sync] Updating status for ${transactionId}: ${orders[orderIndex].status} -> ${newStatus}`);
-                orders[orderIndex].status = newStatus;
-                writeOrders(orders);
-                updated = true;
-
-                if (newStatus === 'paid') {
-                    startStatusAutomation(transactionId);
-                }
-
-                // TRIGGER UTMIFY
-                await sendToUtmify(orders[orderIndex]);
-            }
-        }
-
-        res.json({ success: true, status: newStatus, updated: updated, remoteData: data });
-
-    } catch (error) {
-        console.error('[API] Error syncing status:', error);
-        res.status(500).json({ error: 'Internal server error', message: error.message });
-    }
-});
+// Admin approval, status, and sync endpoints removed (site converted to static frontend)
 
 // ============================================
 // Utmify API Endpoint
@@ -1688,45 +1535,7 @@ app.get('/api/health', (req, res) => {
 // ============================================
 
 
-app.post('/api/admin/login', (req, res) => {
-    const { username, password } = req.body;
-    if (username === ADMIN_USER && password === ADMIN_PASS) {
-        res.json({ token: ADMIN_TOKEN });
-    } else {
-        res.status(401).json({ error: 'Credenciais inválidas' });
-    }
-});
-
-app.post('/api/orders', (req, res) => {
-    try {
-        const order = { ...req.body, createdAt: new Date().toISOString() };
-        const orders = readOrders();
-        orders.push(order);
-        writeOrders(orders);
-        res.json({ success: true, orderId: order.transactionId });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to save order' });
-    }
-});
-
-app.get('/api/orders', (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Não autorizado' });
-    }
-    const token = authHeader.substring(7);
-    if (token !== ADMIN_TOKEN) {
-        return res.status(401).json({ error: 'Token inválido' });
-    }
-    try {
-        const orders = readOrders();
-        orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        res.json(orders);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to read orders' });
-    }
-});
-
+// Stateless helper for Pix Copied event
 app.post('/api/orders/:transactionId/copied', (req, res) => {
     try {
         const { transactionId } = req.params;
@@ -1736,57 +1545,11 @@ app.post('/api/orders/:transactionId/copied', (req, res) => {
         if (orderIndex !== -1) {
             orders[orderIndex].pixCopied = true;
             writeOrders(orders);
-            res.json({ success: true });
-        } else {
-            res.status(404).json({ error: 'Order not found' });
         }
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error updating order:', error);
-        res.status(500).json({ error: 'Failed to update order' });
-    }
-});
-
-// ============================================
-// Delete Order Endpoint
-// ============================================
-
-app.delete('/api/orders/batch', (req, res) => {
-    try {
-        const { transactionIds } = req.body;
-        if (!Array.isArray(transactionIds)) {
-            return res.status(400).json({ error: 'Invalid input' });
-        }
-
-        const orders = readOrders();
-        const initialLength = orders.length;
-
-        const newOrders = orders.filter(o => !transactionIds.includes(String(o.transactionId)));
-
-        writeOrders(newOrders);
-        res.json({ success: true, deletedCount: initialLength - newOrders.length });
-    } catch (error) {
-        console.error('Error batch deleting orders:', error);
-        res.status(500).json({ error: 'Failed to batch delete orders' });
-    }
-});
-
-app.delete('/api/orders/:transactionId', (req, res) => {
-    try {
-        const { transactionId } = req.params;
-        const orders = readOrders();
-        const initialLength = orders.length;
-
-        const newOrders = orders.filter(o => String(o.transactionId) !== String(transactionId));
-
-        if (newOrders.length < initialLength) {
-            writeOrders(newOrders);
-            res.json({ success: true });
-        } else {
-            res.status(404).json({ error: 'Order not found' });
-        }
-    } catch (error) {
-        console.error('Error deleting order:', error);
-        res.status(500).json({ error: 'Failed to delete order' });
+        console.error('Error updating copied status:', error);
+        res.json({ success: true });
     }
 });
 
@@ -1832,30 +1595,7 @@ app.get('/api/public/settings', (req, res) => {
     res.json(publicSettings);
 });
 
-app.get('/api/settings', (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.substring(7) !== ADMIN_TOKEN) {
-        return res.status(401).json({ error: 'Não autorizado' });
-    }
-    res.json(readSettings());
-});
-
-app.post('/api/settings', (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.substring(7) !== ADMIN_TOKEN) {
-        return res.status(401).json({ error: 'Não autorizado' });
-    }
-    try {
-        const currentSettings = readSettings();
-        const newSettings = { ...currentSettings, ...req.body };
-        writeSettings(newSettings);
-        console.log('[API] Settings updated');
-        res.json({ success: true, settings: newSettings });
-    } catch (error) {
-        console.error('Error updating settings:', error);
-        res.status(500).json({ error: 'Failed to update settings' });
-    }
-});
+// Admin settings endpoints removed (site converted to static frontend)
 
 
 // ============================================
@@ -1995,25 +1735,7 @@ function startStatusAutomation(transactionId) {
     }, 2 * 60 * 1000); // 2 minutes
 }
 
-app.post('/api/products', (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Não autorizado' });
-    }
-    const token = authHeader.substring(7);
-    if (token !== ADMIN_TOKEN) {
-        return res.status(401).json({ error: 'Token inválido' });
-    }
-
-    try {
-        writeProducts(req.body);
-        console.log('[API] Products updated');
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error updating products:', error);
-        res.status(500).json({ error: 'Failed to update products' });
-    }
-});
+// Admin products endpoints removed (site converted to static frontend)
 
 // ============================================
 // Start Server
@@ -2022,7 +1744,7 @@ app.post('/api/products', (req, res) => {
 if (!process.env.VERCEL) {
     app.listen(PORT, HOST, () => {
         console.log(`\n🚀 Server running on http://${HOST}:${PORT}`);
-        console.log(`📁 Serving static files from: ${path.join(__dirname, '..')}`);
+        console.log(`📁 Serving static files from: ${__dirname}`);
         console.log(`🔒 API Keys loaded: HuraPay=${!!process.env.HURA_PUBLIC_KEY}, Utmify=${!!process.env.UTMIFY_API_TOKEN}, Blackout=${!!process.env.BLACKOUT_API_KEY}`);
         console.log(`📊 Analytics active\n`);
     });

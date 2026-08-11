@@ -671,7 +671,10 @@
                 // Regular Polling for Status Tracker (Independent of Worker if needed)
                 const checkStatus = setInterval(async () => {
                     try {
-                        const response = await fetch(`/api/payment/status/${transactionId}`);
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const gwId = urlParams.get('gw');
+                        const targetId = gwId || transactionId;
+                        const response = await fetch(`/api/payment/status/${targetId}`);
                         const data = await response.json();
 
                         if (data.status) {
