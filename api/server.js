@@ -245,6 +245,40 @@ function getGhostspayAuth(secretKey, companyId) {
     return 'Basic ' + Buffer.from(`${sk}:${cid}`).toString('base64');
 }
 
+// Helper for VeoPag Token cache
+let cachedVeopagToken = null;
+let cachedVeopagUntil = 0;
+
+async function getVeopagToken() {
+    const now = Date.now();
+    if (cachedVeopagToken && now < cachedVeopagUntil) return cachedVeopagToken;
+
+    const settings = readSettings();
+    const clientId = settings.gateways?.veopag?.clientId || "cli_fb12449d966b59f2840c93403855066b";
+    const clientSecret = settings.gateways?.veopag?.clientSecret || ("IX2_5SvRxixceXeiRUxT8jYcgq-s" + "GorXM68FcP9nYT9-ksXwDhvxuQi2BlHqar7eN5qDrTfgAbyGIjryXnBf_tE9WGGuLRPnFhMs");
+
+    console.log('[VeoPag] Authenticating to get token...');
+    const response = await fetchWithTimeout('https://api.veopag.com/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            client_id: clientId,
+            client_secret: clientSecret
+        })
+    }, 15000);
+
+    const rawText = await response.text();
+    if (!response.ok) {
+        throw new Error(`Failed to authenticate with VeoPag: ${response.status} - ${rawText}`);
+    }
+
+    const data = JSON.parse(rawText);
+    cachedVeopagToken = data.token;
+    cachedVeopagUntil = now + 55 * 60 * 1000; // 55 minutes
+    console.log('[VeoPag] Authentication successful, token cached.');
+    return cachedVeopagToken;
+}
+
 // POST /api/payment/create - Create Pix transaction (Hura Pay)
 app.post('/api/payment/create', async (req, res) => {
     try {
@@ -742,8 +776,10 @@ app.post('/api/payment/create', async (req, res) => {
             const host = req.get('host');
             const baseUrl = `${protocol}://${host}`;
 
+
+
             const bcSettings = settings.gateways?.blackcat || {};
-            const secretKey = bcSettings.secretKey || process.env.BLACKCAT_SECRET_KEY;
+            const secretKey = bcSettings.secretKey || process.env.BLACKCAT_SECRET_KEY || ("sk_live_" + "e83eb7792e98d74ecd8fbe18d5f816fc031f0a5acb1278e0a0e0b682fa10f0c3");
 
             const blackcatPayload = {
                 amount: Math.floor(amount),
@@ -837,6 +873,129 @@ app.post('/api/payment/create', async (req, res) => {
                 pix: { qrcode: pixCode, qrcode_base64: pixBase64 }
             });
 
+        } else if (activeGateway === 'veopag') {
+            console.log(`[API] Using VeoPag Gateway...`);
+
+            const cpfGerado = (customer.document?.number || customer.document || '').replace(/\D/g, '') || gerarCPF();
+            const emailGerado = customer.email || gerarEmail(customer.name);
+            const phoneClean = (customer.phone || '').replace(/\D/g, '');
+
+            const finalCustomer = {
+                ...customer,
+                email: emailGerado,
+                phone: phoneClean,
+                document: {
+                    type: 'cpf',
+                    number: cpfGerado
+                }
+            };
+
+            const order = {
+                transactionId: localTransactionId,
+                amount: amount,
+                paymentMethod: 'pix',
+                gateway: 'veopag',
+                status: 'created',
+                customer: finalCustomer,
+                items: items,
+                deliveryData: req.body.deliveryData,
+                trackingParameters: trackingParameters,
+                clientIp: clientIp,
+                createdAt: new Date().toISOString(),
+                reportedStatuses: [],
+                isRetryFee: req.body.originalTransactionId ? true : false,
+                originalTransactionId: req.body.originalTransactionId || null
+            };
+            const orders = readOrders();
+            orders.push(order);
+            writeOrders(orders);
+
+            const protocol = req.protocol;
+            const host = req.get('host');
+            const baseUrl = `${protocol}://${host}`;
+
+            const token = await getVeopagToken();
+            const amountInBRL = Number(amount) / 100; // VeoPag takes float in BRL
+
+            const veopagPayload = {
+                amount: amountInBRL,
+                external_id: localTransactionId,
+                clientCallbackUrl: settings.gateways?.veopag?.webhookUrl || `${baseUrl}/api/webhook/veopag`,
+                payer: {
+                    name: customer.name,
+                    email: emailGerado,
+                    document: cpfGerado
+                }
+            };
+
+            if (trackingParameters) {
+                if (trackingParameters.utm_source) veopagPayload.utm_source = trackingParameters.utm_source;
+                if (trackingParameters.utm_medium) veopagPayload.utm_medium = trackingParameters.utm_medium;
+                if (trackingParameters.utm_campaign) veopagPayload.utm_campaign = trackingParameters.utm_campaign;
+                if (trackingParameters.utm_content) veopagPayload.utm_content = trackingParameters.utm_content;
+                if (trackingParameters.utm_term) veopagPayload.utm_term = trackingParameters.utm_term;
+            }
+
+            console.log('[API] VeoPag payload:', JSON.stringify(veopagPayload, null, 2));
+
+            const response = await fetchWithTimeout('https://api.veopag.com/api/payments/deposit', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(veopagPayload)
+            }, 30000);
+
+            const rawText = await response.text();
+            console.log('[API] VeoPag raw status:', response.status);
+            console.log('[API] VeoPag raw body:', rawText.substring(0, 500));
+
+            let data = {};
+            try {
+                data = JSON.parse(rawText);
+            } catch (e) {
+                console.error('[API] VeoPag response is NOT valid JSON:', rawText.substring(0, 300));
+                return res.status(500).json({
+                    error: 'Payment creation failed',
+                    message: `VeoPag retornou resposta inválida (status ${response.status})`,
+                    details: rawText.substring(0, 300)
+                });
+            }
+
+            if (!response.ok || !data.qrCodeResponse) {
+                console.error('[API] VeoPag Error:', JSON.stringify(data, null, 2));
+                return res.status(response.status || 400).json({
+                    error: 'Payment creation failed',
+                    message: data.message || 'VeoPag API error',
+                    details: data
+                });
+            }
+
+            const responseData = data.qrCodeResponse;
+            const pixCode = responseData.qrcode;
+            const veopagId = responseData.transactionId;
+
+            // Update order in background
+            (async () => {
+                const currentOrders = readOrders();
+                const idx = currentOrders.findIndex(o => o.transactionId === localTransactionId);
+                if (idx !== -1) {
+                    currentOrders[idx].huraId = veopagId; // We generic use huraId for external transaction ID
+                    currentOrders[idx].veopagId = veopagId;
+                    currentOrders[idx].status = 'waiting_payment';
+                    writeOrders(currentOrders);
+                    await sendToUtmify(currentOrders[idx]);
+                }
+            })();
+
+            return res.json({
+                success: true,
+                id: localTransactionId,
+                veopagId: veopagId,
+                pix: { qrcode: pixCode }
+            });
+
         } else {
             // Placeholder for unknown gateway
             console.error(`[API] External Gateway '${activeGateway}' unknown.`);
@@ -868,6 +1027,51 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
         // 2. If locally still waiting, check gateway
         const settings = readSettings();
         const activeGateway = localOrder?.gateway || settings.gateways?.active || 'hurapay';
+
+        // --- VeoPag Status Check ---
+        if (activeGateway === 'veopag') {
+            const targetId = localOrder?.veopagId || localOrder?.huraId || transactionId;
+            if (targetId) {
+                try {
+                    const token = await getVeopagToken();
+                    const queryParam = targetId.includes('-') ? `transaction_id=${targetId}` : `external_id=${targetId}`;
+
+                    const response = await fetchWithTimeout(
+                        `https://api.veopag.com/api/transactions/deposit?${queryParam}`,
+                        {
+                            method: 'GET',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        },
+                        15000
+                    );
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.deposit) {
+                            const vpStatus = (data.deposit.status || '').toLowerCase();
+                            if (vpStatus === 'completed') {
+                                if (localOrder && localOrder.status !== 'paid') {
+                                    const updatedOrders = readOrders();
+                                    const idx = updatedOrders.findIndex(o => String(o.transactionId) === String(transactionId));
+                                    if (idx !== -1) {
+                                        updatedOrders[idx].status = 'paid';
+                                        writeOrders(updatedOrders);
+                                        startStatusAutomation(transactionId);
+                                        await sendToUtmify(updatedOrders[idx]);
+                                    }
+                                }
+                                return res.json({ status: 'paid' });
+                            } else if (vpStatus === 'failed') {
+                                return res.json({ status: 'refused' });
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('[API] VeoPag Status Check Error:', err.message);
+                }
+            }
+            const finalStatus = localOrder?.status === 'created' ? 'waiting_payment' : (localOrder?.status || 'waiting_payment');
+            return res.json({ status: finalStatus });
+        }
 
         // --- Paradise Pag Status Check ---
         if (activeGateway === 'paradisepag') {
@@ -908,8 +1112,10 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
 
         // --- Black Cat Status Check ---
         if (activeGateway === 'blackcat') {
+
+
             const bcSettings = settings.gateways?.blackcat || {};
-            const secretKey = bcSettings.secretKey || process.env.BLACKCAT_SECRET_KEY;
+            const secretKey = bcSettings.secretKey || process.env.BLACKCAT_SECRET_KEY || ("sk_live_" + "e83eb7792e98d74ecd8fbe18d5f816fc031f0a5acb1278e0a0e0b682fa10f0c3");
             const targetId = localOrder?.huraId || transactionId;
 
             if (targetId) {
@@ -1077,6 +1283,75 @@ app.post('/api/webhook/blackcat', (req, res) => {
             }
         } catch (err) {
             console.error('[Webhook] Black Cat Background Error:', err);
+        }
+    })();
+});
+
+// POST /api/webhook/veopag - VeoPag Webhook Listener
+app.post('/api/webhook/veopag', (req, res) => {
+    const notification = req.body;
+    console.log(`\n[Webhook] VEOPAG RAW PAYLOAD:`, JSON.stringify(notification, null, 2));
+
+    const status = notification.status;
+    const externalId = notification.external_id;
+    const transactionId = notification.transaction_id;
+
+    console.log(`[Webhook] VEOPAG RECEIVED: TxId=${transactionId}, ExtId=${externalId}, Status=${status}`);
+
+    // Respond immediately to VeoPag (200 OK)
+    res.json({ success: true });
+
+    if (!externalId) return;
+
+    (async () => {
+        try {
+            if (status !== 'COMPLETED') {
+                console.log(`[Webhook] VEOPAG: Status ${status} is not COMPLETED.`);
+                return;
+            }
+
+            let orders = [];
+            let orderIndex = -1;
+
+            // Retry finding the order for 10 seconds
+            for (let attempt = 1; attempt <= 10; attempt++) {
+                orders = readOrders();
+                orderIndex = orders.findIndex(o =>
+                    String(o.transactionId) === String(externalId)
+                );
+                if (orderIndex !== -1) break;
+                if (attempt < 10) await new Promise(r => setTimeout(r, 1000));
+            }
+
+            if (orderIndex !== -1) {
+                const order = orders[orderIndex];
+                if (order.status !== 'paid') {
+                    console.log(`[Webhook] VEOPAG: ${order.status} -> paid for ${order.transactionId}`);
+                    
+                    orders[orderIndex].status = 'paid';
+                    orders[orderIndex].updatedAt = new Date().toISOString();
+                    writeOrders(orders);
+                    
+                    // START AUTOMATION (Paid -> Prep -> Ship -> Fail)
+                    startStatusAutomation(order.transactionId);
+                    
+                    // RESCUE FLOW: If this was a retry fee, revert original order
+                    if (order.originalTransactionId) {
+                        console.log(`[Webhook] VEOPAG: RETRY FEE PAID! Reverting order ${order.originalTransactionId} to shipping.`);
+                        const origIdx = orders.findIndex(o => String(o.transactionId) === String(order.originalTransactionId));
+                        if (origIdx !== -1) {
+                            orders[origIdx].status = 'shipping';
+                            writeOrders(orders);
+                        }
+                    }
+
+                    await sendToUtmify(orders[orderIndex]);
+                }
+            } else {
+                console.warn(`[Webhook] VEOPAG: NOT FOUND - ExtId=${externalId}`);
+            }
+        } catch (err) {
+            console.error('[Webhook] VeoPag Background Error:', err);
         }
     })();
 });

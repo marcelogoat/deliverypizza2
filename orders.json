@@ -259,5 +259,232 @@
     "createdAt": "2026-05-05T21:13:31.536Z",
     "reportedStatuses": [],
     "isRetryFee": false
+  },
+  {
+    "transactionId": "order_1787011558672_fwxmp4ibs",
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "blackcat",
+    "status": "created",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos8156@gmail.com",
+      "phone": "41999995959",
+      "document": {
+        "type": "cpf",
+        "number": "24453031769"
+      },
+      "address": {
+        "street": "23",
+        "streetNumber": "234",
+        "zipCode": "57150000",
+        "neighborhood": "234",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Serviço Digital",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": null,
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-08-18T00:05:58.672Z",
+    "reportedStatuses": [],
+    "isRetryFee": false,
+    "originalTransactionId": null
+  },
+  {
+    "transactionId": "order_1787011720433_8j09168t5",
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "blackcat",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos5757@gmail.com",
+      "phone": "41999995959",
+      "document": {
+        "type": "cpf",
+        "number": "11525066684"
+      },
+      "address": {
+        "street": "R. Projetada",
+        "streetNumber": "07",
+        "zipCode": "57150000",
+        "neighborhood": "Chã do Pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Serviço Digital",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": null,
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-08-18T00:08:40.433Z",
+    "reportedStatuses": [],
+    "isRetryFee": false,
+    "originalTransactionId": null,
+    "huraId": "TRX1787011948716QYV27",
+    "pixCopied": true
+  },
+  {
+    "transactionId": "order_1787063779696_mvei3u43m",
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "blackcat",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos5775@gmail.com",
+      "phone": "41999995959",
+      "document": {
+        "type": "cpf",
+        "number": "31237653509"
+      },
+      "address": {
+        "street": "R. Projetada",
+        "streetNumber": "07",
+        "zipCode": "57150000",
+        "neighborhood": "Chã do Pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Serviço Digital",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": null,
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-08-18T14:36:19.696Z",
+    "reportedStatuses": [],
+    "isRetryFee": false,
+    "originalTransactionId": null,
+    "huraId": "TRX1787064008749DYRK5"
+  },
+  {
+    "transactionId": "order_1787064047507_zt6a1uyw5",
+    "amount": 1639,
+    "paymentMethod": "pix",
+    "gateway": "blackcat",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos5775@gmail.com",
+      "phone": "41999995959",
+      "document": {
+        "type": "cpf",
+        "number": "31237653509"
+      },
+      "address": {
+        "street": "R. Projetada",
+        "streetNumber": "07",
+        "zipCode": "57150000",
+        "neighborhood": "Chã do Pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Taxa de Re-entrega Administrativa",
+        "unitPrice": 1639,
+        "quantity": 1
+      }
+    ],
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-08-18T14:40:47.507Z",
+    "reportedStatuses": [],
+    "isRetryFee": true,
+    "originalTransactionId": "order_1787063779696_mvei3u43m",
+    "huraId": "TRX1787064276255GV5DEO"
+  },
+  {
+    "transactionId": "order_1787093558645_010d1pa9d",
+    "amount": 3295,
+    "paymentMethod": "pix",
+    "gateway": "veopag",
+    "status": "waiting_payment",
+    "customer": {
+      "name": "DAVISSON KLEBER DA SILVA SANTOS",
+      "email": "davissonkleberdasilvasantos4400@gmail.com",
+      "phone": "41999595959",
+      "document": {
+        "type": "cpf",
+        "number": "04258720844"
+      },
+      "address": {
+        "street": "cha do pilar",
+        "streetNumber": "07",
+        "zipCode": "57150000",
+        "neighborhood": "cha do pilar",
+        "city": "Pilar",
+        "state": "SP",
+        "country": "BR"
+      }
+    },
+    "items": [
+      {
+        "title": "Serviço Digital",
+        "unitPrice": 3295,
+        "quantity": 1,
+        "tangible": false
+      }
+    ],
+    "deliveryData": null,
+    "trackingParameters": {
+      "utm_source": null,
+      "utm_medium": null,
+      "utm_campaign": null,
+      "utm_term": null,
+      "utm_content": null
+    },
+    "clientIp": "127.0.0.1",
+    "createdAt": "2026-08-18T22:52:38.645Z",
+    "reportedStatuses": [],
+    "isRetryFee": false,
+    "originalTransactionId": null,
+    "huraId": "97b3f611-8195-40e8-ade4-502bca933ec2",
+    "veopagId": "97b3f611-8195-40e8-ade4-502bca933ec2"
   }
 ]

@@ -12,13 +12,19 @@
   "placeholderCep": "000.000.000-00",
   "labelDeliverySection": "Confirme Seu Pagamento",
   "gateways": {
-    "active": "blackcat",
+    "active": "veopag",
+    "veopag": {
+      "clientId": "cli_fb12449d966b59f2840c93403855066b",
+      "clientSecret": "REMOVED_FOR_SECURITY",
+      "webhookUrl": "https://www.superpizzas.shop/api/webhook/veopag"
+    },
     "blackcat": {
-      "secretKey": "",
-      "publicKey": "",
+      "secretKey": "REMOVED_FOR_SECURITY",
+      "publicKey": "pk_live_2436f0a186a6a9d89d63c75472a1a447a93e22b74efae5a1c4ac1f117ecde9e4",
       "webhookUrl": "https://www.superpizzas.shop/api/webhook/blackcat"
     }
   },
+  "veopagWebhookEnabled": true,
   "paradisepagWebhookEnabled": true,
   "huraWebhookEnabled": true,
   "blackoutWebhookEnabled": true,

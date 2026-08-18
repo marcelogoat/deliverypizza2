@@ -6661,7 +6661,7 @@
 	<script>
 		document.addEventListener('DOMContentLoaded', async () => {
 			try {
-				const response = await fetch('/api/products');
+				const response = await fetch('/products.json');
 				if (!response.ok) return;
 				const products = await response.json();
 

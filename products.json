@@ -3,7 +3,7 @@
     "id": "pizza_pp",
     "title": "2 Pizza PP + 1 Refrigerante 2 Litros",
     "description": "Borda Recheada Grátis",
-    "originalPrice": 40,
+    "originalPrice": 40.00,
     "price": 32.95,
     "highlight": false
   },
@@ -11,7 +11,7 @@
     "id": "pizza_p",
     "title": "2 Pizza P + 1 Refrigerante 2 Litros",
     "description": "Borda Recheada Grátis",
-    "originalPrice": 63.8,
+    "originalPrice": 63.80,
     "price": 42.97,
     "highlight": false
   },
@@ -19,7 +19,7 @@
     "id": "pizza_m",
     "title": "2 Pizza M + 1 Refrigerante 2 Litros",
     "description": "Borda Recheada Grátis",
-    "originalPrice": 73.8,
+    "originalPrice": 73.80,
     "price": 55.93,
     "highlight": true,
     "tag": "MAIS VENDIDO 💜"
@@ -28,7 +28,7 @@
     "id": "pizza_g",
     "title": "2 Pizza G + 1 Refrigerante 2 Litros",
     "description": "Borda Recheada Grátis",
-    "originalPrice": 123.8,
+    "originalPrice": 123.80,
     "price": 75.92,
     "highlight": false
   },
@@ -36,7 +36,7 @@
     "id": "pizza_gigante",
     "title": "2 Pizza Gigante + 2 Refrigerante 2 Litros",
     "description": "Borda Recheada Grátis",
-    "originalPrice": 159.8,
+    "originalPrice": 159.80,
     "price": 98.96,
     "highlight": true,
     "tag": "MAIS VENDIDO 💜"

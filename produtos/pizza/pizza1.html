@@ -1108,7 +1108,7 @@
 			if (!productId) return;
 
 			try {
-				const response = await fetch('/api/products');
+				const response = await fetch('/products.json');
 				if (!response.ok) return;
 				const products = await response.json();
 				const product = products.find(p => p.id === productId);
