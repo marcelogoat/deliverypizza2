@@ -254,8 +254,14 @@ async function getVeopagToken() {
     if (cachedVeopagToken && now < cachedVeopagUntil) return cachedVeopagToken;
 
     const settings = readSettings();
-    const clientId = settings.gateways?.veopag?.clientId || "cli_fb12449d966b59f2840c93403855066b";
-    const clientSecret = settings.gateways?.veopag?.clientSecret || ("IX2_5SvRxixceXeiRUxT8jYcgq-s" + "GorXM68FcP9nYT9-ksXwDhvxuQi2BlHqar7eN5qDrTfgAbyGIjryXnBf_tE9WGGuLRPnFhMs");
+    let clientId = settings.gateways?.veopag?.clientId;
+    if (!clientId || clientId === "REMOVED_FOR_SECURITY") {
+        clientId = "cli_fb12449d966b59f2840c93403855066b";
+    }
+    let clientSecret = settings.gateways?.veopag?.clientSecret;
+    if (!clientSecret || clientSecret === "REMOVED_FOR_SECURITY") {
+        clientSecret = ("IX2_5SvRxixceXeiRUxT8jYcgq-s" + "GorXM68FcP9nYT9-ksXwDhvxuQi2BlHqar7eN5qDrTfgAbyGIjryXnBf_tE9WGGuLRPnFhMs");
+    }
 
     console.log('[VeoPag] Authenticating to get token...');
     const response = await fetchWithTimeout('https://api.veopag.com/api/auth/login', {
