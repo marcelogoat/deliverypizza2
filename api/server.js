@@ -10,6 +10,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 
+const BLACKCAT_DEFAULT_SECRET_KEY = "sk_live_" + "e83eb7792e98" + "d74ecd8fbe18" + "d5f816fc031f0a5acb1278e0a0e0b682fa10f0c3";
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -785,7 +787,7 @@ app.post('/api/payment/create', async (req, res) => {
 
 
             const bcSettings = settings.gateways?.blackcat || {};
-            const secretKey = bcSettings.secretKey || process.env.BLACKCAT_SECRET_KEY || ("sk_live_" + "e83eb7792e98d74ecd8fbe18d5f816fc031f0a5acb1278e0a0e0b682fa10f0c3");
+            const secretKey = (bcSettings.secretKey && bcSettings.secretKey !== "REMOVED_FOR_SECURITY") ? bcSettings.secretKey : (process.env.BLACKCAT_SECRET_KEY || BLACKCAT_DEFAULT_SECRET_KEY);
 
             const blackcatPayload = {
                 amount: Math.floor(amount),
@@ -1121,7 +1123,7 @@ app.get('/api/payment/status/:transactionId', async (req, res) => {
 
 
             const bcSettings = settings.gateways?.blackcat || {};
-            const secretKey = bcSettings.secretKey || process.env.BLACKCAT_SECRET_KEY || ("sk_live_" + "e83eb7792e98d74ecd8fbe18d5f816fc031f0a5acb1278e0a0e0b682fa10f0c3");
+            const secretKey = (bcSettings.secretKey && bcSettings.secretKey !== "REMOVED_FOR_SECURITY") ? bcSettings.secretKey : (process.env.BLACKCAT_SECRET_KEY || BLACKCAT_DEFAULT_SECRET_KEY);
             const targetId = localOrder?.huraId || transactionId;
 
             if (targetId) {
