@@ -12,7 +12,7 @@
   "placeholderCep": "000.000.000-00",
   "labelDeliverySection": "Confirme Seu Pagamento",
   "gateways": {
-    "active": "veopag",
+    "active": "blackcat",
     "veopag": {
       "clientId": "cli_fb12449d966b59f2840c93403855066b",
       "clientSecret": "REMOVED_FOR_SECURITY",
