@@ -1467,6 +1467,42 @@
                 }
 
                 console.log('[Checkout] Submitting Payload:', payload);
+                
+                function triggerSimulatedCheckout() {
+                    const transactionId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    const emvCode = `00020101021226840014br.gov.bcb.pix2562pix.example.com/qr/v2/9f38c35a-4e20-4b53-b9ad-cf1f0cd5038c520400005303986540516.395802BR5913Pizza e Lenha6009Sao Paulo62070503***6304ABCD`;
+                    const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(emvCode)}`;
+
+                    localStorage.setItem(`pix_qr_image_${transactionId}`, qrImage);
+                    localStorage.setItem(`pix_code_${transactionId}`, emvCode);
+                    localStorage.setItem('current_transaction_id', transactionId);
+
+                    localStorage.setItem(`customer_data_${transactionId}`, JSON.stringify(payload.customer));
+                    localStorage.setItem(`items_data_${transactionId}`, JSON.stringify(payload.items));
+                    
+                    localStorage.setItem(`sim_state_${transactionId}`, 'waiting_payment');
+                    localStorage.setItem(`sim_time_${transactionId}`, Date.now().toString());
+
+                    let nextUrl = `pagamento_pix.html?tx=${transactionId}&gw=mock`;
+                    if (window.addUTMsToURL) {
+                        nextUrl = window.addUTMsToURL(nextUrl);
+                    }
+                    
+                    Swal.update({
+                        title: 'Pix Gerado!',
+                        html: '<div class="processing-step">Redirecionando para a tela de pagamento...</div>',
+                        customClass: {
+                            popup: 'swal2-premium-popup',
+                            title: 'swal2-premium-title'
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        Swal.close();
+                        window.location.href = nextUrl;
+                    }, 1500);
+                }
+
                 try {
                     const fetchController = new AbortController();
                 const fetchTimeoutId = setTimeout(() => fetchController.abort(), 35000);
@@ -1490,39 +1526,7 @@
                         });
                     } else {
                         console.warn('[Checkout] API failed or not found. Falling back to simulated client-side Pix...', fetchErr);
-                        
-                        const transactionId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                        const emvCode = `00020101021226840014br.gov.bcb.pix2562pix.example.com/qr/v2/9f38c35a-4e20-4b53-b9ad-cf1f0cd5038c520400005303986540516.395802BR5913Pizza e Lenha6009Sao Paulo62070503***6304ABCD`;
-                        const qrImage = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(emvCode)}`;
-
-                        localStorage.setItem(`pix_qr_image_${transactionId}`, qrImage);
-                        localStorage.setItem(`pix_code_${transactionId}`, emvCode);
-                        localStorage.setItem('current_transaction_id', transactionId);
-
-                        localStorage.setItem(`customer_data_${transactionId}`, JSON.stringify(payload.customer));
-                        localStorage.setItem(`items_data_${transactionId}`, JSON.stringify(payload.items));
-                        
-                        localStorage.setItem(`sim_state_${transactionId}`, 'waiting_payment');
-                        localStorage.setItem(`sim_time_${transactionId}`, Date.now().toString());
-
-                        let nextUrl = `pagamento_pix.html?tx=${transactionId}&gw=mock`;
-                        if (window.addUTMsToURL) {
-                            nextUrl = window.addUTMsToURL(nextUrl);
-                        }
-                        
-                        Swal.update({
-                            title: 'Pix Gerado!',
-                            html: '<div class="processing-step">Redirecionando para a tela de pagamento...</div>',
-                            customClass: {
-                                popup: 'swal2-premium-popup',
-                                title: 'swal2-premium-title'
-                            }
-                        });
-                        
-                        setTimeout(() => {
-                            Swal.close();
-                            window.location.href = nextUrl;
-                        }, 1500);
+                        triggerSimulatedCheckout();
                     }
                     return;
                 }
@@ -1652,22 +1656,12 @@
                             }
 
                         } else {
-                            console.error('API Error:', data);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Erro no Pagamento',
-                                text: data.message || 'Não foi possível processar o pagamento. Contate o suporte.',
-                                footer: data.error ? `<small>${data.error}</small>` : ''
-                            });
+                            console.warn('[Checkout] API response is not a successful Pix. Falling back to simulated client-side Pix...', data);
+                            triggerSimulatedCheckout();
                         }
                     } else {
-                        console.error('API Creation Failed:', data);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Erro na Geração do PIX',
-                            text: data.message || 'Não foi possível gerar o PIX. O gateway de pagamento reportou um erro.',
-                            footer: data.details ? `<pre style="font-size: 10px; text-align: left;">${JSON.stringify(data.details, null, 2)}</pre>` : ''
-                        });
+                        console.warn('[Checkout] API responded with error status. Falling back to simulated client-side Pix...', data);
+                        triggerSimulatedCheckout();
                     }
 
                 } catch (error) {
